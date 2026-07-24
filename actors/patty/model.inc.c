@@ -6,6 +6,10 @@ Lights1 patty_burger_patty_lights = gdSPDefLights1(
 	0x7F, 0x7F, 0x7F,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
 
+Lights1 patty_pot_liquid_burnt_lights = gdSPDefLights1(
+	0x7D, 0x7F, 0x67,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
 Texture patty_patty_raw_ci8[] = {
 	#include "actors/patty/patty_raw.ci8.inc.c"
 };
@@ -16,6 +20,14 @@ Texture patty_patty_raw_pal_rgba16[] = {
 
 Texture patty_patty_rgba16[] = {
 	#include "actors/patty/patty.rgba16.inc.c"
+};
+
+Texture patty_pot_liquid_burnt_ci8[] = {
+	#include "actors/patty/pot_liquid_burnt.ci8.inc.c"
+};
+
+Texture patty_pot_liquid_burnt_pal_rgba16[] = {
+	#include "actors/patty/pot_liquid_burnt.rgba16.pal"
 };
 
 Vtx patty_patty_model_mesh_layer_1_vtx_0[79] = {
@@ -176,6 +188,31 @@ Gfx mat_revert_patty_burger_patty[] = {
 	gsSPEndDisplayList(),
 };
 
+Gfx mat_patty_pot_liquid_burnt[] = {
+	gsSPSetLights1(patty_pot_liquid_burnt_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, patty_pot_liquid_burnt_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 10),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, patty_pot_liquid_burnt_ci8),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 511, 512),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 4, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 5, 0, G_TX_WRAP | G_TX_MIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_patty_pot_liquid_burnt[] = {
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
 Gfx patty_patty_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_patty_burger_patty_raw),
 	gsSPDisplayList(patty_patty_model_mesh_layer_1_tri_0),
@@ -187,6 +224,13 @@ Gfx patty_patty_model_mesh_layer_1_mat_override_burger_patty_0[] = {
 	gsSPDisplayList(mat_patty_burger_patty),
 	gsSPDisplayList(patty_patty_model_mesh_layer_1_tri_0),
 	gsSPDisplayList(mat_revert_patty_burger_patty),
+	gsSPEndDisplayList(),
+};
+
+Gfx patty_patty_model_mesh_layer_1_mat_override_pot_liquid_burnt_1[] = {
+	gsSPDisplayList(mat_patty_pot_liquid_burnt),
+	gsSPDisplayList(patty_patty_model_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_patty_pot_liquid_burnt),
 	gsSPEndDisplayList(),
 };
 

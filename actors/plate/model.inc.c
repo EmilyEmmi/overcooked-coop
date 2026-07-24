@@ -11,7 +11,7 @@ Lights1 plate_pot_liquid_tomato_lights = gdSPDefLights1(
 	0xAB, 0x18, 0x13, 0x28, 0x28, 0x28);
 
 Lights1 plate_pot_liquid_burnt_lights = gdSPDefLights1(
-	0x25, 0x22, 0x1B,
+	0x7D, 0x7F, 0x67,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
 
 Lights1 plate_plate_lights = gdSPDefLights1(
@@ -46,25 +46,99 @@ Texture plate_plate_dirty_pal_rgba16[] = {
 	#include "actors/plate/plate_dirty.rgba16.pal"
 };
 
-Vtx plate_plate_soup_dl_mesh_layer_4_vtx_0[10] = {
-	{{{45, 19, 140}, 0, {732, 1260}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-119, 19, 87}, 0, {-122, 968}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-46, 19, 140}, 0, {260, 1260}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-147, 19, 0}, 0, {-268, 496}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-119, 19, -87}, 0, {-122, 24}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-46, 19, -140}, 0, {260, -268}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{45, 19, -140}, 0, {732, -268}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{147, 19, 0}, 0, {1260, 496}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{119, 19, 87}, 0, {1114, 968}, {0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{119, 19, -87}, 0, {1114, 24}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+Vtx plate_plate_soup_onion_so_plate_soup_onion_mdl_mesh_layer_1_vtx_0[11] = {
+	{{{4, 28, 7}, 0, {496, 496}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, 87}, 0, {-122, 968}, {0xFA, 0x7F, 0x04, 0xFF}}},
+	{{{-46, 19, 140}, 0, {260, 1260}, {0xFE, 0x7F, 0x07, 0xFF}}},
+	{{{-147, 19, 0}, 0, {-268, 496}, {0xF9, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, -87}, 0, {-122, 24}, {0xFA, 0x7F, 0xFC, 0xFF}}},
+	{{{-46, 19, -140}, 0, {260, -268}, {0xFE, 0x7F, 0xF9, 0xFF}}},
+	{{{45, 19, -140}, 0, {732, -268}, {0x02, 0x7F, 0xF9, 0xFF}}},
+	{{{119, 19, -87}, 0, {1114, 24}, {0x06, 0x7F, 0xFC, 0xFF}}},
+	{{{147, 19, 0}, 0, {1260, 496}, {0x08, 0x7F, 0x00, 0xFF}}},
+	{{{119, 19, 87}, 0, {1114, 968}, {0x06, 0x7F, 0x05, 0xFF}}},
+	{{{45, 19, 140}, 0, {732, 1260}, {0x02, 0x7F, 0x07, 0xFF}}},
 };
 
-Gfx plate_plate_soup_dl_mesh_layer_4_tri_0[] = {
-	gsSPVertex(plate_plate_soup_dl_mesh_layer_4_vtx_0 + 0, 10, 0),
-	gsSP2Triangles(0, 1, 2, 0, 1, 0, 3, 0),
-	gsSP2Triangles(3, 0, 4, 0, 4, 0, 5, 0),
-	gsSP2Triangles(5, 0, 6, 0, 6, 0, 7, 0),
-	gsSP2Triangles(7, 0, 8, 0, 6, 7, 9, 0),
+Gfx plate_plate_soup_onion_so_plate_soup_onion_mdl_mesh_layer_1_tri_0[] = {
+	gsSPVertex(plate_plate_soup_onion_so_plate_soup_onion_mdl_mesh_layer_1_vtx_0 + 0, 11, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(0, 4, 3, 0, 0, 5, 4, 0),
+	gsSP2Triangles(0, 6, 5, 0, 0, 7, 6, 0),
+	gsSP2Triangles(0, 8, 7, 0, 0, 9, 8, 0),
+	gsSP2Triangles(0, 10, 9, 0, 0, 2, 10, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx plate_plate_soup_mushroom_so_plate_soup_mushroom_mdl_mesh_layer_1_vtx_0[11] = {
+	{{{4, 28, 7}, 0, {496, 496}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, 87}, 0, {-122, 968}, {0xFA, 0x7F, 0x04, 0xFF}}},
+	{{{-46, 19, 140}, 0, {260, 1260}, {0xFE, 0x7F, 0x07, 0xFF}}},
+	{{{-147, 19, 0}, 0, {-268, 496}, {0xF9, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, -87}, 0, {-122, 24}, {0xFA, 0x7F, 0xFC, 0xFF}}},
+	{{{-46, 19, -140}, 0, {260, -268}, {0xFE, 0x7F, 0xF9, 0xFF}}},
+	{{{45, 19, -140}, 0, {732, -268}, {0x02, 0x7F, 0xF9, 0xFF}}},
+	{{{119, 19, -87}, 0, {1114, 24}, {0x06, 0x7F, 0xFC, 0xFF}}},
+	{{{147, 19, 0}, 0, {1260, 496}, {0x08, 0x7F, 0x00, 0xFF}}},
+	{{{119, 19, 87}, 0, {1114, 968}, {0x06, 0x7F, 0x05, 0xFF}}},
+	{{{45, 19, 140}, 0, {732, 1260}, {0x02, 0x7F, 0x07, 0xFF}}},
+};
+
+Gfx plate_plate_soup_mushroom_so_plate_soup_mushroom_mdl_mesh_layer_1_tri_0[] = {
+	gsSPVertex(plate_plate_soup_mushroom_so_plate_soup_mushroom_mdl_mesh_layer_1_vtx_0 + 0, 11, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(0, 4, 3, 0, 0, 5, 4, 0),
+	gsSP2Triangles(0, 6, 5, 0, 0, 7, 6, 0),
+	gsSP2Triangles(0, 8, 7, 0, 0, 9, 8, 0),
+	gsSP2Triangles(0, 10, 9, 0, 0, 2, 10, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx plate_plate_soup_tomato_so_plate_soup_tomato_mdl_mesh_layer_1_vtx_0[11] = {
+	{{{4, 28, 7}, 0, {496, 496}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, 87}, 0, {-122, 968}, {0xFA, 0x7F, 0x04, 0xFF}}},
+	{{{-46, 19, 140}, 0, {260, 1260}, {0xFE, 0x7F, 0x07, 0xFF}}},
+	{{{-147, 19, 0}, 0, {-268, 496}, {0xF9, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, -87}, 0, {-122, 24}, {0xFA, 0x7F, 0xFC, 0xFF}}},
+	{{{-46, 19, -140}, 0, {260, -268}, {0xFE, 0x7F, 0xF9, 0xFF}}},
+	{{{45, 19, -140}, 0, {732, -268}, {0x02, 0x7F, 0xF9, 0xFF}}},
+	{{{119, 19, -87}, 0, {1114, 24}, {0x06, 0x7F, 0xFC, 0xFF}}},
+	{{{147, 19, 0}, 0, {1260, 496}, {0x08, 0x7F, 0x00, 0xFF}}},
+	{{{119, 19, 87}, 0, {1114, 968}, {0x06, 0x7F, 0x05, 0xFF}}},
+	{{{45, 19, 140}, 0, {732, 1260}, {0x02, 0x7F, 0x07, 0xFF}}},
+};
+
+Gfx plate_plate_soup_tomato_so_plate_soup_tomato_mdl_mesh_layer_1_tri_0[] = {
+	gsSPVertex(plate_plate_soup_tomato_so_plate_soup_tomato_mdl_mesh_layer_1_vtx_0 + 0, 11, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(0, 4, 3, 0, 0, 5, 4, 0),
+	gsSP2Triangles(0, 6, 5, 0, 0, 7, 6, 0),
+	gsSP2Triangles(0, 8, 7, 0, 0, 9, 8, 0),
+	gsSP2Triangles(0, 10, 9, 0, 0, 2, 10, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx plate_plate_soup_burnt_so_plate_soup_burnt_mdl_mesh_layer_1_vtx_0[11] = {
+	{{{4, 28, 7}, 0, {496, 496}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, 87}, 0, {-154, 992}, {0xFA, 0x7F, 0x04, 0xFF}}},
+	{{{-46, 19, 140}, 0, {248, 1299}, {0xFE, 0x7F, 0x07, 0xFF}}},
+	{{{-147, 19, 0}, 0, {-307, 496}, {0xF9, 0x7F, 0x00, 0xFF}}},
+	{{{-119, 19, -87}, 0, {-154, 0}, {0xFA, 0x7F, 0xFC, 0xFF}}},
+	{{{-46, 19, -140}, 0, {248, -307}, {0xFE, 0x7F, 0xF9, 0xFF}}},
+	{{{45, 19, -140}, 0, {744, -307}, {0x02, 0x7F, 0xF9, 0xFF}}},
+	{{{119, 19, -87}, 0, {1146, 0}, {0x06, 0x7F, 0xFC, 0xFF}}},
+	{{{147, 19, 0}, 0, {1299, 496}, {0x08, 0x7F, 0x00, 0xFF}}},
+	{{{119, 19, 87}, 0, {1146, 992}, {0x06, 0x7F, 0x05, 0xFF}}},
+	{{{45, 19, 140}, 0, {744, 1299}, {0x02, 0x7F, 0x07, 0xFF}}},
+};
+
+Gfx plate_plate_soup_burnt_so_plate_soup_burnt_mdl_mesh_layer_1_tri_0[] = {
+	gsSPVertex(plate_plate_soup_burnt_so_plate_soup_burnt_mdl_mesh_layer_1_vtx_0 + 0, 11, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(0, 4, 3, 0, 0, 5, 4, 0),
+	gsSP2Triangles(0, 6, 5, 0, 0, 7, 6, 0),
+	gsSP2Triangles(0, 8, 7, 0, 0, 9, 8, 0),
+	gsSP2Triangles(0, 10, 9, 0, 0, 2, 10, 0),
 	gsSPEndDisplayList(),
 };
 
@@ -233,23 +307,6 @@ Gfx plate_plate_dl_mesh_layer_1_tri_1[] = {
 };
 
 
-Gfx mat_plate_pot_liquid_none[] = {
-	gsSPGeometryMode(G_LIGHTING | G_SHADE, G_CULL_FRONT),
-	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 0, 0, 0, 0, ENVIRONMENT),
-	gsDPSetAlphaDither(G_AD_NOISE),
-	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsDPSetEnvColor(255, 255, 255, 0),
-	gsSPEndDisplayList(),
-};
-
-Gfx mat_revert_plate_pot_liquid_none[] = {
-	gsSPGeometryMode(G_CULL_FRONT, G_LIGHTING | G_SHADE),
-	gsDPPipeSync(),
-	gsDPSetAlphaDither(G_AD_DISABLE),
-	gsSPEndDisplayList(),
-};
-
 Gfx mat_plate_pot_liquid_onion[] = {
 	gsSPSetLights1(plate_pot_liquid_onion_lights),
 	gsDPPipeSync(),
@@ -380,37 +437,30 @@ Gfx mat_revert_plate_plate_dirty[] = {
 	gsSPEndDisplayList(),
 };
 
-Gfx plate_plate_soup_dl_mesh_layer_4[] = {
-	gsSPDisplayList(mat_plate_pot_liquid_none),
-	gsSPDisplayList(plate_plate_soup_dl_mesh_layer_4_tri_0),
-	gsSPDisplayList(mat_revert_plate_pot_liquid_none),
-	gsSPEndDisplayList(),
-};
-
-Gfx plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_onion_0[] = {
+Gfx plate_plate_soup_onion_so_plate_soup_onion_mdl_mesh_layer_1[] = {
 	gsSPDisplayList(mat_plate_pot_liquid_onion),
-	gsSPDisplayList(plate_plate_soup_dl_mesh_layer_4_tri_0),
+	gsSPDisplayList(plate_plate_soup_onion_so_plate_soup_onion_mdl_mesh_layer_1_tri_0),
 	gsSPDisplayList(mat_revert_plate_pot_liquid_onion),
 	gsSPEndDisplayList(),
 };
 
-Gfx plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_mushroom_1[] = {
+Gfx plate_plate_soup_mushroom_so_plate_soup_mushroom_mdl_mesh_layer_1[] = {
 	gsSPDisplayList(mat_plate_pot_liquid_mushroom),
-	gsSPDisplayList(plate_plate_soup_dl_mesh_layer_4_tri_0),
+	gsSPDisplayList(plate_plate_soup_mushroom_so_plate_soup_mushroom_mdl_mesh_layer_1_tri_0),
 	gsSPDisplayList(mat_revert_plate_pot_liquid_mushroom),
 	gsSPEndDisplayList(),
 };
 
-Gfx plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_tomato_2[] = {
+Gfx plate_plate_soup_tomato_so_plate_soup_tomato_mdl_mesh_layer_1[] = {
 	gsSPDisplayList(mat_plate_pot_liquid_tomato),
-	gsSPDisplayList(plate_plate_soup_dl_mesh_layer_4_tri_0),
+	gsSPDisplayList(plate_plate_soup_tomato_so_plate_soup_tomato_mdl_mesh_layer_1_tri_0),
 	gsSPDisplayList(mat_revert_plate_pot_liquid_tomato),
 	gsSPEndDisplayList(),
 };
 
-Gfx plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_burnt_3[] = {
+Gfx plate_plate_soup_burnt_so_plate_soup_burnt_mdl_mesh_layer_1[] = {
 	gsSPDisplayList(mat_plate_pot_liquid_burnt),
-	gsSPDisplayList(plate_plate_soup_dl_mesh_layer_4_tri_0),
+	gsSPDisplayList(plate_plate_soup_burnt_so_plate_soup_burnt_mdl_mesh_layer_1_tri_0),
 	gsSPDisplayList(mat_revert_plate_pot_liquid_burnt),
 	gsSPEndDisplayList(),
 };

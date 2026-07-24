@@ -1,28 +1,28 @@
-const GeoLayout plate_plate_soup_switch_opt1[] = {
+const GeoLayout plate_plate_soup_onion[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
-		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_onion_0),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, plate_plate_soup_onion_so_plate_soup_onion_mdl_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
-const GeoLayout plate_plate_soup_switch_opt2[] = {
+const GeoLayout plate_plate_soup_mushroom[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
-		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_mushroom_1),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, plate_plate_soup_mushroom_so_plate_soup_mushroom_mdl_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
-const GeoLayout plate_plate_soup_switch_opt3[] = {
+const GeoLayout plate_plate_soup_tomato[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
-		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_tomato_2),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, plate_plate_soup_tomato_so_plate_soup_tomato_mdl_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
-const GeoLayout plate_plate_soup_switch_opt4[] = {
+const GeoLayout plate_plate_soup_burnt[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
-		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_burnt_3),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, plate_plate_soup_burnt_so_plate_soup_burnt_mdl_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
@@ -44,12 +44,12 @@ const GeoLayout plate_geo[] = {
 				GEO_OPEN_NODE(),
 					GEO_NODE_START(),
 					GEO_OPEN_NODE(),
-						GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4),
+						GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, NULL),
 					GEO_CLOSE_NODE(),
-					GEO_BRANCH(1, plate_plate_soup_switch_opt1),
-					GEO_BRANCH(1, plate_plate_soup_switch_opt2),
-					GEO_BRANCH(1, plate_plate_soup_switch_opt3),
-					GEO_BRANCH(1, plate_plate_soup_switch_opt4),
+					GEO_BRANCH(1, plate_plate_soup_onion),
+					GEO_BRANCH(1, plate_plate_soup_mushroom),
+					GEO_BRANCH(1, plate_plate_soup_tomato),
+					GEO_BRANCH(1, plate_plate_soup_burnt),
 				GEO_CLOSE_NODE(),
 				GEO_SWITCH_CASE(0, plate_switch),
 				GEO_OPEN_NODE(),
@@ -62,7 +62,6 @@ const GeoLayout plate_geo[] = {
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, plate_material_revert_render_settings),
-		GEO_DISPLAY_LIST(LAYER_ALPHA, plate_material_revert_render_settings),
 	GEO_CLOSE_NODE(),
 	GEO_END(),
 };
