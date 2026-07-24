@@ -1,0 +1,45 @@
+const GeoLayout pot_pot_liquid_switch_opt1[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pot_pot_liquid_model_mesh_layer_1_mat_override_pot_liquid_mushroom_0),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pot_pot_liquid_switch_opt2[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pot_pot_liquid_model_mesh_layer_1_mat_override_pot_liquid_tomato_1),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pot_pot_liquid_switch_opt3[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pot_pot_liquid_model_mesh_layer_1_mat_override_pot_liquid_burnt_2),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pot_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SHADOW(1, 180, 100),
+		GEO_OPEN_NODE(),
+			GEO_SCALE(LAYER_FORCE, 16384),
+			GEO_OPEN_NODE(),
+				GEO_DISPLAY_LIST(LAYER_OPAQUE, pot_pot_dl_mesh_layer_1),
+				GEO_SWITCH_CASE(0, pot_liquid_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+						GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pot_pot_liquid_model_mesh_layer_1),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, pot_pot_liquid_switch_opt1),
+					GEO_BRANCH(1, pot_pot_liquid_switch_opt2),
+					GEO_BRANCH(1, pot_pot_liquid_switch_opt3),
+				GEO_CLOSE_NODE(),
+			GEO_CLOSE_NODE(),
+		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, pot_material_revert_render_settings),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};

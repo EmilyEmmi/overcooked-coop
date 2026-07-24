@@ -1,0 +1,28 @@
+const GeoLayout cheese_cheese_chopped[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, cheese_cheese_chopped_switch_op_cheese_chopped_model_mesh_layer_1),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout cheese_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SHADOW(1, 180, 67),
+		GEO_OPEN_NODE(),
+			GEO_SCALE(LAYER_FORCE, 16384),
+			GEO_OPEN_NODE(),
+				GEO_SWITCH_CASE(0, cheese_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+						GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, cheese_cheese_model_mesh_layer_1),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, cheese_cheese_chopped),
+				GEO_CLOSE_NODE(),
+			GEO_CLOSE_NODE(),
+		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, cheese_material_revert_render_settings),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};

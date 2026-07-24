@@ -1,0 +1,17 @@
+extern const GeoLayout trash_geo[];
+extern Lights1 trash_trash_black_lights;
+extern Lights1 trash_trash_border_lights;
+extern Lights1 trash_trash_bag_lights;
+extern Vtx trash_trash_model_mesh_layer_1_vtx_0[24];
+extern Gfx trash_trash_model_mesh_layer_1_tri_0[];
+extern Vtx trash_trash_model_mesh_layer_1_vtx_1[24];
+extern Gfx trash_trash_model_mesh_layer_1_tri_1[];
+extern Vtx trash_trash_model_mesh_layer_1_vtx_2[24];
+extern Gfx trash_trash_model_mesh_layer_1_tri_2[];
+extern Gfx mat_trash_trash_black[];
+extern Gfx mat_revert_trash_trash_black[];
+extern Gfx mat_trash_trash_border[];
+extern Gfx mat_revert_trash_trash_border[];
+extern Gfx mat_trash_trash_bag[];
+extern Gfx mat_revert_trash_trash_bag[];
+extern Gfx trash_trash_model_mesh_layer_1[];

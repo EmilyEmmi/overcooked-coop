@@ -1,0 +1,17 @@
+extern const GeoLayout knife_geo[];
+extern Lights1 knife_knife_handle_lights;
+extern Lights1 knife_knife_handle_tip_lights;
+extern Lights1 knife_knife_metal_lights;
+extern Vtx knife_knife_model_mesh_layer_1_vtx_0[10];
+extern Gfx knife_knife_model_mesh_layer_1_tri_0[];
+extern Vtx knife_knife_model_mesh_layer_1_vtx_1[8];
+extern Gfx knife_knife_model_mesh_layer_1_tri_1[];
+extern Vtx knife_knife_model_mesh_layer_1_vtx_2[10];
+extern Gfx knife_knife_model_mesh_layer_1_tri_2[];
+extern Gfx mat_knife_knife_handle[];
+extern Gfx mat_revert_knife_knife_handle[];
+extern Gfx mat_knife_knife_handle_tip[];
+extern Gfx mat_revert_knife_knife_handle_tip[];
+extern Gfx mat_knife_knife_metal[];
+extern Gfx mat_revert_knife_knife_metal[];
+extern Gfx knife_knife_model_mesh_layer_1[];

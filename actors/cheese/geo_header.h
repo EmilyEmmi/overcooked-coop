@@ -1,0 +1,12 @@
+extern const GeoLayout cheese_cheese_chopped[];
+extern const GeoLayout cheese_geo[];
+extern Lights1 cheese_cheese_lights;
+extern Vtx cheese_cheese_model_mesh_layer_1_vtx_0[124];
+extern Gfx cheese_cheese_model_mesh_layer_1_tri_0[];
+extern Vtx cheese_cheese_chopped_switch_op_cheese_chopped_model_mesh_layer_1_vtx_0[429];
+extern Gfx cheese_cheese_chopped_switch_op_cheese_chopped_model_mesh_layer_1_tri_0[];
+extern Gfx mat_cheese_cheese[];
+extern Gfx mat_revert_cheese_cheese[];
+extern Gfx cheese_cheese_model_mesh_layer_1[];
+extern Gfx cheese_cheese_chopped_switch_op_cheese_chopped_model_mesh_layer_1[];
+extern Gfx cheese_material_revert_render_settings[];

@@ -1,0 +1,68 @@
+const GeoLayout plate_plate_soup_switch_opt1[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_onion_0),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout plate_plate_soup_switch_opt2[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_mushroom_1),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout plate_plate_soup_switch_opt3[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_tomato_2),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout plate_plate_soup_switch_opt4[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4_mat_override_pot_liquid_burnt_3),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout plate_plate_switch_opt1[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, plate_plate_dl_mesh_layer_1_mat_override_plate_dirty_0),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout plate_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SHADOW(0, 180, 100),
+		GEO_OPEN_NODE(),
+			GEO_SCALE(LAYER_FORCE, 16384),
+			GEO_OPEN_NODE(),
+				GEO_SWITCH_CASE(0, plate_soup_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+						GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, plate_plate_soup_dl_mesh_layer_4),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, plate_plate_soup_switch_opt1),
+					GEO_BRANCH(1, plate_plate_soup_switch_opt2),
+					GEO_BRANCH(1, plate_plate_soup_switch_opt3),
+					GEO_BRANCH(1, plate_plate_soup_switch_opt4),
+				GEO_CLOSE_NODE(),
+				GEO_SWITCH_CASE(0, plate_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+						GEO_DISPLAY_LIST(LAYER_OPAQUE, plate_plate_dl_mesh_layer_1),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, plate_plate_switch_opt1),
+				GEO_CLOSE_NODE(),
+			GEO_CLOSE_NODE(),
+		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, plate_material_revert_render_settings),
+		GEO_DISPLAY_LIST(LAYER_ALPHA, plate_material_revert_render_settings),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};

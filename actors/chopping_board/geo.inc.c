@@ -1,0 +1,27 @@
+const GeoLayout chopping_board_chopping_board_knifeless[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, chopping_board_chopping_board_knifeless_switch_option_chopping_board_knifeless_model_mesh_layer_4),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout chopping_board_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SCALE(LAYER_OPAQUE, 16384),
+		GEO_OPEN_NODE(),
+			GEO_SWITCH_CASE(0, chopping_board_switch),
+			GEO_OPEN_NODE(),
+				GEO_NODE_START(),
+				GEO_OPEN_NODE(),
+					GEO_ANIMATED_PART(LAYER_ALPHA, 0, 0, 0, chopping_board_chopping_board_model_mesh_layer_4),
+					GEO_OPEN_NODE(),
+						GEO_DISPLAY_LIST(LAYER_OPAQUE, chopping_board_chopping_board_model_mesh_layer_1),
+					GEO_CLOSE_NODE(),
+				GEO_CLOSE_NODE(),
+				GEO_BRANCH(1, chopping_board_chopping_board_knifeless),
+			GEO_CLOSE_NODE(),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};

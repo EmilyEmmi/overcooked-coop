@@ -1,0 +1,15 @@
+const GeoLayout sink_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SCALE(LAYER_OPAQUE, 16384),
+		GEO_OPEN_NODE(),
+			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, sink_sink_model_mesh_layer_1),
+			GEO_OPEN_NODE(),
+				GEO_ANIMATED_PART(LAYER_OPAQUE, 0, -98, 0, sink_plate_1_mesh_layer_1),
+				GEO_ANIMATED_PART(LAYER_OPAQUE, 0, -115, 0, sink_plate_2_mesh_layer_1),
+				GEO_ANIMATED_PART(LAYER_OPAQUE, 0, -130, 0, sink_plate_3_mesh_layer_1),
+			GEO_CLOSE_NODE(),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};

@@ -1,0 +1,15 @@
+const GeoLayout heat_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SCALE(LAYER_OPAQUE, 16384),
+		GEO_OPEN_NODE(),
+			GEO_ANIMATED_PART(LAYER_TRANSPARENT, 0, 121, 0, heat_heat_flame_movement_mesh_layer_5),
+			GEO_OPEN_NODE(),
+				GEO_DISPLAY_LIST(LAYER_TRANSPARENT, heat_heat_flame_tip_skinned_mesh_layer_5),
+				GEO_ANIMATED_PART(LAYER_TRANSPARENT, 0, 58, 0, heat_heat_flame_tip_mesh_layer_5),
+			GEO_CLOSE_NODE(),
+			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, heat_heat_model_mesh_layer_1),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};

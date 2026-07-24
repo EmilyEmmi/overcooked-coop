@@ -1,0 +1,10 @@
+extern const GeoLayout steak_geo[];
+extern Lights1 steak_steak_raw_lights;
+extern u8 steak_steak_raw_ci8[];
+extern u8 steak_steak_raw_pal_rgba16[];
+extern Vtx steak_steak_model_mesh_layer_1_vtx_0[48];
+extern Gfx steak_steak_model_mesh_layer_1_tri_0[];
+extern Gfx mat_steak_steak_raw[];
+extern Gfx mat_revert_steak_steak_raw[];
+extern Gfx steak_steak_model_mesh_layer_1[];
+extern Gfx steak_material_revert_render_settings[];

@@ -1,0 +1,12 @@
+extern const GeoLayout plate_counter_geo[];
+extern Lights1 plate_counter_plate_counters_lights;
+extern Lights1 plate_counter_plate_counters_gray_lights;
+extern Vtx plate_counter_plate_counter_model_mesh_layer_1_vtx_0[32];
+extern Gfx plate_counter_plate_counter_model_mesh_layer_1_tri_0[];
+extern Vtx plate_counter_plate_counter_model_mesh_layer_1_vtx_1[36];
+extern Gfx plate_counter_plate_counter_model_mesh_layer_1_tri_1[];
+extern Gfx mat_plate_counter_plate_counters[];
+extern Gfx mat_revert_plate_counter_plate_counters[];
+extern Gfx mat_plate_counter_plate_counters_gray[];
+extern Gfx mat_revert_plate_counter_plate_counters_gray[];
+extern Gfx plate_counter_plate_counter_model_mesh_layer_1[];

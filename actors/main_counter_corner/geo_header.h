@@ -1,0 +1,16 @@
+extern const GeoLayout main_counter_corner_geo[];
+extern Lights1 main_counter_corner_wood_lights;
+extern Lights1 main_counter_corner_wood2_lights;
+extern u8 main_counter_corner_wood_ci4[];
+extern u8 main_counter_corner_wood_pal_rgba16[];
+extern u8 main_counter_corner_wood2_ci4[];
+extern u8 main_counter_corner_wood2_pal_rgba16[];
+extern Vtx main_counter_corner_main_counter_corner_model_mesh_layer_1_vtx_0[4];
+extern Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1_tri_0[];
+extern Vtx main_counter_corner_main_counter_corner_model_mesh_layer_1_vtx_1[30];
+extern Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1_tri_1[];
+extern Gfx mat_main_counter_corner_wood[];
+extern Gfx mat_revert_main_counter_corner_wood[];
+extern Gfx mat_main_counter_corner_wood2[];
+extern Gfx mat_revert_main_counter_corner_wood2[];
+extern Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1[];

@@ -1,0 +1,926 @@
+Lights1 mushroom_mushroom_bottom_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Lights1 mushroom_mushroom_top_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Lights1 mushroom_mushroom_inside_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Lights1 mushroom_mushroom_stem_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Texture mushroom_mushroom_bottom_ci8[] = {
+	#include "actors/mushroom/mushroom_bottom.ci8.inc.c"
+};
+
+Texture mushroom_mushroom_bottom_pal_rgba16[] = {
+	#include "actors/mushroom/mushroom_bottom.rgba16.pal"
+};
+
+Texture mushroom_mushroom_top_ci4[] = {
+	#include "actors/mushroom/mushroom_top.ci4.inc.c"
+};
+
+Texture mushroom_mushroom_top_pal_rgba16[] = {
+	#include "actors/mushroom/mushroom_top.rgba16.pal"
+};
+
+Texture mushroom_mushroom_inside_ci8[] = {
+	#include "actors/mushroom/mushroom_inside.ci8.inc.c"
+};
+
+Texture mushroom_mushroom_inside_pal_rgba16[] = {
+	#include "actors/mushroom/mushroom_inside.rgba16.pal"
+};
+
+Texture mushroom_mushroom_stem_ci8[] = {
+	#include "actors/mushroom/mushroom_stem.ci8.inc.c"
+};
+
+Texture mushroom_mushroom_stem_pal_rgba16[] = {
+	#include "actors/mushroom/mushroom_stem.rgba16.pal"
+};
+
+Vtx mushroom_segment_1_mesh_layer_1_vtx_0[6] = {
+	{{{-14, -42, 35}, 0, {-59, 752}, {0xA7, 0xAA, 0x1D, 0xFF}}},
+	{{{15, -50, 25}, 0, {71, 582}, {0xDD, 0x86, 0x0C, 0xFF}}},
+	{{{15, -42, 75}, 0, {126, 935}, {0xBE, 0xA8, 0x3F, 0xFF}}},
+	{{{15, -50, -25}, 0, {96, 328}, {0xDD, 0x86, 0xF4, 0xFF}}},
+	{{{-14, -42, -35}, 0, {-107, 396}, {0xA7, 0xAA, 0xE3, 0xFF}}},
+	{{{15, -42, -75}, 0, {23, 171}, {0xBE, 0xA8, 0xC1, 0xFF}}},
+};
+
+Gfx mushroom_segment_1_mesh_layer_1_tri_0[] = {
+	gsSPVertex(mushroom_segment_1_mesh_layer_1_vtx_0 + 0, 6, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(0, 4, 3, 0, 4, 5, 3, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_1_mesh_layer_1_vtx_1[15] = {
+	{{{-14, -42, 35}, 0, {-108, 774}, {0xA7, 0xAA, 0x1D, 0xFF}}},
+	{{{15, -42, 75}, 0, {94, 973}, {0xBE, 0xA8, 0x3F, 0xFF}}},
+	{{{15, -10, 90}, 0, {-44, 1085}, {0xAC, 0x01, 0x60, 0xFF}}},
+	{{{-23, -10, 38}, 0, {-310, 744}, {0x87, 0x01, 0x28, 0xFF}}},
+	{{{-23, -10, -38}, 0, {-310, 248}, {0x87, 0x01, 0xD8, 0xFF}}},
+	{{{-7, 44, -33}, 0, {-98, 314}, {0x9B, 0x46, 0xDF, 0xFF}}},
+	{{{-7, 44, 33}, 0, {-98, 678}, {0x9B, 0x46, 0x21, 0xFF}}},
+	{{{15, 44, 62}, 0, {34, 846}, {0xAE, 0x48, 0x41, 0xFF}}},
+	{{{15, -10, 90}, 0, {-44, 1085}, {0xAC, 0x01, 0x60, 0xFF}}},
+	{{{15, 61, 25}, 0, {34, 638}, {0xAF, 0x5F, 0x19, 0xFF}}},
+	{{{15, 61, -25}, 0, {34, 354}, {0xAF, 0x5F, 0xE7, 0xFF}}},
+	{{{15, 44, -62}, 0, {34, 146}, {0xAE, 0x48, 0xBF, 0xFF}}},
+	{{{15, -10, -90}, 0, {-44, -93}, {0xAC, 0x01, 0xA0, 0xFF}}},
+	{{{-14, -42, -35}, 0, {-160, 387}, {0xA7, 0xAA, 0xE3, 0xFF}}},
+	{{{15, -42, -75}, 0, {-18, 142}, {0xBE, 0xA8, 0xC1, 0xFF}}},
+};
+
+Gfx mushroom_segment_1_mesh_layer_1_tri_1[] = {
+	gsSPVertex(mushroom_segment_1_mesh_layer_1_vtx_1 + 0, 15, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSP2Triangles(0, 3, 4, 0, 3, 5, 4, 0),
+	gsSP2Triangles(3, 6, 5, 0, 7, 6, 3, 0),
+	gsSP2Triangles(7, 3, 8, 0, 6, 7, 9, 0),
+	gsSP2Triangles(6, 9, 10, 0, 6, 10, 5, 0),
+	gsSP2Triangles(5, 10, 11, 0, 4, 5, 11, 0),
+	gsSP2Triangles(4, 11, 12, 0, 13, 4, 12, 0),
+	gsSP2Triangles(13, 12, 14, 0, 0, 4, 13, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_1_mesh_layer_1_vtx_2[10] = {
+	{{{15, -10, 90}, 0, {-95, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, -42, 75}, 0, {-38, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, -50, 25}, 0, {146, 470}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, 44, 62}, 0, {22, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, 61, 25}, 0, {152, -177}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, -50, -25}, 0, {334, 470}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, 61, -25}, 0, {328, -177}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, 44, -62}, 0, {458, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, -10, -90}, 0, {575, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{15, -42, -75}, 0, {518, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+};
+
+Gfx mushroom_segment_1_mesh_layer_1_tri_2[] = {
+	gsSPVertex(mushroom_segment_1_mesh_layer_1_vtx_2 + 0, 10, 0),
+	gsSP2Triangles(0, 1, 2, 0, 3, 0, 2, 0),
+	gsSP2Triangles(4, 3, 2, 0, 5, 4, 2, 0),
+	gsSP2Triangles(6, 4, 5, 0, 7, 6, 5, 0),
+	gsSP2Triangles(8, 7, 5, 0, 5, 9, 8, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_2_mesh_layer_1_vtx_0[27] = {
+	{{{-18, -42, 75}, 0, {94, 973}, {0xBE, 0xA8, 0x3F, 0xFF}}},
+	{{{-12, -10, 99}, 0, {0, 1142}, {0xB5, 0x01, 0x66, 0xFF}}},
+	{{{-18, -10, 90}, 0, {-44, 1085}, {0xAC, 0x01, 0x60, 0xFF}}},
+	{{{-6, -42, 91}, 0, {175, 1054}, {0xC9, 0xAA, 0x4B, 0xFF}}},
+	{{{21, -10, 110}, 0, {226, 1215}, {0xD5, 0x01, 0x77, 0xFF}}},
+	{{{21, -42, 100}, 0, {342, 1083}, {0xDF, 0xA8, 0x55, 0xFF}}},
+	{{{-2, 44, 85}, 0, {131, 971}, {0xC1, 0x46, 0x56, 0xFF}}},
+	{{{-18, -10, 90}, 0, {-44, 1085}, {0xAC, 0x01, 0x60, 0xFF}}},
+	{{{-18, 44, 62}, 0, {34, 846}, {0xAE, 0x48, 0x41, 0xFF}}},
+	{{{21, 80, 46}, 0, {299, 752}, {0xDC, 0x72, 0x2C, 0xFF}}},
+	{{{21, 44, 93}, 0, {265, 1015}, {0xD7, 0x48, 0x60, 0xFF}}},
+	{{{-18, 61, 25}, 0, {34, 638}, {0xAF, 0x5F, 0x19, 0xFF}}},
+	{{{6, 80, 18}, 0, {176, 594}, {0xCB, 0x73, 0x0F, 0xFF}}},
+	{{{21, 82, 13}, 0, {265, 567}, {0xD9, 0x78, 0x0B, 0xFF}}},
+	{{{21, 82, -13}, 0, {265, 425}, {0xD9, 0x78, 0xF5, 0xFF}}},
+	{{{6, 80, -18}, 0, {176, 398}, {0xCB, 0x73, 0xF1, 0xFF}}},
+	{{{21, 80, -46}, 0, {299, 240}, {0xDC, 0x72, 0xD4, 0xFF}}},
+	{{{-18, 61, -25}, 0, {34, 354}, {0xAF, 0x5F, 0xE7, 0xFF}}},
+	{{{-18, 44, -62}, 0, {34, 146}, {0xAE, 0x48, 0xBF, 0xFF}}},
+	{{{-2, 44, -85}, 0, {131, 21}, {0xC1, 0x46, 0xAA, 0xFF}}},
+	{{{21, 44, -93}, 0, {265, -23}, {0xD7, 0x48, 0xA0, 0xFF}}},
+	{{{-12, -10, -99}, 0, {0, -150}, {0xB5, 0x01, 0x9A, 0xFF}}},
+	{{{21, -10, -110}, 0, {226, -223}, {0xD5, 0x01, 0x89, 0xFF}}},
+	{{{21, -42, -100}, 0, {192, -29}, {0xDF, 0xA8, 0xAB, 0xFF}}},
+	{{{-6, -42, -91}, 0, {40, 43}, {0xC9, 0xAA, 0xB5, 0xFF}}},
+	{{{-18, -10, -90}, 0, {-44, -93}, {0xAC, 0x01, 0xA0, 0xFF}}},
+	{{{-18, -42, -75}, 0, {-18, 142}, {0xBE, 0xA8, 0xC1, 0xFF}}},
+};
+
+Gfx mushroom_segment_2_mesh_layer_1_tri_0[] = {
+	gsSPVertex(mushroom_segment_2_mesh_layer_1_vtx_0 + 0, 27, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(3, 4, 1, 0, 3, 5, 4, 0),
+	gsSP2Triangles(6, 1, 4, 0, 7, 1, 6, 0),
+	gsSP2Triangles(7, 6, 8, 0, 8, 6, 9, 0),
+	gsSP2Triangles(6, 10, 9, 0, 6, 4, 10, 0),
+	gsSP2Triangles(9, 11, 8, 0, 9, 12, 11, 0),
+	gsSP2Triangles(9, 13, 12, 0, 12, 13, 14, 0),
+	gsSP2Triangles(12, 14, 15, 0, 15, 14, 16, 0),
+	gsSP2Triangles(17, 15, 16, 0, 18, 17, 16, 0),
+	gsSP2Triangles(16, 19, 18, 0, 19, 16, 20, 0),
+	gsSP2Triangles(21, 19, 20, 0, 21, 20, 22, 0),
+	gsSP2Triangles(23, 21, 22, 0, 23, 24, 21, 0),
+	gsSP2Triangles(24, 25, 21, 0, 24, 26, 25, 0),
+	gsSP2Triangles(18, 21, 25, 0, 18, 19, 21, 0),
+	gsSP2Triangles(12, 17, 11, 0, 12, 15, 17, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_2_mesh_layer_1_vtx_1[14] = {
+	{{{-6, -42, 91}, 0, {201, 1009}, {0xC9, 0xAA, 0x4B, 0xFF}}},
+	{{{21, -54, 52}, 0, {213, 687}, {0xFD, 0x81, 0x03, 0xFF}}},
+	{{{21, -42, 100}, 0, {354, 1036}, {0xDF, 0xA8, 0x55, 0xFF}}},
+	{{{-18, -42, 75}, 0, {126, 935}, {0xBE, 0xA8, 0x3F, 0xFF}}},
+	{{{-18, -50, 25}, 0, {71, 582}, {0xDD, 0x86, 0x0C, 0xFF}}},
+	{{{-2, -54, 20}, 0, {143, 488}, {0xFC, 0x81, 0x02, 0xFF}}},
+	{{{-18, -50, -25}, 0, {96, 328}, {0xDD, 0x86, 0xF4, 0xFF}}},
+	{{{-2, -54, -20}, 0, {209, 291}, {0xFC, 0x81, 0xFE, 0xFF}}},
+	{{{21, -54, -52}, 0, {384, 173}, {0xFD, 0x81, 0xFD, 0xFF}}},
+	{{{-18, -42, -75}, 0, {23, 171}, {0xBE, 0xA8, 0xC1, 0xFF}}},
+	{{{-6, -42, -91}, 0, {76, 79}, {0xC9, 0xAA, 0xB5, 0xFF}}},
+	{{{21, -42, -100}, 0, {217, 13}, {0xDF, 0xA8, 0xAB, 0xFF}}},
+	{{{21, -47, -19}, 0, {321, 330}, {0x22, 0x86, 0x0C, 0xFF}}},
+	{{{21, -47, 19}, 0, {257, 524}, {0x22, 0x86, 0xF4, 0xFF}}},
+};
+
+Gfx mushroom_segment_2_mesh_layer_1_tri_1[] = {
+	gsSPVertex(mushroom_segment_2_mesh_layer_1_vtx_1 + 0, 14, 0),
+	gsSP2Triangles(0, 1, 2, 0, 1, 0, 3, 0),
+	gsSP2Triangles(3, 4, 1, 0, 4, 5, 1, 0),
+	gsSP2Triangles(5, 4, 6, 0, 5, 6, 7, 0),
+	gsSP2Triangles(8, 7, 6, 0, 6, 9, 8, 0),
+	gsSP2Triangles(9, 10, 8, 0, 10, 11, 8, 0),
+	gsSP2Triangles(7, 8, 12, 0, 5, 7, 12, 0),
+	gsSP2Triangles(5, 12, 13, 0, 5, 13, 1, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_2_mesh_layer_1_vtx_2[24] = {
+	{{{-18, -50, 25}, 0, {146, 470}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, -42, 75}, 0, {-38, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, -10, 90}, 0, {-95, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, 44, 62}, 0, {22, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, 61, 25}, 0, {152, -177}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, 61, -25}, 0, {328, -177}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, -50, -25}, 0, {334, 470}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, 44, -62}, 0, {458, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, -10, -90}, 0, {575, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-18, -42, -75}, 0, {518, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{21, -10, 110}, 0, {-168, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -42, 100}, 0, {-132, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -54, 52}, 0, {45, 398}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, 44, 93}, 0, {-83, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -47, 19}, 0, {169, 459}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, 80, 46}, 0, {81, -184}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, 82, 13}, 0, {196, -191}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, 82, -13}, 0, {284, -191}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -47, -19}, 0, {311, 459}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, 80, -46}, 0, {399, -184}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, 44, -93}, 0, {563, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -54, -52}, 0, {435, 398}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -10, -110}, 0, {648, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{21, -42, -100}, 0, {612, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+};
+
+Gfx mushroom_segment_2_mesh_layer_1_tri_2[] = {
+	gsSPVertex(mushroom_segment_2_mesh_layer_1_vtx_2 + 0, 24, 0),
+	gsSP2Triangles(0, 1, 2, 0, 2, 3, 0, 0),
+	gsSP2Triangles(3, 4, 0, 0, 4, 5, 0, 0),
+	gsSP2Triangles(6, 0, 5, 0, 5, 7, 6, 0),
+	gsSP2Triangles(8, 6, 7, 0, 9, 6, 8, 0),
+	gsSP2Triangles(10, 11, 12, 0, 13, 10, 12, 0),
+	gsSP2Triangles(14, 13, 12, 0, 15, 13, 14, 0),
+	gsSP2Triangles(16, 15, 14, 0, 17, 16, 14, 0),
+	gsSP2Triangles(14, 18, 17, 0, 17, 18, 19, 0),
+	gsSP2Triangles(19, 18, 20, 0, 18, 21, 20, 0),
+	gsSP2Triangles(22, 20, 21, 0, 21, 23, 22, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_3_mesh_layer_1_vtx_0[14] = {
+	{{{-19, -33, 100}, 0, {354, 1036}, {0xDF, 0xA8, 0x55, 0xFF}}},
+	{{{20, -45, 65}, 0, {390, 815}, {0x00, 0x81, 0x05, 0xFF}}},
+	{{{20, -33, 113}, 0, {574, 1074}, {0x00, 0xAA, 0x5D, 0xFF}}},
+	{{{-19, -45, 52}, 0, {213, 687}, {0xFD, 0x81, 0x03, 0xFF}}},
+	{{{-7, -35, 19}, 0, {316, 542}, {0x1A, 0x85, 0xEE, 0xFF}}},
+	{{{-19, -38, 19}, 0, {257, 524}, {0x22, 0x86, 0xF4, 0xFF}}},
+	{{{-19, -38, -19}, 0, {321, 330}, {0x22, 0x86, 0x0C, 0xFF}}},
+	{{{-7, -35, -19}, 0, {379, 351}, {0x1A, 0x85, 0x12, 0xFF}}},
+	{{{-19, -45, -52}, 0, {384, 173}, {0xFD, 0x81, 0xFD, 0xFF}}},
+	{{{20, -45, -65}, 0, {602, 177}, {0x00, 0x81, 0xFD, 0xFF}}},
+	{{{20, -33, -113}, 0, {418, -82}, {0x00, 0xAA, 0xA3, 0xFF}}},
+	{{{-19, -33, -100}, 0, {217, 13}, {0xDF, 0xA8, 0xAB, 0xFF}}},
+	{{{20, -35, -29}, 0, {545, 348}, {0x00, 0x85, 0x21, 0xFF}}},
+	{{{20, -35, 29}, 0, {447, 644}, {0x00, 0x85, 0xDF, 0xFF}}},
+};
+
+Gfx mushroom_segment_3_mesh_layer_1_tri_0[] = {
+	gsSPVertex(mushroom_segment_3_mesh_layer_1_vtx_0 + 0, 14, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(1, 3, 4, 0, 4, 3, 5, 0),
+	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
+	gsSP2Triangles(8, 7, 6, 0, 7, 8, 9, 0),
+	gsSP2Triangles(8, 10, 9, 0, 8, 11, 10, 0),
+	gsSP2Triangles(7, 9, 12, 0, 1, 4, 13, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_3_mesh_layer_1_vtx_1[19] = {
+	{{{-19, -33, 100}, 0, {342, 1083}, {0xDF, 0xA8, 0x55, 0xFF}}},
+	{{{20, -33, 113}, 0, {581, 1125}, {0x00, 0xAA, 0x5D, 0xFF}}},
+	{{{20, -1, 123}, 0, {496, 1302}, {0x00, 0x01, 0x7F, 0xFF}}},
+	{{{-19, -1, 110}, 0, {226, 1215}, {0xD5, 0x01, 0x77, 0xFF}}},
+	{{{20, 53, 106}, 0, {496, 1092}, {0x00, 0x46, 0x6A, 0xFF}}},
+	{{{-19, 53, 93}, 0, {265, 1015}, {0xD7, 0x48, 0x60, 0xFF}}},
+	{{{-19, 89, 46}, 0, {299, 752}, {0xDD, 0x72, 0x2C, 0xFF}}},
+	{{{20, 89, 57}, 0, {496, 817}, {0x00, 0x73, 0x37, 0xFF}}},
+	{{{20, 98, 0}, 0, {496, 496}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-19, 91, 13}, 0, {265, 567}, {0xD9, 0x78, 0x0B, 0xFF}}},
+	{{{-19, 91, -13}, 0, {265, 425}, {0xD9, 0x78, 0xF5, 0xFF}}},
+	{{{-19, 89, -46}, 0, {299, 240}, {0xDD, 0x72, 0xD4, 0xFF}}},
+	{{{20, 89, -57}, 0, {496, 175}, {0x00, 0x73, 0xC9, 0xFF}}},
+	{{{20, 53, -106}, 0, {496, -100}, {0x00, 0x46, 0x96, 0xFF}}},
+	{{{-19, 53, -93}, 0, {265, -23}, {0xD7, 0x48, 0xA0, 0xFF}}},
+	{{{-19, -1, -110}, 0, {226, -223}, {0xD5, 0x01, 0x89, 0xFF}}},
+	{{{20, -1, -123}, 0, {496, -310}, {0x00, 0x01, 0x81, 0xFF}}},
+	{{{-19, -33, -100}, 0, {192, -29}, {0xDF, 0xA8, 0xAB, 0xFF}}},
+	{{{20, -33, -113}, 0, {411, -133}, {0x00, 0xAA, 0xA3, 0xFF}}},
+};
+
+Gfx mushroom_segment_3_mesh_layer_1_tri_1[] = {
+	gsSPVertex(mushroom_segment_3_mesh_layer_1_vtx_1 + 0, 19, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSP2Triangles(3, 2, 4, 0, 3, 4, 5, 0),
+	gsSP2Triangles(4, 6, 5, 0, 4, 7, 6, 0),
+	gsSP2Triangles(6, 7, 8, 0, 6, 8, 9, 0),
+	gsSP2Triangles(8, 10, 9, 0, 8, 11, 10, 0),
+	gsSP2Triangles(11, 8, 12, 0, 11, 12, 13, 0),
+	gsSP2Triangles(11, 13, 14, 0, 15, 14, 13, 0),
+	gsSP2Triangles(15, 13, 16, 0, 17, 15, 16, 0),
+	gsSP1Triangle(17, 16, 18, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_3_mesh_layer_1_vtx_2[13] = {
+	{{{-7, -35, 19}, 0, {55, -208}, {0x1A, 0x85, 0xEE, 0xFF}}},
+	{{{20, -89, 43}, 0, {240, 197}, {0x00, 0xE2, 0x7B, 0xFF}}},
+	{{{20, -35, 29}, 0, {240, -209}, {0x00, 0x85, 0xDF, 0xFF}}},
+	{{{-19, -89, 28}, 0, {-16, 197}, {0x9B, 0xE2, 0x46, 0xFF}}},
+	{{{-7, -35, -19}, 0, {55, -208}, {0x1A, 0x85, 0x12, 0xFF}}},
+	{{{-19, -89, -28}, 0, {-16, 197}, {0x9B, 0xE2, 0xBA, 0xFF}}},
+	{{{20, -35, -29}, 0, {240, -209}, {0x00, 0x85, 0x21, 0xFF}}},
+	{{{20, -89, -43}, 0, {240, 197}, {0x00, 0xE2, 0x85, 0xFF}}},
+	{{{-2, -110, -16}, 0, {96, 436}, {0xC8, 0x95, 0xD9, 0xFF}}},
+	{{{20, -110, -22}, 0, {240, 436}, {0x00, 0x93, 0xBF, 0xFF}}},
+	{{{20, -112, 0}, 0, {240, 491}, {0x00, 0x81, 0x00, 0xFF}}},
+	{{{-2, -110, 16}, 0, {96, 436}, {0xC8, 0x95, 0x27, 0xFF}}},
+	{{{20, -110, 22}, 0, {240, 436}, {0x00, 0x93, 0x41, 0xFF}}},
+};
+
+Gfx mushroom_segment_3_mesh_layer_1_tri_2[] = {
+	gsSPVertex(mushroom_segment_3_mesh_layer_1_vtx_2 + 0, 13, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(3, 0, 4, 0, 3, 4, 5, 0),
+	gsSP2Triangles(5, 4, 6, 0, 5, 6, 7, 0),
+	gsSP2Triangles(5, 7, 8, 0, 8, 7, 9, 0),
+	gsSP2Triangles(10, 8, 9, 0, 11, 8, 10, 0),
+	gsSP2Triangles(11, 10, 12, 0, 11, 12, 1, 0),
+	gsSP2Triangles(3, 11, 1, 0, 11, 3, 5, 0),
+	gsSP1Triangle(11, 5, 8, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_3_mesh_layer_1_vtx_3[32] = {
+	{{{-19, -45, 52}, 0, {45, 398}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -33, 100}, 0, {-132, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -1, 110}, 0, {-168, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, 53, 93}, 0, {-83, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -38, 19}, 0, {169, 459}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, 89, 46}, 0, {81, -184}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, 91, 13}, 0, {196, -191}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, 91, -13}, 0, {284, -191}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -38, -19}, 0, {311, 459}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, 89, -46}, 0, {399, -184}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, 53, -93}, 0, {563, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -45, -52}, 0, {435, 398}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -1, -110}, 0, {648, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-19, -33, -100}, 0, {612, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{20, -33, 113}, 0, {-181, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -45, 65}, 0, {-3, 398}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -1, 123}, 0, {-218, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, 53, 106}, 0, {-130, -98}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -35, 29}, 0, {134, 442}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, 89, 57}, 0, {40, -184}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, 98, 0}, 0, {240, -207}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -35, -29}, 0, {346, 442}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -112, 0}, 0, {240, 187}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -89, 43}, 0, {81, 243}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -110, 22}, 0, {157, 193}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -89, -43}, 0, {399, 243}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -110, -22}, 0, {323, 193}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -45, -65}, 0, {483, 398}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -33, -113}, 0, {661, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, -1, -123}, 0, {698, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, 53, -106}, 0, {610, -98}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{20, 89, -57}, 0, {440, -184}, {0x7F, 0x00, 0x00, 0xFF}}},
+};
+
+Gfx mushroom_segment_3_mesh_layer_1_tri_3[] = {
+	gsSPVertex(mushroom_segment_3_mesh_layer_1_vtx_3 + 0, 32, 0),
+	gsSP2Triangles(0, 1, 2, 0, 3, 0, 2, 0),
+	gsSP2Triangles(4, 0, 3, 0, 3, 5, 4, 0),
+	gsSP2Triangles(5, 6, 4, 0, 6, 7, 4, 0),
+	gsSP2Triangles(8, 4, 7, 0, 7, 9, 8, 0),
+	gsSP2Triangles(9, 10, 8, 0, 10, 11, 8, 0),
+	gsSP2Triangles(10, 12, 11, 0, 13, 11, 12, 0),
+	gsSP2Triangles(14, 15, 16, 0, 17, 16, 15, 0),
+	gsSP2Triangles(15, 18, 17, 0, 18, 19, 17, 0),
+	gsSP2Triangles(20, 19, 18, 0, 21, 20, 18, 0),
+	gsSP2Triangles(18, 22, 21, 0, 22, 18, 23, 0),
+	gsSP2Triangles(22, 23, 24, 0, 25, 21, 22, 0),
+	gsSP2Triangles(25, 22, 26, 0, 27, 28, 29, 0),
+	gsSP2Triangles(30, 27, 29, 0, 21, 27, 30, 0),
+	gsSP2Triangles(30, 31, 21, 0, 31, 20, 21, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_4_mesh_layer_1_vtx_0[14] = {
+	{{{-20, -33, 113}, 0, {574, 1074}, {0x00, 0xAA, 0x5D, 0xFF}}},
+	{{{19, -45, 52}, 0, {608, 819}, {0x03, 0x81, 0x03, 0xFF}}},
+	{{{19, -33, 100}, 0, {775, 979}, {0x21, 0xA8, 0x55, 0xFF}}},
+	{{{-20, -45, 65}, 0, {390, 815}, {0x00, 0x81, 0x05, 0xFF}}},
+	{{{-20, -35, 29}, 0, {447, 644}, {0x00, 0x85, 0xDF, 0xFF}}},
+	{{{7, -35, 19}, 0, {613, 641}, {0xE6, 0x85, 0xEE, 0xFF}}},
+	{{{19, -38, 19}, 0, {671, 662}, {0xDE, 0x86, 0xF4, 0xFF}}},
+	{{{19, -38, -19}, 0, {735, 468}, {0xDE, 0x86, 0x0C, 0xFF}}},
+	{{{7, -35, -19}, 0, {676, 450}, {0xE6, 0x85, 0x12, 0xFF}}},
+	{{{19, -45, -52}, 0, {779, 305}, {0x03, 0x81, 0xFD, 0xFF}}},
+	{{{-20, -35, -29}, 0, {545, 348}, {0x00, 0x85, 0x21, 0xFF}}},
+	{{{-20, -45, -65}, 0, {602, 177}, {0x00, 0x81, 0xFD, 0xFF}}},
+	{{{-20, -33, -113}, 0, {418, -82}, {0x00, 0xAA, 0xA3, 0xFF}}},
+	{{{19, -33, -100}, 0, {638, -44}, {0x21, 0xA8, 0xAB, 0xFF}}},
+};
+
+Gfx mushroom_segment_4_mesh_layer_1_tri_0[] = {
+	gsSPVertex(mushroom_segment_4_mesh_layer_1_vtx_0 + 0, 14, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(4, 1, 3, 0, 4, 5, 1, 0),
+	gsSP2Triangles(1, 5, 6, 0, 5, 7, 6, 0),
+	gsSP2Triangles(5, 8, 7, 0, 8, 9, 7, 0),
+	gsSP2Triangles(10, 9, 8, 0, 10, 11, 9, 0),
+	gsSP2Triangles(9, 11, 12, 0, 9, 12, 13, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_4_mesh_layer_1_vtx_1[19] = {
+	{{{-20, -33, 113}, 0, {581, 1125}, {0x00, 0xAA, 0x5D, 0xFF}}},
+	{{{19, -33, 100}, 0, {800, 1021}, {0x21, 0xA8, 0x55, 0xFF}}},
+	{{{19, -1, 110}, 0, {766, 1215}, {0x2B, 0x01, 0x77, 0xFF}}},
+	{{{-20, -1, 123}, 0, {496, 1302}, {0x00, 0x01, 0x7F, 0xFF}}},
+	{{{-20, 53, 106}, 0, {496, 1092}, {0x00, 0x46, 0x6A, 0xFF}}},
+	{{{19, 53, 93}, 0, {727, 1015}, {0x29, 0x48, 0x60, 0xFF}}},
+	{{{19, 89, 46}, 0, {693, 752}, {0x23, 0x72, 0x2C, 0xFF}}},
+	{{{-20, 89, 57}, 0, {496, 817}, {0x00, 0x73, 0x37, 0xFF}}},
+	{{{-20, 98, 0}, 0, {496, 496}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{19, 91, 13}, 0, {727, 567}, {0x27, 0x78, 0x0B, 0xFF}}},
+	{{{19, 91, -13}, 0, {727, 425}, {0x27, 0x78, 0xF5, 0xFF}}},
+	{{{19, 89, -46}, 0, {693, 240}, {0x23, 0x72, 0xD4, 0xFF}}},
+	{{{-20, 89, -57}, 0, {496, 175}, {0x00, 0x73, 0xC9, 0xFF}}},
+	{{{-20, 53, -106}, 0, {496, -100}, {0x00, 0x46, 0x96, 0xFF}}},
+	{{{19, 53, -93}, 0, {727, -23}, {0x29, 0x48, 0xA0, 0xFF}}},
+	{{{19, -1, -110}, 0, {766, -223}, {0x2B, 0x01, 0x89, 0xFF}}},
+	{{{-20, -1, -123}, 0, {496, -310}, {0x00, 0x01, 0x81, 0xFF}}},
+	{{{19, -33, -100}, 0, {650, -91}, {0x21, 0xA8, 0xAB, 0xFF}}},
+	{{{-20, -33, -113}, 0, {411, -133}, {0x00, 0xAA, 0xA3, 0xFF}}},
+};
+
+Gfx mushroom_segment_4_mesh_layer_1_tri_1[] = {
+	gsSPVertex(mushroom_segment_4_mesh_layer_1_vtx_1 + 0, 19, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSP2Triangles(4, 3, 2, 0, 4, 2, 5, 0),
+	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
+	gsSP2Triangles(6, 8, 7, 0, 8, 6, 9, 0),
+	gsSP2Triangles(8, 9, 10, 0, 11, 8, 10, 0),
+	gsSP2Triangles(11, 12, 8, 0, 13, 12, 11, 0),
+	gsSP2Triangles(13, 11, 14, 0, 15, 13, 14, 0),
+	gsSP2Triangles(15, 16, 13, 0, 17, 16, 15, 0),
+	gsSP1Triangle(17, 18, 16, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_4_mesh_layer_1_vtx_2[13] = {
+	{{{7, -35, -19}, 0, {425, -208}, {0xE6, 0x85, 0x12, 0xFF}}},
+	{{{-20, -89, -43}, 0, {240, 197}, {0x00, 0xE2, 0x85, 0xFF}}},
+	{{{-20, -35, -29}, 0, {240, -209}, {0x00, 0x85, 0x21, 0xFF}}},
+	{{{19, -89, -28}, 0, {496, 197}, {0x65, 0xE2, 0xBA, 0xFF}}},
+	{{{7, -35, 19}, 0, {425, -208}, {0xE6, 0x85, 0xEE, 0xFF}}},
+	{{{19, -89, 28}, 0, {496, 197}, {0x65, 0xE2, 0x46, 0xFF}}},
+	{{{-20, -35, 29}, 0, {240, -209}, {0x00, 0x85, 0xDF, 0xFF}}},
+	{{{-20, -89, 43}, 0, {240, 197}, {0x00, 0xE2, 0x7B, 0xFF}}},
+	{{{2, -110, 16}, 0, {384, 436}, {0x38, 0x95, 0x27, 0xFF}}},
+	{{{-20, -110, 22}, 0, {240, 436}, {0x00, 0x93, 0x41, 0xFF}}},
+	{{{-20, -112, 0}, 0, {240, 491}, {0x00, 0x81, 0x00, 0xFF}}},
+	{{{2, -110, -16}, 0, {384, 436}, {0x38, 0x95, 0xD9, 0xFF}}},
+	{{{-20, -110, -22}, 0, {240, 436}, {0x00, 0x93, 0xBF, 0xFF}}},
+};
+
+Gfx mushroom_segment_4_mesh_layer_1_tri_2[] = {
+	gsSPVertex(mushroom_segment_4_mesh_layer_1_vtx_2 + 0, 13, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(4, 3, 0, 0, 4, 5, 3, 0),
+	gsSP2Triangles(6, 5, 4, 0, 6, 7, 5, 0),
+	gsSP2Triangles(7, 8, 5, 0, 7, 9, 8, 0),
+	gsSP2Triangles(8, 9, 10, 0, 8, 10, 11, 0),
+	gsSP2Triangles(11, 10, 12, 0, 1, 11, 12, 0),
+	gsSP2Triangles(11, 1, 3, 0, 5, 11, 3, 0),
+	gsSP1Triangle(5, 8, 11, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_4_mesh_layer_1_vtx_3[32] = {
+	{{{-20, -45, 65}, 0, {-3, 398}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -33, 113}, 0, {-181, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -1, 123}, 0, {-218, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, 53, 106}, 0, {-130, -98}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -35, 29}, 0, {134, 442}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, 89, 57}, 0, {40, -184}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, 98, 0}, 0, {240, -207}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -35, -29}, 0, {346, 442}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, 89, -57}, 0, {440, -184}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, 53, -106}, 0, {610, -98}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -45, -65}, 0, {483, 398}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -1, -123}, 0, {698, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -33, -113}, 0, {661, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -112, 0}, 0, {240, 187}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -89, -43}, 0, {399, 243}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -110, -22}, 0, {323, 193}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -89, 43}, 0, {81, 243}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-20, -110, 22}, 0, {157, 193}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{19, -33, 100}, 0, {-132, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -45, 52}, 0, {45, 398}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -1, 110}, 0, {-168, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, 53, 93}, 0, {-83, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -38, 19}, 0, {169, 459}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, 89, 46}, 0, {81, -184}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, 91, 13}, 0, {196, -191}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, 91, -13}, 0, {284, -191}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -38, -19}, 0, {311, 459}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, 89, -46}, 0, {399, -184}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, 53, -93}, 0, {563, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -45, -52}, 0, {435, 398}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -1, -110}, 0, {648, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{19, -33, -100}, 0, {612, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+};
+
+Gfx mushroom_segment_4_mesh_layer_1_tri_3[] = {
+	gsSPVertex(mushroom_segment_4_mesh_layer_1_vtx_3 + 0, 32, 0),
+	gsSP2Triangles(0, 1, 2, 0, 3, 0, 2, 0),
+	gsSP2Triangles(4, 0, 3, 0, 3, 5, 4, 0),
+	gsSP2Triangles(5, 6, 4, 0, 4, 6, 7, 0),
+	gsSP2Triangles(6, 8, 7, 0, 7, 8, 9, 0),
+	gsSP2Triangles(10, 7, 9, 0, 9, 11, 10, 0),
+	gsSP2Triangles(11, 12, 10, 0, 7, 13, 4, 0),
+	gsSP2Triangles(13, 7, 14, 0, 13, 14, 15, 0),
+	gsSP2Triangles(16, 4, 13, 0, 16, 13, 17, 0),
+	gsSP2Triangles(18, 19, 20, 0, 21, 20, 19, 0),
+	gsSP2Triangles(21, 19, 22, 0, 22, 23, 21, 0),
+	gsSP2Triangles(22, 24, 23, 0, 25, 24, 22, 0),
+	gsSP2Triangles(22, 26, 25, 0, 27, 25, 26, 0),
+	gsSP2Triangles(28, 27, 26, 0, 26, 29, 28, 0),
+	gsSP2Triangles(30, 28, 29, 0, 31, 30, 29, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_5_mesh_layer_1_vtx_0[14] = {
+	{{{6, -42, 91}, 0, {916, 913}, {0x37, 0xAA, 0x4B, 0xFF}}},
+	{{{-21, -42, 100}, 0, {775, 979}, {0x21, 0xA8, 0x55, 0xFF}}},
+	{{{-21, -54, 52}, 0, {608, 819}, {0x03, 0x81, 0x03, 0xFF}}},
+	{{{18, -42, 75}, 0, {969, 821}, {0x42, 0xA8, 0x3F, 0xFF}}},
+	{{{18, -50, 25}, 0, {896, 664}, {0x23, 0x86, 0x0C, 0xFF}}},
+	{{{2, -54, 20}, 0, {783, 701}, {0x04, 0x81, 0x02, 0xFF}}},
+	{{{-21, -47, 19}, 0, {671, 662}, {0xDE, 0x86, 0xF4, 0xFF}}},
+	{{{-21, -47, -19}, 0, {735, 468}, {0xDE, 0x86, 0x0C, 0xFF}}},
+	{{{2, -54, -20}, 0, {849, 504}, {0x04, 0x81, 0xFE, 0xFF}}},
+	{{{-21, -54, -52}, 0, {779, 305}, {0x03, 0x81, 0xFD, 0xFF}}},
+	{{{18, -50, -25}, 0, {921, 410}, {0x23, 0x86, 0xF4, 0xFF}}},
+	{{{18, -42, -75}, 0, {866, 57}, {0x42, 0xA8, 0xC1, 0xFF}}},
+	{{{6, -42, -91}, 0, {791, -17}, {0x37, 0xAA, 0xB5, 0xFF}}},
+	{{{-21, -42, -100}, 0, {638, -44}, {0x21, 0xA8, 0xAB, 0xFF}}},
+};
+
+Gfx mushroom_segment_5_mesh_layer_1_tri_0[] = {
+	gsSPVertex(mushroom_segment_5_mesh_layer_1_vtx_0 + 0, 14, 0),
+	gsSP2Triangles(0, 1, 2, 0, 3, 0, 2, 0),
+	gsSP2Triangles(2, 4, 3, 0, 2, 5, 4, 0),
+	gsSP2Triangles(5, 2, 6, 0, 5, 6, 7, 0),
+	gsSP2Triangles(5, 7, 8, 0, 8, 7, 9, 0),
+	gsSP2Triangles(10, 8, 9, 0, 9, 11, 10, 0),
+	gsSP2Triangles(9, 12, 11, 0, 13, 12, 9, 0),
+	gsSP2Triangles(5, 8, 10, 0, 5, 10, 4, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_5_mesh_layer_1_vtx_1[26] = {
+	{{{-21, -10, -110}, 0, {766, -223}, {0x2B, 0x01, 0x89, 0xFF}}},
+	{{{6, -42, -91}, 0, {817, -62}, {0x37, 0xAA, 0xB5, 0xFF}}},
+	{{{-21, -42, -100}, 0, {650, -91}, {0x21, 0xA8, 0xAB, 0xFF}}},
+	{{{12, -10, -99}, 0, {992, -150}, {0x4B, 0x01, 0x9A, 0xFF}}},
+	{{{-21, 44, -93}, 0, {727, -23}, {0x29, 0x48, 0xA0, 0xFF}}},
+	{{{2, 44, -85}, 0, {861, 21}, {0x3F, 0x46, 0xAA, 0xFF}}},
+	{{{-21, 80, -46}, 0, {693, 240}, {0x24, 0x72, 0xD4, 0xFF}}},
+	{{{18, 44, -62}, 0, {958, 146}, {0x52, 0x48, 0xBF, 0xFF}}},
+	{{{18, 61, -25}, 0, {958, 354}, {0x51, 0x5F, 0xE7, 0xFF}}},
+	{{{-6, 80, -18}, 0, {816, 398}, {0x35, 0x73, 0xF1, 0xFF}}},
+	{{{-21, 82, -13}, 0, {727, 425}, {0x27, 0x78, 0xF5, 0xFF}}},
+	{{{-6, 80, 18}, 0, {816, 594}, {0x35, 0x73, 0x0F, 0xFF}}},
+	{{{-21, 82, 13}, 0, {727, 567}, {0x27, 0x78, 0x0B, 0xFF}}},
+	{{{-21, 80, 46}, 0, {693, 752}, {0x24, 0x72, 0x2C, 0xFF}}},
+	{{{18, 61, 25}, 0, {958, 638}, {0x51, 0x5F, 0x19, 0xFF}}},
+	{{{18, 44, 62}, 0, {958, 846}, {0x52, 0x48, 0x41, 0xFF}}},
+	{{{2, 44, 85}, 0, {861, 971}, {0x3F, 0x46, 0x56, 0xFF}}},
+	{{{-21, 44, 93}, 0, {727, 1015}, {0x29, 0x48, 0x60, 0xFF}}},
+	{{{-21, -10, 110}, 0, {766, 1215}, {0x2B, 0x01, 0x77, 0xFF}}},
+	{{{12, -10, 99}, 0, {992, 1142}, {0x4B, 0x01, 0x66, 0xFF}}},
+	{{{-21, -42, 100}, 0, {800, 1021}, {0x21, 0xA8, 0x55, 0xFF}}},
+	{{{6, -42, 91}, 0, {952, 949}, {0x37, 0xAA, 0x4B, 0xFF}}},
+	{{{18, -42, 75}, 0, {1010, 850}, {0x42, 0xA8, 0x3F, 0xFF}}},
+	{{{18, -10, 90}, 0, {1036, 1085}, {0x54, 0x01, 0x60, 0xFF}}},
+	{{{18, -10, -90}, 0, {1036, -93}, {0x54, 0x01, 0xA0, 0xFF}}},
+	{{{18, -42, -75}, 0, {898, 19}, {0x42, 0xA8, 0xC1, 0xFF}}},
+};
+
+Gfx mushroom_segment_5_mesh_layer_1_tri_1[] = {
+	gsSPVertex(mushroom_segment_5_mesh_layer_1_vtx_1 + 0, 26, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(4, 3, 0, 0, 4, 5, 3, 0),
+	gsSP2Triangles(5, 4, 6, 0, 7, 5, 6, 0),
+	gsSP2Triangles(8, 7, 6, 0, 6, 9, 8, 0),
+	gsSP2Triangles(9, 6, 10, 0, 11, 9, 10, 0),
+	gsSP2Triangles(11, 10, 12, 0, 11, 12, 13, 0),
+	gsSP2Triangles(14, 11, 13, 0, 13, 15, 14, 0),
+	gsSP2Triangles(13, 16, 15, 0, 17, 16, 13, 0),
+	gsSP2Triangles(18, 16, 17, 0, 18, 19, 16, 0),
+	gsSP2Triangles(20, 19, 18, 0, 20, 21, 19, 0),
+	gsSP2Triangles(19, 21, 22, 0, 19, 22, 23, 0),
+	gsSP2Triangles(19, 23, 15, 0, 19, 15, 16, 0),
+	gsSP2Triangles(11, 14, 8, 0, 11, 8, 9, 0),
+	gsSP2Triangles(1, 24, 25, 0, 1, 3, 24, 0),
+	gsSP2Triangles(24, 3, 5, 0, 24, 5, 7, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_5_mesh_layer_1_vtx_2[24] = {
+	{{{-21, -54, 52}, 0, {45, 398}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -42, 100}, 0, {-132, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -10, 110}, 0, {-168, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, 44, 93}, 0, {-83, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -47, 19}, 0, {169, 459}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, 80, 46}, 0, {81, -184}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, 82, 13}, 0, {196, -191}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, 82, -13}, 0, {284, -191}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -47, -19}, 0, {311, 459}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, 80, -46}, 0, {399, -184}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, 44, -93}, 0, {563, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -54, -52}, 0, {435, 398}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -10, -110}, 0, {648, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-21, -42, -100}, 0, {612, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{18, -10, 90}, 0, {-95, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, -42, 75}, 0, {-38, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, -50, 25}, 0, {146, 470}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, 44, 62}, 0, {22, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, 61, 25}, 0, {152, -177}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, 61, -25}, 0, {328, -177}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, -50, -25}, 0, {334, 470}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, 44, -62}, 0, {458, -99}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, -10, -90}, 0, {575, 76}, {0x7F, 0x00, 0x00, 0xFF}}},
+	{{{18, -42, -75}, 0, {518, 237}, {0x7F, 0x00, 0x00, 0xFF}}},
+};
+
+Gfx mushroom_segment_5_mesh_layer_1_tri_2[] = {
+	gsSPVertex(mushroom_segment_5_mesh_layer_1_vtx_2 + 0, 24, 0),
+	gsSP2Triangles(0, 1, 2, 0, 2, 3, 0, 0),
+	gsSP2Triangles(4, 0, 3, 0, 5, 4, 3, 0),
+	gsSP2Triangles(6, 4, 5, 0, 6, 7, 4, 0),
+	gsSP2Triangles(8, 4, 7, 0, 9, 8, 7, 0),
+	gsSP2Triangles(9, 10, 8, 0, 11, 8, 10, 0),
+	gsSP2Triangles(10, 12, 11, 0, 12, 13, 11, 0),
+	gsSP2Triangles(14, 15, 16, 0, 17, 14, 16, 0),
+	gsSP2Triangles(17, 16, 18, 0, 19, 18, 16, 0),
+	gsSP2Triangles(16, 20, 19, 0, 21, 19, 20, 0),
+	gsSP2Triangles(21, 20, 22, 0, 20, 23, 22, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_6_mesh_layer_1_vtx_0[6] = {
+	{{{14, -42, 35}, 0, {1099, 596}, {0x59, 0xAA, 0x1D, 0xFF}}},
+	{{{-15, -42, 75}, 0, {969, 821}, {0x42, 0xA8, 0x3F, 0xFF}}},
+	{{{-15, -50, 25}, 0, {896, 664}, {0x23, 0x86, 0x0C, 0xFF}}},
+	{{{-15, -50, -25}, 0, {921, 410}, {0x23, 0x86, 0xF4, 0xFF}}},
+	{{{14, -42, -35}, 0, {1051, 240}, {0x59, 0xAA, 0xE3, 0xFF}}},
+	{{{-15, -42, -75}, 0, {866, 57}, {0x42, 0xA8, 0xC1, 0xFF}}},
+};
+
+Gfx mushroom_segment_6_mesh_layer_1_tri_0[] = {
+	gsSPVertex(mushroom_segment_6_mesh_layer_1_vtx_0 + 0, 6, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSP2Triangles(0, 3, 4, 0, 5, 4, 3, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_6_mesh_layer_1_vtx_1[14] = {
+	{{{14, -42, -35}, 0, {1100, 218}, {0x59, 0xAA, 0xE3, 0xFF}}},
+	{{{-15, -42, -75}, 0, {898, 19}, {0x42, 0xA8, 0xC1, 0xFF}}},
+	{{{-15, -10, -90}, 0, {1036, -93}, {0x54, 0x01, 0xA0, 0xFF}}},
+	{{{23, -10, -38}, 0, {1302, 248}, {0x79, 0x01, 0xD8, 0xFF}}},
+	{{{7, 44, -33}, 0, {1090, 314}, {0x65, 0x46, 0xDF, 0xFF}}},
+	{{{-15, 44, -62}, 0, {958, 146}, {0x52, 0x48, 0xBF, 0xFF}}},
+	{{{-15, 61, -25}, 0, {958, 354}, {0x51, 0x5F, 0xE7, 0xFF}}},
+	{{{7, 44, 33}, 0, {1090, 678}, {0x65, 0x46, 0x21, 0xFF}}},
+	{{{-15, 61, 25}, 0, {958, 638}, {0x51, 0x5F, 0x19, 0xFF}}},
+	{{{-15, 44, 62}, 0, {958, 846}, {0x52, 0x48, 0x41, 0xFF}}},
+	{{{-15, -10, 90}, 0, {1036, 1085}, {0x54, 0x01, 0x60, 0xFF}}},
+	{{{23, -10, 38}, 0, {1302, 744}, {0x79, 0x01, 0x28, 0xFF}}},
+	{{{-15, -42, 75}, 0, {1010, 850}, {0x42, 0xA8, 0x3F, 0xFF}}},
+	{{{14, -42, 35}, 0, {1152, 605}, {0x59, 0xAA, 0x1D, 0xFF}}},
+};
+
+Gfx mushroom_segment_6_mesh_layer_1_tri_1[] = {
+	gsSPVertex(mushroom_segment_6_mesh_layer_1_vtx_1 + 0, 14, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSP2Triangles(4, 3, 2, 0, 4, 2, 5, 0),
+	gsSP2Triangles(4, 5, 6, 0, 7, 4, 6, 0),
+	gsSP2Triangles(7, 6, 8, 0, 9, 7, 8, 0),
+	gsSP2Triangles(10, 7, 9, 0, 10, 11, 7, 0),
+	gsSP2Triangles(12, 11, 10, 0, 12, 13, 11, 0),
+	gsSP2Triangles(11, 13, 0, 0, 11, 0, 3, 0),
+	gsSP2Triangles(7, 11, 3, 0, 7, 3, 4, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx mushroom_segment_6_mesh_layer_1_vtx_2[10] = {
+	{{{-15, -50, 25}, 0, {146, 470}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, -42, 75}, 0, {-38, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, -10, 90}, 0, {-95, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, 44, 62}, 0, {22, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, 61, 25}, 0, {152, -177}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, -50, -25}, 0, {334, 470}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, 61, -25}, 0, {328, -177}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, 44, -62}, 0, {458, -99}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, -10, -90}, 0, {575, 76}, {0x81, 0x00, 0x00, 0xFF}}},
+	{{{-15, -42, -75}, 0, {518, 237}, {0x81, 0x00, 0x00, 0xFF}}},
+};
+
+Gfx mushroom_segment_6_mesh_layer_1_tri_2[] = {
+	gsSPVertex(mushroom_segment_6_mesh_layer_1_vtx_2 + 0, 10, 0),
+	gsSP2Triangles(0, 1, 2, 0, 3, 0, 2, 0),
+	gsSP2Triangles(3, 4, 0, 0, 5, 0, 4, 0),
+	gsSP2Triangles(4, 6, 5, 0, 6, 7, 5, 0),
+	gsSP2Triangles(7, 8, 5, 0, 8, 9, 5, 0),
+	gsSPEndDisplayList(),
+};
+
+
+Gfx mat_mushroom_mushroom_bottom[] = {
+	gsSPSetLights1(mushroom_mushroom_bottom_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, mushroom_mushroom_bottom_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 69),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, mushroom_mushroom_bottom_ci8),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 511, 512),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 4, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_mushroom_mushroom_bottom[] = {
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_mushroom_mushroom_top[] = {
+	gsSPSetLights1(mushroom_mushroom_top_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, mushroom_mushroom_top_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 12),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, mushroom_mushroom_top_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 255, 1024),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 2, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_mushroom_mushroom_top[] = {
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_mushroom_mushroom_inside[] = {
+	gsSPSetLights1(mushroom_mushroom_inside_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, mushroom_mushroom_inside_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 50),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, mushroom_mushroom_inside_ci8),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 127, 1024),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 2, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 4, 0, G_TX_WRAP | G_TX_NOMIRROR, 4, 0),
+	gsDPSetTileSize(0, 0, 0, 60, 60),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_mushroom_mushroom_inside[] = {
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_mushroom_mushroom_stem[] = {
+	gsSPSetLights1(mushroom_mushroom_stem_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, mushroom_mushroom_stem_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 27),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, mushroom_mushroom_stem_ci8),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 127, 1024),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 2, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPSetTileSize(0, 0, 0, 60, 60),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_mushroom_mushroom_stem[] = {
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_segment_1_mesh_layer_1[] = {
+	gsSPDisplayList(mat_mushroom_mushroom_bottom),
+	gsSPDisplayList(mushroom_segment_1_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_bottom),
+	gsSPDisplayList(mat_mushroom_mushroom_top),
+	gsSPDisplayList(mushroom_segment_1_mesh_layer_1_tri_1),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_top),
+	gsSPDisplayList(mat_mushroom_mushroom_inside),
+	gsSPDisplayList(mushroom_segment_1_mesh_layer_1_tri_2),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_inside),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_segment_2_mesh_layer_1[] = {
+	gsSPDisplayList(mat_mushroom_mushroom_top),
+	gsSPDisplayList(mushroom_segment_2_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_top),
+	gsSPDisplayList(mat_mushroom_mushroom_bottom),
+	gsSPDisplayList(mushroom_segment_2_mesh_layer_1_tri_1),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_bottom),
+	gsSPDisplayList(mat_mushroom_mushroom_inside),
+	gsSPDisplayList(mushroom_segment_2_mesh_layer_1_tri_2),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_inside),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_segment_3_mesh_layer_1[] = {
+	gsSPDisplayList(mat_mushroom_mushroom_bottom),
+	gsSPDisplayList(mushroom_segment_3_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_bottom),
+	gsSPDisplayList(mat_mushroom_mushroom_top),
+	gsSPDisplayList(mushroom_segment_3_mesh_layer_1_tri_1),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_top),
+	gsSPDisplayList(mat_mushroom_mushroom_stem),
+	gsSPDisplayList(mushroom_segment_3_mesh_layer_1_tri_2),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_stem),
+	gsSPDisplayList(mat_mushroom_mushroom_inside),
+	gsSPDisplayList(mushroom_segment_3_mesh_layer_1_tri_3),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_inside),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_segment_4_mesh_layer_1[] = {
+	gsSPDisplayList(mat_mushroom_mushroom_bottom),
+	gsSPDisplayList(mushroom_segment_4_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_bottom),
+	gsSPDisplayList(mat_mushroom_mushroom_top),
+	gsSPDisplayList(mushroom_segment_4_mesh_layer_1_tri_1),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_top),
+	gsSPDisplayList(mat_mushroom_mushroom_stem),
+	gsSPDisplayList(mushroom_segment_4_mesh_layer_1_tri_2),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_stem),
+	gsSPDisplayList(mat_mushroom_mushroom_inside),
+	gsSPDisplayList(mushroom_segment_4_mesh_layer_1_tri_3),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_inside),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_segment_5_mesh_layer_1[] = {
+	gsSPDisplayList(mat_mushroom_mushroom_bottom),
+	gsSPDisplayList(mushroom_segment_5_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_bottom),
+	gsSPDisplayList(mat_mushroom_mushroom_top),
+	gsSPDisplayList(mushroom_segment_5_mesh_layer_1_tri_1),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_top),
+	gsSPDisplayList(mat_mushroom_mushroom_inside),
+	gsSPDisplayList(mushroom_segment_5_mesh_layer_1_tri_2),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_inside),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_segment_6_mesh_layer_1[] = {
+	gsSPDisplayList(mat_mushroom_mushroom_bottom),
+	gsSPDisplayList(mushroom_segment_6_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_bottom),
+	gsSPDisplayList(mat_mushroom_mushroom_top),
+	gsSPDisplayList(mushroom_segment_6_mesh_layer_1_tri_1),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_top),
+	gsSPDisplayList(mat_mushroom_mushroom_inside),
+	gsSPDisplayList(mushroom_segment_6_mesh_layer_1_tri_2),
+	gsSPDisplayList(mat_revert_mushroom_mushroom_inside),
+	gsSPEndDisplayList(),
+};
+
+Gfx mushroom_material_revert_render_settings[] = {
+	gsDPPipeSync(),
+	gsSPSetGeometryMode(G_LIGHTING),
+	gsSPClearGeometryMode(G_TEXTURE_GEN),
+	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
+	gsSPTexture(65535, 65535, 0, 0, 0),
+	gsDPSetEnvColor(255, 255, 255, 255),
+	gsDPSetAlphaCompare(G_AC_NONE),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, 0),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP  | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 1023, 256),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 8, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, 0),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 256, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(6, 0, 0, 1023, 256),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 8, 256, 1, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(1, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+

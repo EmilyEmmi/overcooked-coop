@@ -1,0 +1,17 @@
+extern const GeoLayout fire_extinguisher_geo[];
+extern Lights1 fire_extinguisher_fire_extinguisher_lights;
+extern Lights1 fire_extinguisher_fire_extinguisher_handle_lights;
+extern u8 fire_extinguisher_fire_extinguisher_ci4[];
+extern u8 fire_extinguisher_fire_extinguisher_pal_rgba16[];
+extern u8 fire_extinguisher_fire_extinguisher_handle_ci4[];
+extern u8 fire_extinguisher_fire_extinguisher_handle_pal_rgba16[];
+extern Vtx fire_extinguisher_fire_extinguisher_model_mesh_layer_1_vtx_0[52];
+extern Gfx fire_extinguisher_fire_extinguisher_model_mesh_layer_1_tri_0[];
+extern Vtx fire_extinguisher_fire_extinguisher_model_mesh_layer_1_vtx_1[44];
+extern Gfx fire_extinguisher_fire_extinguisher_model_mesh_layer_1_tri_1[];
+extern Gfx mat_fire_extinguisher_fire_extinguisher[];
+extern Gfx mat_revert_fire_extinguisher_fire_extinguisher[];
+extern Gfx mat_fire_extinguisher_fire_extinguisher_handle[];
+extern Gfx mat_revert_fire_extinguisher_fire_extinguisher_handle[];
+extern Gfx fire_extinguisher_fire_extinguisher_model_mesh_layer_1[];
+extern Gfx fire_extinguisher_material_revert_render_settings[];

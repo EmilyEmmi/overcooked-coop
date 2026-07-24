@@ -1,0 +1,11 @@
+extern const GeoLayout ocTest_area_1_geo[];
+extern const GeoLayout ocTest_area_1[];
+extern const Collision ocTest_area_1_collision[];
+extern const MacroObject ocTest_area_1_macro_objs[];
+extern Lights1 ocTest_dl_Solid_lights;
+extern u8 ocTest_dl_lll_textures_08000_rgba16_rgba16[];
+extern Vtx ocTest_dl_Room_mesh_layer_1_vtx_0[4];
+extern Gfx ocTest_dl_Room_mesh_layer_1_tri_0[];
+extern Gfx mat_ocTest_dl_Solid[];
+extern Gfx mat_revert_ocTest_dl_Solid[];
+extern Gfx ocTest_dl_Room_mesh_layer_1_with_revert[];

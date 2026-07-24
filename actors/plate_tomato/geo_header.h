@@ -1,0 +1,16 @@
+extern const GeoLayout plate_tomato_plate_tomato_flat[];
+extern const GeoLayout plate_tomato_geo[];
+extern Lights1 plate_tomato_tomato_outer_lights;
+extern Lights1 plate_tomato_tomato_lights;
+extern u8 plate_tomato_tomato_ci8[];
+extern u8 plate_tomato_tomato_pal_rgba16[];
+extern Vtx plate_tomato_plate_tomato_dl_mesh_layer_1_vtx_0[80];
+extern Gfx plate_tomato_plate_tomato_dl_mesh_layer_1_tri_0[];
+extern Vtx plate_tomato_plate_tomato_dl_mesh_layer_1_vtx_1[80];
+extern Gfx plate_tomato_plate_tomato_dl_mesh_layer_1_tri_1[];
+extern Gfx mat_plate_tomato_tomato_outer[];
+extern Gfx mat_revert_plate_tomato_tomato_outer[];
+extern Gfx mat_plate_tomato_tomato[];
+extern Gfx mat_revert_plate_tomato_tomato[];
+extern Gfx plate_tomato_plate_tomato_dl_mesh_layer_1[];
+extern Gfx plate_tomato_material_revert_render_settings[];
