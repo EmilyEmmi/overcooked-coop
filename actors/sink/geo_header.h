@@ -5,7 +5,7 @@ extern Lights1 sink_sink_water_lights;
 extern Lights1 sink_sink_lines_lights;
 extern Lights1 sink_plate_dirty_lights;
 extern Lights1 sink_plate_bottom_lights;
-extern u8 sink_wood_ci4[];
+extern u8 sink_wood_ci8[];
 extern u8 sink_wood_pal_rgba16[];
 extern u8 sink_sink_lines_ia8[];
 extern u8 sink_plate_dirty_ci8[];
