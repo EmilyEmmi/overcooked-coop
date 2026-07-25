@@ -1,4 +1,3 @@
-E_MODEL_INGREDIENTS = smlua_model_util_get_id("ingredients_geo")
 E_MODEL_TOMATO = smlua_model_util_get_id("tomato_geo")
 E_MODEL_ONION = smlua_model_util_get_id("onion_geo")
 E_MODEL_MUSHROOM = smlua_model_util_get_id("mushroom_geo")
@@ -6,6 +5,7 @@ E_MODEL_STEAK = smlua_model_util_get_id("steak_geo")
 E_MODEL_PATTY = smlua_model_util_get_id("patty_geo")
 E_MODEL_BURGER = smlua_model_util_get_id("burger_geo")
 E_MODEL_CHEESE = smlua_model_util_get_id("cheese_geo")
+E_MODEL_LETTUCE = smlua_model_util_get_id("lettuce_geo")
 E_MODEL_PLATE_LETTUCE = smlua_model_util_get_id("plate_lettuce_geo")
 E_MODEL_PLATE_TOMATO = smlua_model_util_get_id("plate_tomato_geo")
 
@@ -85,6 +85,8 @@ ITEM_DATA = {
         cookable = true,
         noTrash = true,
         noThrow = true,
+        cookSound = SOUND_GENERAL_QUIET_BUBBLE2,
+        cookSoundChance = 1/16,
         renderFunc = function(o)
             local amount = math.clamp(o.oContentCount, 0, 3)
             smlua_anim_util_set_animation(o, "pot_liquid_"..amount)
@@ -92,8 +94,7 @@ ITEM_DATA = {
         icon = ICON_POT,
     },
     [ITEM_LETTUCE] = {
-        model = E_MODEL_INGREDIENTS,
-        billboard = true,
+        model = E_MODEL_LETTUCE,
         cut = ITEM_LETTUCE_CUT,
         icon = ICON_LETTUCE,
     },
@@ -204,9 +205,7 @@ ITEM_DATA = {
         icon = ICON_PAN,
     },
     [ITEM_BURNT] = {
-        model = E_MODEL_RED_FLAME,
-        scale = 5,
-        billboard = true,
+        model = E_MODEL_PATTY
     },
     [ITEM_CHEESE] = {
         model = E_MODEL_CHEESE,

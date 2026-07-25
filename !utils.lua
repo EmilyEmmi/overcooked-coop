@@ -28,6 +28,16 @@ function nearest_behavior_id_from_pos_with_condition(pos, id, condFunction)
     return nearest, maxDist
 end
 
+---@param o Object
+---@param soundBits integer
+---@param freqScale number
+function obj_play_sound_with_freq_scale(o, soundBits, freqScale)
+    if not o then return end
+    if o.header.gfx.node.flags & GRAPH_RENDER_ACTIVE ~= 0 then
+        play_sound_with_freq_scale(soundBits, o.header.gfx.cameraToObject, freqScale)
+    end
+end
+
 function find_all_object_children(o, id)
     local children = {}
     local c = obj_get_first_with_behavior_id(id)
