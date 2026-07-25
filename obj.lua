@@ -79,7 +79,7 @@ function bhv_ingredient_loop(o)
             end)
             if counter then
                 obj_copy_pos(o, counter)
-                o.oPosY = o.oPosY + 34 * counter.header.gfx.scale.y
+                o.oPosY = o.oPosY + (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
             else
                 obj_set_pos(o, o.oHomeX, o.oHomeY, o.oHomeZ)
                 spawn_mist_particles()
@@ -143,7 +143,7 @@ function bhv_ingredient_loop(o)
                 o.oUsingSyncID = 0
             else
                 obj_copy_pos(o, counter)
-                o.oPosY = o.oPosY + 34 * counter.header.gfx.scale.y
+                o.oPosY = o.oPosY + (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
 
                 if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT and o.oContentCount ~= 0 and o.oContents ~= ITEM_BURNT then
                     if iData.cookable then
@@ -273,9 +273,9 @@ function ingredient_render_setup(o)
             end
         end
 
-        local plateHeight = 5
+        local plateHeight = 2
         if o.parentObj.oBehParams == ITEM_PAN then
-            plateHeight = 10
+            plateHeight = 5
         end
         oGFX.angle.y = oGFX.angle.y + o.oFaceAngleYaw
         oGFX.pos.y = oGFX.pos.y + plateHeight - o.parentObj.oGraphYOffset + (iData.plateOffset or 0)
@@ -337,7 +337,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                 o, o2 = o2, o
                 iData, iData2 = iData2, iData
             else
-                return true, true
+                return false, true
             end
         end
 
@@ -483,7 +483,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
             else
                 if m and m.playerIndex == 0 then
                     obj_mark_for_deletion(o)
-                    return false, false
+                    return true, false
                 end
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
@@ -506,7 +506,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                     o.oPlateAppearTimer = 5 * 30
                     network_send_object(o, true)
                 end
-                return false, false
+                return true, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_PLATES then
             allowPlace = false
@@ -520,11 +520,11 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
         o.oForwardVel = 0
         o.oVelY = 0
         obj_copy_pos(o, counter)
-        o.oPosY = o.oPosY + 34 * counter.header.gfx.scale.y
+        o.oPosY = o.oPosY + (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
         if m and m.playerIndex == 0 then
             network_send_object(o, true)
         end
-        return false, false
+        return true, false
     end
 
     return true, true

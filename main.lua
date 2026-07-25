@@ -196,11 +196,13 @@ function before_mario_update(m)
     if m.controller.buttonPressed & B_BUTTON ~= 0 and not INVALID_GRAB_ACTION[m.action] then
         if m.heldObj then
             local o = m.heldObj
-            mario_drop_held_object(m)
+            
             local placed, stillHolding = attempt_item_place(o, m, selectedItem, true)
-            if stillHolding then
-                m.usedObj = o
-                mario_grab_used_object(m)
+            if not stillHolding then
+                mario_drop_held_object(m)
+            end
+            if placed or not stillHolding then
+                play_sound(SOUND_ACTION_TERRAIN_STEP_TIPTOE, gGlobalSoundSource) -- TODO: pick better sfx
             end
             
             m.controller.buttonPressed = m.controller.buttonPressed &~ B_BUTTON
@@ -244,6 +246,7 @@ function before_mario_update(m)
             end
 
             if o and valid then
+                play_sound(SOUND_ACTION_TERRAIN_STEP_TIPTOE, gGlobalSoundSource)
                 m.usedObj = o
                 m.marioBodyState.grabPos = GRAB_POS_LIGHT_OBJ
                 o.oInteractType = INTERACT_GRABBABLE
