@@ -197,9 +197,8 @@ function before_mario_update(m)
         if m.heldObj then
             local o = m.heldObj
             mario_drop_held_object(m)
-            if not attempt_item_place(o, m, selectedItem, true) then
-                o.oHeldState = HELD_FREE
-            else
+            local placed, stillHolding = attempt_item_place(o, m, selectedItem, true)
+            if stillHolding then
                 m.usedObj = o
                 mario_grab_used_object(m)
             end

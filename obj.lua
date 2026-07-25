@@ -202,6 +202,7 @@ local heldObjMtx = {}
 ---@param o Object
 function ingredient_render_setup(o)
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
+    local plated = (o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE)
 
     local oGFX = o.header.gfx
     oGFX.scale.y = iData.scale or 1
@@ -213,7 +214,9 @@ function ingredient_render_setup(o)
     if iData.idleAnim then
         local anim = iData.idleAnim
         local animFrame = -2
-        if o.oHeldState ~= HELD_FREE then
+        if plated then
+            anim = iData.plateAnim or anim
+        elseif o.oHeldState ~= HELD_FREE then
             anim = iData.pickupAnim or anim
             animFrame = -1 -- animate normally
         elseif o.oCutOrCookTimer ~= 0 then
@@ -236,7 +239,7 @@ function ingredient_render_setup(o)
         end
     end
 
-    if o.parentObj == nil or o.parentObj == o or o.oHeldState ~= HELD_FREE then
+    if not plated then
         oGFX.shadowInvisible = (iData.isPlate or false) -- temporary solution
         if iData.billboard then
             obj_set_billboard(o)
@@ -297,10 +300,12 @@ end
 ---@param m MarioState
 ---@param placeOnObj Object?
 ---@param isHeld boolean?
+---@return boolean placeValid
+---@return boolean stillHolding
 function attempt_item_place(placedObj, m, placeOnObj, isHeld)
     local o = placedObj
     local o2 = placeOnObj
-    if obj_has_behavior_id(o, id_bhvIngredient) == 0 then return false end
+    if obj_has_behavior_id(o, id_bhvIngredient) == 0 then return false, false end
 
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
     local counter = nil
@@ -310,13 +315,13 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
     else
         counter = obj_get_nearest_object_with_behavior_id(o, id_bhvCounter)
         local dist = (counter and dist_between_objects(o, counter)) or 10000
-        if dist > 150 or ((isHeld or o.oForwardVel < 5) and dist > 100) then return false end
+        if dist > 150 or ((isHeld or o.oForwardVel < 5) and dist > 100) then return false, false end
         o2 = counter.usingObj
         -- empty, default counters have a smaller auto-snap range
-        if (not o2) and counter.oBehParams2ndByte == COUNTER_TYPE_DEFAULT and dist > 100 then return false end
+        if (not o2) and counter.oBehParams2ndByte == COUNTER_TYPE_DEFAULT and dist > 100 then return false, false end
 
         -- Non-throwables will only snap to empty counters
-        if (iData.noThrow or o.oContentCount ~= 0) and o2 then return false end
+        if (iData.noThrow or o.oContentCount ~= 0) and o2 then return false, false end
     end
 
     if o2 then
@@ -332,7 +337,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                 o, o2 = o2, o
                 iData, iData2 = iData2, iData
             else
-                return true
+                return true, true
             end
         end
 
@@ -343,7 +348,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
             if wasPlate then
                 local children = find_all_object_children(o2, id_bhvIngredient)
                 o2 = children[1]
-                if o2 == nil then return true end
+                if o2 == nil then return false, true end
                 iData2 = ITEM_DATA[o2.oBehParams] or ITEM_DATA[0]
             end
             
@@ -363,7 +368,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                 if iData.isPlate then
                     -- Put all items on plate into container
                     children = find_all_object_children(o, id_bhvIngredient)
-                    if #children == 0 then return true end
+                    if #children == 0 then return false, true end
                 end
 
                 for i,c in ipairs(children) do
@@ -384,19 +389,19 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
             if m and m.playerIndex == 0 then
                 network_send_object(o2, true)
                 if iData.pourable then
-                    return true
+                    return true, true
                 else
                     for i,c in ipairs(children) do
                         obj_mark_for_deletion(c)
                     end
                 end
             elseif iData.pourable then
-                return true
+                return true, true
             end
             
             if iData.isPlate then
                 if wasPlate or not iData2.plateable then
-                    return true
+                    return true, true
                 else
                     o2.parentObj = o
                     o2.oParentSyncID = o.oSyncID
@@ -404,7 +409,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                         network_send_object(o2, true)
                     end
                     forceCounterPlace = true
-                    if o2 == placedObj then return false end
+                    if o2 == placedObj then return true, false end
                 end
             end
         else
@@ -430,7 +435,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                     o.oContentCount = 0
                 end
 
-                return true
+                return true, true
             elseif iData.isPlate then
                 children = find_all_object_children(o, id_bhvIngredient)
             end
@@ -444,10 +449,10 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
             end
 
             if iData.isPlate or o == placedObj then
-                return (iData.isPlate)
+                return true, (iData.isPlate)
             end
         end
-        if o == placedObj and not forceCounterPlace then return false end
+        if o == placedObj and not forceCounterPlace then return true, false end
     end
 
     if counter then
@@ -474,11 +479,11 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                         network_send_object(o, true)
                     end
                 end
-                return true
+                return true, true
             else
                 if m and m.playerIndex == 0 then
                     obj_mark_for_deletion(o)
-                    return false
+                    return false, false
                 end
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
@@ -501,13 +506,13 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
                     o.oPlateAppearTimer = 5 * 30
                     network_send_object(o, true)
                 end
-                return false
+                return false, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_PLATES then
             allowPlace = false
         end
 
-        if not allowPlace then return true end
+        if not allowPlace then return true, true end
 
         counter.usingObj = o
         o.usingObj = counter
@@ -519,10 +524,10 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
         if m and m.playerIndex == 0 then
             network_send_object(o, true)
         end
-        return false
+        return false, false
     end
 
-    return true
+    return true, true
 end
 
 -- check if o can be placed on/in o2
@@ -779,14 +784,21 @@ function bhv_counter_loop(o)
 
     if o.oBehParams2ndByte == COUNTER_TYPE_HEAT then
         local heatOn = false
+        local cookSound = SOUND_MOVING_LAVA_BURN
+        local cookSoundChance = 1
         if o.usingObj and o.usingObj ~= o then
             local iData = ITEM_DATA[o.usingObj.oBehParams] or ITEM_DATA[0]
             if iData.cookable and o.usingObj.oContentCount ~= 0 then
                 heatOn = true
+                cookSound = iData.cookSound or cookSound
+                cookSoundChance = iData.cookSoundChance or cookSoundChance
             end
         end
         if heatOn then
             smlua_anim_util_set_animation(o, "heat_on")
+            if cookSoundChance == 1 or random_float() < cookSoundChance then
+                cur_obj_play_sound_2(cookSound)
+            end
         else
             smlua_anim_util_set_animation(o, "heat_off")
         end

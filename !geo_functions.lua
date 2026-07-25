@@ -173,6 +173,10 @@ end
 function patty_switch(n)
     local switch = cast_graph_node(n)
     local o = geo_get_current_object()
+    if o.oBehParams == ITEM_BURNT then
+        switch.selectedCase = 2
+        return
+    end
     switch.selectedCase = (o.oBehParams == ITEM_MEAT_COOKED and 1) or 0
 end
 
