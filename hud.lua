@@ -1,6 +1,5 @@
 function on_hud_render()
     djui_hud_set_resolution(RESOLUTION_DJUI)
-    hud_hide()
     djui_hud_set_font(FONT_CUSTOM_HUD)
     djui_hud_reset_color()
     djui_hud_reset_text_color()
@@ -77,19 +76,26 @@ function on_hud_render()
             local colorRatio = (timeRatio - 0.66) / -0.33
             color = lerp_color({r = 255, g = 255, b = 0}, color, colorRatio)
         end
-        djui_hud_set_color(color.r, color.g, color.b, alpha)
+        
         -- split into 3 segments
         local segmentX = x
         local prevSegmentX = prevX
         for a=1,3 do
-            local segmentWidth = math.min(maxTimerWidth / 3, timerWidth)
-            local prevSegmentWidth = math.min(maxTimerWidth / 3, prevTimerWidth)
-            djui_hud_render_rect_interpolated(prevSegmentX, y, prevSegmentWidth, 10 * scale, segmentX, y, segmentWidth, 10 * scale)
-            segmentX = segmentX + maxTimerWidth / 3 + 5 * scale
-            prevSegmentX = prevSegmentX + maxTimerWidth / 3 + 5 * scale
+            local maxSegmentWidth = maxTimerWidth / 3
+            local segmentWidth = math.min(maxSegmentWidth, timerWidth)
+            local prevSegmentWidth = math.min(maxSegmentWidth, prevTimerWidth)
+            
+            djui_hud_set_color(0, 50, 100, alpha)
+            djui_hud_render_rect_interpolated(prevSegmentX, y, maxSegmentWidth, 10 * scale, segmentX, y, maxSegmentWidth, 10 * scale)
+            if segmentWidth > 0 and prevSegmentWidth >= 0 then
+                djui_hud_set_color(color.r, color.g, color.b, alpha)
+                djui_hud_render_rect_interpolated(prevSegmentX, y, prevSegmentWidth, 10 * scale, segmentX, y, segmentWidth, 10 * scale)
+            end
+            
+            segmentX = segmentX + maxSegmentWidth + 5 * scale
+            prevSegmentX = prevSegmentX + maxSegmentWidth + 5 * scale
             timerWidth = timerWidth - segmentWidth
             prevTimerWidth = prevTimerWidth - prevSegmentWidth
-            if timerWidth <= 0 and prevTimerWidth <= 0 then break end
         end
 
         -- item to serve
@@ -136,21 +142,160 @@ function on_hud_render()
         intendedX = intendedX + width + 10 * scale
     end
 
-    --scale = scale * 2
     djui_hud_reset_color()
     djui_hud_reset_text_color()
+    djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_BOTTOM)
+
+    -- score and tip combo
+    scale = scale * 2
+    local x = 20
+    y = djui_hud_get_screen_height() - 8 * scale
+    djui_hud_render_texture(gTextures.coin, x, y - 22 * scale, scale, scale)
+    x = x + 16 * scale
+    djui_hud_print_text(tostring(gGlobalSyncTable.score), x, y, scale, scale)
+    scale = scale / 2
+    x = 20
+    y = y + 16 * scale
+    djui_hud_print_text("Tip x"..gGlobalSyncTable.tipMulti, x, y, scale, scale)
+    
+    scale = scale * 2
+    x = djui_hud_get_screen_width() - 32
+    y = djui_hud_get_screen_height()
     djui_hud_set_text_alignment(TEXT_HALIGN_RIGHT, TEXT_VALIGN_BOTTOM)
-    intendedX = djui_hud_get_screen_width() - 20
-    y = djui_hud_get_screen_height() - 20
-    djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft), intendedX, y, scale, scale)
-    y = y - 32 * scale
-    djui_hud_print_text("Tip x"..gGlobalSyncTable.tipMulti, intendedX, y, scale, scale)
-    y = y - 32 * scale
-    djui_hud_print_text("$"..tostring(gGlobalSyncTable.score), intendedX, y, scale, scale)
+    djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft), x, y, scale, scale)
 end
 hook_event(HOOK_ON_HUD_RENDER, on_hud_render)
 
-function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon)
+local objectRadarStorage = {}
+function behind_hud_render()
+    djui_hud_set_resolution(RESOLUTION_DJUI)
+    djui_hud_set_font(FONT_CUSTOM_HUD)
+    hud_hide()
+    djui_hud_reset_color()
+    djui_hud_reset_text_color()
+
+    local o = obj_get_first_with_behavior_id(id_bhvIngredient)
+    local toRenderObj = {}
+    while o do
+        local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
+        local out = gVec3fZero()
+        djui_hud_world_pos_to_screen_pos(pos, out)
+        if out.z < 0 then
+            local radar = objectRadarStorage[o]
+            if not radar then
+                radar = {}
+                radar.x = -50
+                radar.y = -50
+                radar.scale = 0
+                radar.prevX = -50
+                radar.prevY = -50
+                radar.prevScale = 0
+                radar.frameLastRendered = 0
+                objectRadarStorage[o] = radar
+            end
+
+            radar.x = out.x
+            radar.y = out.y
+            radar.scale = 2000 / -out.z
+            table.insert(toRenderObj, {out.z, o})
+        end
+        o = obj_get_next_with_same_behavior_id(o)
+    end
+
+    -- sort by z
+    table.sort(toRenderObj, function(renderData1, renderData2)
+        return renderData1[1] < renderData2[1]
+    end)
+
+    for i, renderData in ipairs(toRenderObj) do
+        local o = renderData[2]
+        local radar = objectRadarStorage[o]
+        local iData = ITEM_DATA[o.oBehParams]
+        local items = {}
+        local children = {o}
+        local allCooked = (iData.isCooked or false)
+        if iData.isPlate then
+            children = find_all_object_children(o, id_bhvIngredient)
+        elseif o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE then
+            children = {} -- Don't render if on plate
+        end
+
+        for i, c in ipairs(children) do
+            if c.oContents == ITEM_BURNT then
+                table.insert(items, ITEM_BURNT)
+            else
+                local iDataC = ITEM_DATA[c.oBehParams]
+                if iDataC.icon and not (iDataC.noTrash or iDataC.skipItem) then
+                    table.insert(items, c.oBehParams)
+                end
+                
+                if c.oContentCount ~= 0 then
+                    local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
+                    allCooked = (iData.cookable and c.oCutOrCookTimer >= maxCookTime)
+
+                    local cookedData = get_cooked_data(c)
+                    local renderContents = true
+                    if cookedData then
+                        allCooked = true
+                        local ingredient = cookedData.result
+                        local iDataR = ITEM_DATA[ingredient]
+                        if iDataR.icon and not (iDataR.noTrash or iDataR.skipItem) then
+                            table.insert(items, cookedData.result)
+                        end
+                        renderContents = cookedData.inheritContents
+                    end
+
+                    if renderContents then
+                        for i=0,c.oContentCount-1 do
+                            local ingredient = (c.oContents >> (8 * i)) & 0xFF
+                            table.insert(items, ingredient)
+                        end
+                    end
+                end
+            end
+        end
+
+        if #items ~= 0 then
+            if radar.frameLastRendered + 1 ~= get_global_timer() then
+                radar.prevX = radar.x
+                radar.prevY = radar.y
+                radar.prevScale = radar.scale
+            end
+            radar.frameLastRendered = get_global_timer()
+
+        
+            local x, y, scale = radar.x, radar.y, radar.scale
+            local prevX, prevY, prevScale = radar.prevX, radar.prevY, radar.prevScale
+            local maxColumns = 3
+            local columns = math.min(#items, maxColumns)
+            if #items == 1 then
+                render_ingredient_icon_interpolated(items[1], prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
+            else
+                y = y - 20 * scale * math.ceil(#items / columns)
+                prevY = prevY - 20 * prevScale * math.ceil(#items / columns)
+                for i, item in ipairs(items) do
+                    if i % columns == 1 then
+                        x = radar.x - 10 * scale * (columns - 1)
+                        prevX = radar.prevX - 10 * prevScale * (columns - 1)
+                        y = y + 20 * scale
+                        prevY = prevY + 20 * prevScale
+                    else
+                        x = x + 20 * scale
+                        prevX = prevX + 20 * prevScale
+                    end
+                    render_ingredient_icon_interpolated(item, prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
+                end
+            end
+            
+            radar.prevX = radar.x
+            radar.prevY = radar.y
+            radar.prevScale = radar.scale
+        end
+    end
+end
+hook_event(HOOK_ON_HUD_RENDER_BEHIND, behind_hud_render)
+
+function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, forceHeatIcon)
     local tex = ITEM_DATA[item].icon
     if tex then
         local texWidth = tex.width * scaleX
@@ -158,8 +303,8 @@ function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon)
         
         djui_hud_render_texture(tex, itemX, y, scaleX, scaleY)
         local subTex = ITEM_DATA[item].subIcon
-        if allowHeatIcon and ITEM_DATA[item].isCooked then
-            subTex = gTextures.star -- Heat icon (TEMP)
+        if allowHeatIcon and (forceHeatIcon or ITEM_DATA[item].isCooked) then
+            subTex = ICON_HEAT
         end
         if subTex then
             local texHeight = tex.height * scaleY
@@ -176,7 +321,7 @@ function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon)
     end
 end
 
-function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, prevScaleY, x, y, scaleX, scaleY, allowHeatIcon)
+function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, prevScaleY, x, y, scaleX, scaleY, allowHeatIcon, forceHeatIcon)
     local tex = ITEM_DATA[item].icon
     if tex then
         local texWidth = tex.width * scaleX
@@ -186,8 +331,8 @@ function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, pre
         
         djui_hud_render_texture_interpolated(tex, prevItemX, prevY, prevScaleX, prevScaleY, itemX, y, scaleX, scaleY)
         local subTex = ITEM_DATA[item].subIcon
-        if allowHeatIcon and ITEM_DATA[item].isCooked then
-            subTex = gTextures.star -- Heat icon (TEMP)
+        if allowHeatIcon and (forceHeatIcon or ITEM_DATA[item].isCooked) then
+            subTex = ICON_HEAT
         end
         if subTex then
             local texHeight = tex.height * scaleY

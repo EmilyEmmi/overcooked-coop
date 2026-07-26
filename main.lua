@@ -1,5 +1,6 @@
 -- name: Overcooked! (WIP)
 -- description: Collab with WBMarioo and denpakei32 for Blocky's gamemode competition.
+-- pausable: false
 -- category: gamemode
 -- incompatible: gamemode
 
@@ -33,6 +34,8 @@ for i=0,MAX_PLAYERS-1 do
     sMario.kitchen = 0
     c.cutAnimTimer = 0
 end
+
+GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
 
 function update()
     if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
@@ -81,6 +84,7 @@ function update()
             pending_data.time = pending_data.time - 1
             if pending_data.time <= 0 then
                 pending_data.time = pending_data.maxTime
+                play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
                 if network_is_server() then
                     gGlobalSyncTable.tipMulti = 1
                     gGlobalSyncTable.score = gGlobalSyncTable.score - 30
@@ -133,6 +137,7 @@ function on_sync_valid()
 end
 hook_event(HOOK_ON_SYNC_VALID, on_sync_valid)
 
+---@param m MarioState
 function mario_update(m)
     if m.prevAction == ACT_HOLD_WALKING and m.action ~= ACT_HOLD_WALKING then
         m.marioBodyState.allowPartRotation = 0
@@ -142,8 +147,11 @@ function mario_update(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     if sMario.cutTimer ~= 0 then
         set_mario_animation(m, CHAR_ANIM_FIRST_PUNCH)
-        set_anim_to_frame(m, c.cutAnimTimer % 6)
-        c.cutAnimTimer = c.cutAnimTimer + 1
+        set_anim_to_frame(m, c.cutAnimTimer)
+        c.cutAnimTimer = (c.cutAnimTimer + 1) % 6
+        if c.cutAnimTimer == 1 then
+            play_sound(SOUND_ACTION_UNK55, m.marioObj.header.gfx.cameraToObject)
+        end
         set_without_sync(sMario, "cutTimer", sMario.cutTimer - 1)
         if sMario.cutTimer == 0 and m.playerIndex == 0 then
             sync_value(sMario, "cutTimer")
@@ -202,7 +210,7 @@ function before_mario_update(m)
                 mario_drop_held_object(m)
             end
             if placed or not stillHolding then
-                play_sound(SOUND_ACTION_TERRAIN_STEP_TIPTOE, gGlobalSoundSource) -- TODO: pick better sfx
+                play_sound(GRAB_SOUND, gGlobalSoundSource) -- TODO: pick better sfx
             end
             
             m.controller.buttonPressed = m.controller.buttonPressed &~ B_BUTTON
@@ -246,7 +254,7 @@ function before_mario_update(m)
             end
 
             if o and valid then
-                play_sound(SOUND_ACTION_TERRAIN_STEP_TIPTOE, gGlobalSoundSource)
+                play_sound(GRAB_SOUND, gGlobalSoundSource)
                 m.usedObj = o
                 m.marioBodyState.grabPos = GRAB_POS_LIGHT_OBJ
                 o.oInteractType = INTERACT_GRABBABLE

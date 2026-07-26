@@ -72,6 +72,7 @@ function bhv_ingredient_loop(o)
     if o.oPlateAppearTimer ~= 0 then
         o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
         o.oPlateAppearTimer = o.oPlateAppearTimer - 1
+        o.oHeldState = HELD_FREE
         if o.oPlateAppearTimer == 0 then
             -- go to nearest plate counter
             local counter = obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(counter)
@@ -89,6 +90,7 @@ function bhv_ingredient_loop(o)
     elseif o.oRespawnTimer ~= 0 then
         o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
         o.oRespawnTimer = o.oRespawnTimer - 1
+        o.oHeldState = HELD_FREE
         if o.oRespawnTimer == 0 then
             obj_set_pos(o, o.oHomeX, o.oHomeY, o.oHomeZ)
             spawn_mist_particles()
@@ -153,12 +155,19 @@ function bhv_ingredient_loop(o)
 
                             -- TEMP
                             if o.oCutOrCookTimer == maxCookTime then
-                                djui_chat_message_create("done!")
+                                --djui_chat_message_create("done!")
+                                cur_obj_play_sound_2(SOUND_MENU_REVERSE_PAUSE | 128)
                             end
                         else -- overcook after 10 seconds
                             o.oOvercookTimer = o.oOvercookTimer + 1
+                            if o.oOvercookTimer >= 5 * 30 then
+                                local freq = ((o.oOvercookTimer >= 7.5 * 30) and 10) or 30
+                                if o.oOvercookTimer % freq == 0 then
+                                    play_sound_with_freq_scale(SOUND_MOVING_ALMOST_DROWNING, o.header.gfx.cameraToObject, -2)
+                                end
+                            end
                             if o.oOvercookTimer >= 10 * 30 then
-                                djui_chat_message_create("burnt") -- TEMP
+                                -- djui_chat_message_create("burnt")
                                 o.oCutOrCookTimer = 0
                                 o.oOvercookTimer = 0
                                 o.oContents = ITEM_BURNT
@@ -245,6 +254,11 @@ function ingredient_render_setup(o)
             obj_set_billboard(o)
         else
             oGFX.node.flags = oGFX.node.flags & ~GRAPH_RENDER_BILLBOARD
+        end
+        if o.oHeldState ~= HELD_FREE then
+            local m = gMarioStates[o.heldByPlayerIndex]
+            --obj_set_pos(o, m.marioBodyState.heldObjLastPosition.x, m.marioBodyState.heldObjLastPosition.y, m.marioBodyState.heldObjLastPosition.z)
+            --obj_set_angle(o, 0, m.faceAngle.y, 0)
         end
 
         obj_set_model_extended(o, iData.model or E_MODEL_ERROR_MODEL)
@@ -746,7 +760,7 @@ function attempt_serve_order(items)
             end
 
             if valid then
-                djui_chat_message_create("Served "..order.name) -- TEMP
+                --djui_chat_message_create("Served "..order.name)
                 network_send_include_self(true, {id = PACKET_SERVED_ORDER, orderID = orderID, from = network_global_index_from_local(0)})
                 return true
             end

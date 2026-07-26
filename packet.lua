@@ -22,6 +22,7 @@ function on_packet_served_order(data, self)
             existingOrders = existingOrders + 1
             if orderID == data.orderID then
                 pending_data.vanishTimer = 15
+                play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
                 if network_is_server() then
                     gGlobalSyncTable.servedOrders = gGlobalSyncTable.servedOrders + 1
                 end
@@ -55,7 +56,7 @@ function on_packet_served_order(data, self)
                         gGlobalSyncTable.tipMulti = 1
                     end
 
-                    djui_chat_message_create("Earned "..score.." points")
+                    --djui_chat_message_create("Earned "..score.." points")
                     gGlobalSyncTable.score = gGlobalSyncTable.score + score
                 end
                 break
