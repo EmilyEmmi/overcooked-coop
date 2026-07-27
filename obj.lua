@@ -7,6 +7,7 @@ define_custom_obj_fields({
     oUsingSyncID = "u32",
     oRespawnTimer = "u32",
     oPlateAppearTimer = "u32",
+    oNotifyTimer = "u32",
 })
 
 ---@param o Object
@@ -21,6 +22,7 @@ function bhv_ingredient_init(o)
     o.oWallHitboxRadius = 50
     o.oCutOrCookTimer = 0
     o.oOvercookTimer = 0
+    o.oNotifyTimer = 0
     o.hookRender = 0xDA
     if o.header.gfx.sharedChild then
         o.header.gfx.sharedChild.hookProcess = 0xDA
@@ -156,13 +158,20 @@ function bhv_ingredient_loop(o)
                             -- TEMP
                             if o.oCutOrCookTimer == maxCookTime then
                                 --djui_chat_message_create("done!")
+                                o.oNotifyTimer = 30
                                 cur_obj_play_sound_2(SOUND_MENU_REVERSE_PAUSE | 128)
                             end
                         else -- overcook after 10 seconds
                             o.oOvercookTimer = o.oOvercookTimer + 1
                             if o.oOvercookTimer >= 5 * 30 then
-                                local freq = ((o.oOvercookTimer >= 7.5 * 30) and 10) or 30
+                                local freq = 30
+                                if o.oOvercookTimer >= 9 * 30 then
+                                    freq = 5
+                                elseif o.oOvercookTimer >= 7.5 * 30 then
+                                    freq = 10
+                                end
                                 if o.oOvercookTimer % freq == 0 then
+                                    o.oNotifyTimer = freq
                                     play_sound_with_freq_scale(SOUND_MOVING_ALMOST_DROWNING, o.header.gfx.cameraToObject, -2)
                                 end
                             end
@@ -170,6 +179,7 @@ function bhv_ingredient_loop(o)
                                 -- djui_chat_message_create("burnt")
                                 o.oCutOrCookTimer = 0
                                 o.oOvercookTimer = 0
+                                o.oNotifyTimer = 0
                                 o.oContents = ITEM_BURNT
                             end
                         end
@@ -186,7 +196,7 @@ function bhv_ingredient_loop(o)
 
         cur_obj_disable_rendering()
     elseif (o.oHeldState == HELD_THROWN) or (o.oHeldState == HELD_DROPPED) then
-        cur_obj_enable_rendering()
+        --cur_obj_enable_rendering()
         o.oForwardVel = (o.oHeldState == HELD_THROWN and 60) or 0
         o.oVelY = (o.oHeldState == HELD_THROWN and 10) or 0
 
@@ -313,10 +323,11 @@ end
 ---@param placedObj Object
 ---@param m MarioState
 ---@param placeOnObj Object?
+---@param placeOnCounter Object?
 ---@param isHeld boolean?
 ---@return boolean placeValid
 ---@return boolean stillHolding
-function attempt_item_place(placedObj, m, placeOnObj, isHeld)
+function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
     local o = placedObj
     local o2 = placeOnObj
     if obj_has_behavior_id(o, id_bhvIngredient) == 0 then return false, false end
@@ -326,6 +337,8 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
     if o2 then
         counter = o2.usingObj
         if counter == o2 then counter = nil end
+    elseif placeOnCounter then
+        counter = placeOnCounter
     else
         counter = obj_get_nearest_object_with_behavior_id(o, id_bhvCounter)
         local dist = (counter and dist_between_objects(o, counter)) or 10000
@@ -397,6 +410,7 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
             -- average cooking time
             if iData.pourable then
                 o2.oCutOrCookTimer = o2.oCutOrCookTimer + o.oCutOrCookTimer
+                o.oCutOrCookTimer = 0
             end
             o2.oCutOrCookTimer = o2.oCutOrCookTimer // 2
 
@@ -443,10 +457,12 @@ function attempt_item_place(placedObj, m, placeOnObj, isHeld)
 
                     o.oContents = 0
                     o.oContentCount = 0
+                    o.oCutOrCookTimer = 0
                     network_send_object(o, true)
                 else
                     o.oContents = 0
                     o.oContentCount = 0
+                    o.oCutOrCookTimer = 0
                 end
 
                 return true, true

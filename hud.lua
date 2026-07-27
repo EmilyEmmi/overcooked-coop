@@ -156,7 +156,7 @@ function on_hud_render()
     scale = scale / 2
     x = 20
     y = y + 16 * scale
-    djui_hud_print_text("Tip x"..gGlobalSyncTable.tipMulti, x, y, scale, scale)
+    djui_hud_print_text("Tip *"..gGlobalSyncTable.tipMulti, x, y, scale, scale)
     
     scale = scale * 2
     x = djui_hud_get_screen_width() - 32
@@ -187,9 +187,11 @@ function behind_hud_render()
                 radar.x = -50
                 radar.y = -50
                 radar.scale = 0
+                radar.barWidth = 0
                 radar.prevX = -50
                 radar.prevY = -50
                 radar.prevScale = 0
+                radar.prevBarWidth = 0
                 radar.frameLastRendered = 0
                 objectRadarStorage[o] = radar
             end
@@ -260,10 +262,11 @@ function behind_hud_render()
                 radar.prevX = radar.x
                 radar.prevY = radar.y
                 radar.prevScale = radar.scale
+                radar.prevBarWidth = radar.barWidth
             end
             radar.frameLastRendered = get_global_timer()
 
-        
+            djui_hud_set_color(255, 255, 255, 255)
             local x, y, scale = radar.x, radar.y, radar.scale
             local prevX, prevY, prevScale = radar.prevX, radar.prevY, radar.prevScale
             local maxColumns = 3
@@ -286,10 +289,51 @@ function behind_hud_render()
                     render_ingredient_icon_interpolated(item, prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
                 end
             end
-            
+
+            -- cooking/cutting progress
+            if o.oCutOrCookTimer ~= 0 then
+                x = radar.x - 20 * scale
+                y = radar.y + 20 * scale
+                prevX = radar.prevX - 20 * prevScale
+                prevY = radar.prevY + 20 * prevScale
+                radar.barWidth = 0
+                if iData.cut then
+                    radar.barWidth = o.oCutOrCookTimer / 30
+                elseif iData.cookable then
+                    local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
+                    radar.barWidth = o.oCutOrCookTimer / maxCookTime
+                end
+
+                if radar.barWidth ~= 0 and radar.barWidth ~= 1 then
+                    local width = 40 * radar.barWidth
+                    djui_hud_render_rect_interpolated(prevX, prevY, 40 * prevScale, 10 * prevScale, x, y, 40 * scale, 10 * scale)
+                    djui_hud_set_color(0, 255, 0, 255)
+                    djui_hud_render_rect_interpolated(prevX, prevY, width * prevScale, 10 * prevScale, x, y, width * scale, 10 * scale)
+                end
+            end
+            -- notification for cooking progress
+            if o.oNotifyTimer ~= 0 then
+                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+                x = radar.x
+                y = radar.y + 8 * scale
+                prevX = radar.prevX
+                prevY = radar.prevY + 8 * prevScale
+                local alpha = 255
+                if o.oNotifyTimer > 20 then
+                    alpha = ((30 - o.oNotifyTimer) / 10) * alpha
+                elseif o.oNotifyTimer < 10 then
+                    alpha = (o.oNotifyTimer / 10) * alpha
+                end
+                o.oNotifyTimer = o.oNotifyTimer - 1
+                djui_hud_set_color(255, 255, 255, alpha)
+                djui_hud_print_text_interpolated(text, prevX, prevY, prevScale, x, y, scale)
+            end
+
             radar.prevX = radar.x
             radar.prevY = radar.y
             radar.prevScale = radar.scale
+            radar.prevBarWidth = radar.barWidth
         end
     end
 end

@@ -201,11 +201,26 @@ function before_mario_update(m)
         end
     end
 
+    -- might be changed
+    if selectedCounter or selectedItem then
+        local o = selectedCounter or selectedItem
+        local pos = {x = o.oPosX, y = o.oPosY, z = o.oPosZ}
+        local size = 45
+        if o == selectedCounter then
+            pos.y = pos.y + (COUNTER_HEIGHT[o.oBehParams2ndByte] or 34) * o.header.gfx.scale.y
+            size = 30
+        end
+        spawn_non_sync_object(id_bhvSparkle, E_MODEL_SPARKLES, pos.x, pos.y, pos.z, function(sparkle)
+            obj_translate_xyz_random(sparkle, size);
+            obj_scale_random(sparkle, 1.0, 0.0);
+        end)
+    end
+
     if m.controller.buttonPressed & B_BUTTON ~= 0 and not INVALID_GRAB_ACTION[m.action] then
         if m.heldObj then
             local o = m.heldObj
             
-            local placed, stillHolding = attempt_item_place(o, m, selectedItem, true)
+            local placed, stillHolding = attempt_item_place(o, m, selectedItem, selectedCounter, true)
             if not stillHolding then
                 mario_drop_held_object(m)
             end
@@ -294,7 +309,7 @@ function before_mario_update(m)
         if o and o ~= counter and iData and iData.cut then
             o.oCutOrCookTimer = o.oCutOrCookTimer + 1
             sMario.cutTimer = 5
-            if o.oCutOrCookTimer > 30 then
+            if o.oCutOrCookTimer >= 30 then
                 o.oBehParams = ITEM_DATA[o.oBehParams].cut
                 network_send_object(o, true)
                 o.oCutOrCookTimer = 0
