@@ -1,9 +1,4 @@
-function on_hud_render()
-    djui_hud_set_resolution(RESOLUTION_DJUI)
-    djui_hud_set_font(FONT_CUSTOM_HUD)
-    djui_hud_reset_color()
-    djui_hud_reset_text_color()
-
+function playing_hud()
     local screenWidth = djui_hud_get_screen_width()
     local intendedX = 10
     local y = 0
@@ -156,13 +151,44 @@ function on_hud_render()
     scale = scale / 2
     x = 20
     y = y + 16 * scale
-    djui_hud_print_text("Tip *"..gGlobalSyncTable.tipMulti, x, y, scale, scale)
+    local tipMulti = gGlobalSyncTable["tipMulti"..gPlayerSyncTable[0].kitchen] or 1
+    djui_hud_print_text("Tip *"..tipMulti, x, y, scale, scale)
     
     scale = scale * 2
     x = djui_hud_get_screen_width() - 32
     y = djui_hud_get_screen_height()
     djui_hud_set_text_alignment(TEXT_HALIGN_RIGHT, TEXT_VALIGN_BOTTOM)
     djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft), x, y, scale, scale)
+end
+
+function end_hud()
+    local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
+    djui_hud_set_color(0, 0, 0, 100)
+    djui_hud_render_rect(0, 0, screenWidth + 16, screenHeight + 16)
+
+    djui_hud_reset_color()
+    local scale = 8
+    local text = tostring(gGlobalSyncTable.score)
+    local width = (16 + djui_hud_measure_text(text)) * scale
+    local x = (screenWidth - width) / 2
+    local y = screenHeight / 2 - 8 * scale
+    djui_hud_render_texture(gTextures.coin, x, y, scale, scale)
+    x = x + 16 * scale
+    djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
+    djui_hud_print_text(text, x, y, scale, scale)
+end
+
+function on_hud_render()
+    djui_hud_set_resolution(RESOLUTION_DJUI)
+    djui_hud_set_font(FONT_CUSTOM_HUD)
+    djui_hud_reset_color()
+    djui_hud_reset_text_color()
+
+    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+        playing_hud()
+    elseif gGlobalSyncTable.gameState == GAME_STATE_END then
+        end_hud()
+    end
 end
 hook_event(HOOK_ON_HUD_RENDER, on_hud_render)
 

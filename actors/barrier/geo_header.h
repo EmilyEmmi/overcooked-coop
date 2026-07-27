@@ -1,0 +1,10 @@
+extern const GeoLayout barrier_geo[];
+extern Lights1 barrier_f3dlite_material_001_lights;
+extern u8 barrier_barrier_ia8[];
+extern Vtx barrier_Mesh_mesh_layer_5_vtx_cull[8];
+extern Vtx barrier_Mesh_mesh_layer_5_vtx_0[4];
+extern Gfx barrier_Mesh_mesh_layer_5_tri_0[];
+extern Gfx mat_barrier_f3dlite_material_001[];
+extern Gfx mat_revert_barrier_f3dlite_material_001[];
+extern Gfx barrier_Mesh_mesh_layer_5[];
+extern Gfx barrier_final_revert_mesh_layer_5[];

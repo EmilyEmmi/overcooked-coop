@@ -24,6 +24,7 @@ E_MODEL_SERVING = smlua_model_util_get_id("service_counter_geo")
 E_MODEL_PLATE_COUNTER = smlua_model_util_get_id("plate_counter_geo")
 
 E_MODEL_KNIFE = smlua_model_util_get_id("knife_geo")
+E_MODEL_BARRIER = smlua_model_util_get_id("barrier_geo")
 
 ICON_BUN = get_texture_info("icon_bun")
 ICON_MEAT = get_texture_info("icon_meat")

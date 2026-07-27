@@ -24,6 +24,7 @@ function bhv_ingredient_init(o)
     o.oOvercookTimer = 0
     o.oNotifyTimer = 0
     o.hookRender = 0xDA
+    o.activeFlags = o.activeFlags | ACTIVE_FLAG_MOVE_THROUGH_GRATE
     if o.header.gfx.sharedChild then
         o.header.gfx.sharedChild.hookProcess = 0xDA
     end
@@ -916,6 +917,24 @@ function bhv_pan_child_loop(o)
 end
 
 id_bhvPanChild = hook_behavior(nil, OBJ_LIST_GENACTOR, false, bhv_pan_child_init, bhv_pan_child_loop, "bhvPanChild")
+
+function bhv_player_barrier_init(o)
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
+    obj_scale_xyz(o, o.oBehParams2ndByte, 1, 1)
+
+    o.collisionData = smlua_collision_util_get("barrier_collision")
+end
+
+function bhv_player_barrier_loop(o)
+    if false and is_other_player_active() ~= 0 then -- disabled for now
+        load_object_collision_model()
+        cur_obj_enable_rendering()
+    else
+        cur_obj_disable_rendering()
+    end
+end
+
+id_bhvPlayerBarrier = hook_behavior(nil, OBJ_LIST_SURFACE, false, bhv_player_barrier_init, bhv_player_barrier_loop, "bhvPlayerBarrier")
 
 ---@param o Object
 function on_object_render(o)

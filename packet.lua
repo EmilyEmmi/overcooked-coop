@@ -43,17 +43,18 @@ function on_packet_served_order(data, self)
                     -- Tip based on how fast we served the order
                     local tip = 8
                     local timeRatio = pending_data.time / pending_data.maxTime
+                    local tipMultiField = "tipMulti"..fromKitchen
                     if timeRatio < 0.33 then
                         tip = 3
                     elseif timeRatio < 0.66 then
                         tip = 5
                     end
-                    score = score + tip * gGlobalSyncTable.tipMulti
+                    score = score + tip * (gGlobalSyncTable[tipMultiField] or 1)
                     -- tip multiplier increases if we serve in order
                     if existingOrders == 1 then
-                        gGlobalSyncTable.tipMulti = math.min(gGlobalSyncTable.tipMulti + 1, 4)
+                        gGlobalSyncTable[tipMultiField] = math.min(gGlobalSyncTable[tipMultiField] + 1, 4)
                     else
-                        gGlobalSyncTable.tipMulti = 1
+                        gGlobalSyncTable[tipMultiField] = 1
                     end
 
                     --djui_chat_message_create("Earned "..score.." points")

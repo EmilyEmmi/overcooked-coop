@@ -10,7 +10,7 @@ selectedCounter = nil
 pending_orders = {}
 
 GAME_STATE_LEVEL_SELECT = 0
-GAME_STATE_LOADING = 1
+GAME_STATE_SETUP = 1
 GAME_STATE_PLAYING = 2
 GAME_STATE_END = 3
 
@@ -21,8 +21,13 @@ gGlobalSyncTable.gameState = GAME_STATE_LEVEL_SELECT
 gGlobalSyncTable.ocLevel = 0
 gGlobalSyncTable.score = 0
 gGlobalSyncTable.timeLeft = 0
-gGlobalSyncTable.tipMulti = 1
 gGlobalSyncTable.servedOrders = 0
+-- one kitchen for every 4 players
+MAX_KITCHENS = math.ceil(MAX_PLAYERS / 4)
+for i=0,MAX_KITCHENS-1 do
+    gGlobalSyncTable["tipMulti"..i] = 1
+end
+
 local subTimer = 0
 
 gOvercookedExtraStates = {}
@@ -32,72 +37,93 @@ for i=0,MAX_PLAYERS-1 do
     local sMario = gPlayerSyncTable[i]
     sMario.cutTimer = 0
     sMario.kitchen = 0
+    sMario.spawnID = 0
     c.cutAnimTimer = 0
 end
 
 GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
 
 function update()
+    local newTempo = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
+    if newTempo ~= BASE_TEMPO * BASE_MULTI then
+        BASE_TEMPO = newTempo
+    end
+    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING and gGlobalSyncTable.timeLeft <= 30 then
+        BASE_MULTI = 1.5
+        sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 3)
+    else
+        BASE_MULTI = 1
+        sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 2)
+    end
+    sequence_player_set_tempo(SEQ_PLAYER_LEVEL, BASE_TEMPO * BASE_MULTI)
+
     if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
         local np = gNetworkPlayers[0]
         if np.currLevelNum ~= LEVEL_CASTLE_GROUNDS and np.currAreaSyncValid then
             warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
         end
-    elseif gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+    elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
         local np = gNetworkPlayers[0]
         if np.currLevelNum ~= lData.level and np.currAreaSyncValid then
             warp_to_level(lData.level, 1, 0)
         end
-        
-        local newTempo = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
-        if newTempo ~= BASE_TEMPO * BASE_MULTI then
-            BASE_TEMPO = newTempo
-        end
-        if gGlobalSyncTable.timeLeft <= 30 then
-            BASE_MULTI = 1.5
-            sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 3)
-        else
-            BASE_MULTI = 1
-            sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 2)
-        end
-        sequence_player_set_tempo(SEQ_PLAYER_LEVEL, BASE_TEMPO * BASE_MULTI)
 
-        subTimer = subTimer + 1
-        if subTimer >= 30 then
-            subTimer = 0
-            if gGlobalSyncTable.timeLeft ~= 0 then
-                if network_is_server() then
-                    gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
-                    if gGlobalSyncTable.timeLeft == 0 then
-                        gGlobalSyncTable.timeLeft = 10
-                        gGlobalSyncTable.gameState = GAME_STATE_END
+        if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+            subTimer = subTimer + 1
+            if subTimer >= 30 then
+                subTimer = 0
+                if gGlobalSyncTable.timeLeft ~= 0 then
+                    if network_is_server() then
+                        gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
+                        if gGlobalSyncTable.timeLeft == 0 then
+                            gGlobalSyncTable.timeLeft = 10
+                            gGlobalSyncTable.gameState = GAME_STATE_END
+                        end
+                    else
+                        set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
                     end
-                else
-                    set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
                 end
             end
-        end
 
-        for i, pending_data in ipairs(pending_orders) do
-            pending_data.prevTime = pending_data.time
-            pending_data.time = pending_data.time - 1
-            if pending_data.time <= 0 then
-                pending_data.time = pending_data.maxTime
-                play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
-                if network_is_server() then
-                    gGlobalSyncTable.tipMulti = 1
-                    gGlobalSyncTable.score = gGlobalSyncTable.score - 30
+            for i, pending_data in ipairs(pending_orders) do
+                pending_data.prevTime = pending_data.time
+                pending_data.time = pending_data.time - 1
+                if pending_data.time <= 0 then
+                    pending_data.time = pending_data.maxTime
+                    play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+                    if network_is_server() then
+                        local kitchen = pending_data.kitchen or 0
+                        gGlobalSyncTable["tipMulti"..kitchen] = 1
+                        gGlobalSyncTable.score = gGlobalSyncTable.score - 30
+                    end
                 end
             end
-        end
 
-        -- automatically add orders
-        if network_is_server() then
-            expected_orders = math.max(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10, 2)
-            while #pending_orders < 5 and #pending_orders + gGlobalSyncTable.servedOrders < expected_orders do
-                local orderID = lData.orders[math.random(1, #lData.orders)]
-                network_send_include_self(true, {id = PACKET_ORDER, orderID = orderID})
+            -- automatically add orders
+            if network_is_server() then
+                expected_orders = math.max(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10, 2)
+                while #pending_orders < 5 and #pending_orders + gGlobalSyncTable.servedOrders < expected_orders do
+                    local orderID = lData.orders[math.random(1, #lData.orders)]
+                    network_send_include_self(true, {id = PACKET_ORDER, orderID = orderID})
+                end
+            end
+        else
+            pending_orders = {}
+            subTimer = subTimer + 1
+            if subTimer >= 30 then
+                subTimer = 0
+                if gGlobalSyncTable.timeLeft ~= 0 then
+                    if network_is_server() then
+                        gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
+                        if gGlobalSyncTable.timeLeft == 0 then
+                            gGlobalSyncTable.timeLeft = lData.totalTime or 240
+                            gGlobalSyncTable.gameState = GAME_STATE_PLAYING
+                        end
+                    else
+                        set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
+                    end
+                end
             end
         end
     elseif gGlobalSyncTable.gameState == GAME_STATE_END then
@@ -161,10 +187,10 @@ function mario_update(m)
     end
     
     -- move romhack cam up
-    if m.playerIndex == 0 and m.area.camera and m.area.camera.mode == CAMERA_MODE_ROM_HACK
+    --[[if m.playerIndex == 0 and m.area.camera and m.area.camera.mode == CAMERA_MODE_ROM_HACK
     and set_cam_angle(0) ~= CAM_ANGLE_MARIO then
         m.statusForCamera.pos.y = m.statusForCamera.pos.y + 250
-    end
+    end]]
 end
 hook_event(HOOK_MARIO_UPDATE, mario_update)
 
@@ -476,21 +502,20 @@ end
 hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
 
 function start_level_command(msg)
-    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
-        gGlobalSyncTable.gameState = GAME_STATE_END
+    if gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         gGlobalSyncTable.timeLeft = 1
         return true
     end
 
     local oc_level = tonumber(msg) or OC_LEVEL_TEST
-    local lData = OC_LEVEL_DATA[oc_level]
-
-    gGlobalSyncTable.gameState = GAME_STATE_PLAYING
+    gGlobalSyncTable.gameState = GAME_STATE_SETUP
     gGlobalSyncTable.score = 0
-    gGlobalSyncTable.tipMulti = 1
     gGlobalSyncTable.ocLevel = oc_level
-    gGlobalSyncTable.timeLeft = lData.totalTime or 240
+    gGlobalSyncTable.timeLeft = 20
     gGlobalSyncTable.servedOrders = 0
+    for i=0,MAX_KITCHENS-1 do
+        gGlobalSyncTable["tipMulti"..i] = 1
+    end
     return true
 end
 hook_chat_command("start-level", "[ID?] - Start this level - leave blank to start the test level", start_level_command)
