@@ -268,8 +268,8 @@ function ingredient_render_setup(o)
         end
         if o.oHeldState ~= HELD_FREE then
             local m = gMarioStates[o.heldByPlayerIndex]
-            --obj_set_pos(o, m.marioBodyState.heldObjLastPosition.x, m.marioBodyState.heldObjLastPosition.y, m.marioBodyState.heldObjLastPosition.z)
-            --obj_set_angle(o, 0, m.faceAngle.y, 0)
+            obj_set_pos(o, m.marioBodyState.heldObjLastPosition.x, m.marioBodyState.heldObjLastPosition.y, m.marioBodyState.heldObjLastPosition.z)
+            obj_set_angle(o, 0, m.faceAngle.y, 0)
         end
 
         obj_set_model_extended(o, iData.model or E_MODEL_ERROR_MODEL)
@@ -920,13 +920,13 @@ id_bhvPanChild = hook_behavior(nil, OBJ_LIST_GENACTOR, false, bhv_pan_child_init
 
 function bhv_player_barrier_init(o)
     o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
-    obj_scale_xyz(o, o.oBehParams2ndByte, 1, 1)
+    obj_scale_xyz(o, o.oBehParams2ndByte * 1.04, 1, 1)
 
     o.collisionData = smlua_collision_util_get("barrier_collision")
 end
 
 function bhv_player_barrier_loop(o)
-    if false and is_other_player_active() ~= 0 then -- disabled for now
+    if is_other_player_active() ~= 0 then
         load_object_collision_model()
         cur_obj_enable_rendering()
     else
@@ -935,6 +935,9 @@ function bhv_player_barrier_loop(o)
 end
 
 id_bhvPlayerBarrier = hook_behavior(nil, OBJ_LIST_SURFACE, false, bhv_player_barrier_init, bhv_player_barrier_loop, "bhvPlayerBarrier")
+
+-- Does nothing on its own; used to mark player spawns
+id_bhvOcSpawn = hook_behavior(nil, OBJ_LIST_GENACTOR, false, nil, nil, "bhvOcSpawn")
 
 ---@param o Object
 function on_object_render(o)

@@ -69,8 +69,11 @@ function spawn_child_object(parent, id, model, offsetX, offsetY, offsetZ, initFu
 end
 
 function get_order_fail_time()
+    -- Uses the lower amount of players expected per kitchen
     local data = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
-    return data.failTime[1] or 240 -- TODO: base on player count
+    local maxKitchens = gGlobalSyncTable.maxKitchens
+    local lowPlayers = math.clamp(network_player_connected_count() // maxKitchens, 1, 4)
+    return data.failTime[lowPlayers] or 240
 end
 
 -- Returns if table1 and table2 contain the same amount of each element (ignoring order)

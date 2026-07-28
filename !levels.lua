@@ -12,14 +12,26 @@ OC_LEVEL_DATA = {
         name = "Test Level",
         level = LEVEL_TEST,
         totalTime = 240,
-        failTime = {130, 130, 130, 130},
+        failTime = {210, 190, 160, 130},
         orders = ALL_ORDERS,
+        starScores = {
+            {200, 400, 800, 1000},
+            {200, 400, 800, 1000},
+            {200, 400, 800, 1000},
+            {250, 500, 950, 1500},
+        },
     },
     [OC_LEVEL_BOB] = {
         name = "Level 1",
         level = LEVEL_BOB,
         totalTime = 180,
-        failTime = {150, 120, 90, 60},
+        failTime = {180, 150, 120, 90},
         orders = {ORDER_PLAIN_SALAD, ORDER_MIXED_SALAD},
+        starScores = {
+            {200, 400, 800, 1000},
+            {200, 400, 800, 1000},
+            {200, 400, 800, 1000},
+            {200, 400, 800, 1000},
+        },
     },
 }
