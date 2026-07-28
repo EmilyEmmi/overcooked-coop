@@ -50,6 +50,18 @@ function find_all_object_children(o, id)
     return children
 end
 
+function find_all_object_using(o, id)
+    local using = {}
+    local other = obj_get_first_with_behavior_id(id)
+    while other do
+        if other ~= o and other.usingObj == o then
+            table.insert(using, other)
+        end
+        other = obj_get_next_with_same_behavior_id(other)
+    end
+    return using
+end
+
 function spawn_child_object(parent, id, model, offsetX, offsetY, offsetZ, initFunc, sync)
     local spawnFunc = spawn_non_sync_object
     if sync then

@@ -286,29 +286,70 @@ function behind_hud_render()
     local o = obj_get_first_with_behavior_id(id_bhvIngredient)
     local toRenderObj = {}
     while o do
-        local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
-        local out = gVec3fZero()
-        djui_hud_world_pos_to_screen_pos(pos, out)
-        if out.z < 0 then
-            local radar = objectRadarStorage[o]
-            if not radar then
-                radar = {}
-                radar.x = -50
-                radar.y = -50
-                radar.scale = 0
-                radar.barWidth = 0
-                radar.prevX = -50
-                radar.prevY = -50
-                radar.prevScale = 0
-                radar.prevBarWidth = 0
-                radar.frameLastRendered = 0
-                objectRadarStorage[o] = radar
-            end
+        local validForRender = true
+        if o.oHeldState == HELD_FREE and (o.header.gfx.node.flags & GRAPH_RENDER_INVISIBLE ~= 0 or o.header.gfx.node.flags & GRAPH_RENDER_ACTIVE == 0) then
+            validForRender = false
+        elseif (o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE) then
+            validForRender = false
+        end
 
-            radar.x = out.x
-            radar.y = out.y
-            radar.scale = 2000 / -out.z
-            table.insert(toRenderObj, {out.z, o})
+        if validForRender then
+            local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
+            local out = gVec3fZero()
+            djui_hud_world_pos_to_screen_pos(pos, out)
+            if out.z < 0 then
+                local radar = objectRadarStorage[o]
+                if not radar then
+                    radar = {}
+                    radar.x = -50
+                    radar.y = -50
+                    radar.scale = 0
+                    radar.barWidth = 0
+                    radar.prevX = -50
+                    radar.prevY = -50
+                    radar.prevScale = 0
+                    radar.prevBarWidth = 0
+                    radar.frameLastRendered = 0
+                    objectRadarStorage[o] = radar
+                end
+
+                radar.x = out.x
+                radar.y = out.y
+                radar.scale = 2000 / -out.z
+                table.insert(toRenderObj, {out.z, o})
+            end
+        end
+        o = obj_get_next_with_same_behavior_id(o)
+    end
+
+    -- render progress bar for sinks
+    o = obj_get_first_with_behavior_id(id_bhvCounter)
+    while o do
+        if o.oBehParams2ndByte == COUNTER_TYPE_SINK and o.oPlateAppearTimer ~= 0 then
+            local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
+            local out = gVec3fZero()
+            djui_hud_world_pos_to_screen_pos(pos, out)
+            if out.z < 0 then
+                local radar = objectRadarStorage[o]
+                if not radar then
+                    radar = {}
+                    radar.x = -50
+                    radar.y = -50
+                    radar.scale = 0
+                    radar.barWidth = 0
+                    radar.prevX = -50
+                    radar.prevY = -50
+                    radar.prevScale = 0
+                    radar.prevBarWidth = 0
+                    radar.frameLastRendered = 0
+                    objectRadarStorage[o] = radar
+                end
+
+                radar.x = out.x
+                radar.y = out.y
+                radar.scale = 2000 / -out.z
+                table.insert(toRenderObj, {out.z, o})
+            end
         end
         o = obj_get_next_with_same_behavior_id(o)
     end
@@ -321,52 +362,129 @@ function behind_hud_render()
     for i, renderData in ipairs(toRenderObj) do
         local o = renderData[2]
         local radar = objectRadarStorage[o]
-        local iData = ITEM_DATA[o.oBehParams]
-        local items = {}
-        local children = {o}
-        local allCooked = (iData.isCooked or false)
-        if iData.isPlate then
-            children = find_all_object_children(o, id_bhvIngredient)
-        elseif o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE then
-            children = {} -- Don't render if on plate
-        end
+        if obj_has_behavior_id(o, id_bhvIngredient) ~= 0 then
+            local iData = ITEM_DATA[o.oBehParams]
+            local items = {}
+            local children = {o}
+            local allCooked = (iData.isCooked or false)
+            if iData.isPlate then
+                children = find_all_object_children(o, id_bhvIngredient)
+            end
 
-        for i, c in ipairs(children) do
-            if c.oContents == ITEM_BURNT then
-                table.insert(items, ITEM_BURNT)
-            else
-                local iDataC = ITEM_DATA[c.oBehParams]
-                if iDataC.icon and not (iDataC.noTrash or iDataC.skipItem) then
-                    table.insert(items, c.oBehParams)
-                end
-                
-                if c.oContentCount ~= 0 then
-                    local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
-                    allCooked = (iData.cookable and c.oCutOrCookTimer >= maxCookTime)
-
-                    local cookedData = get_cooked_data(c)
-                    local renderContents = true
-                    if cookedData then
-                        allCooked = true
-                        local ingredient = cookedData.result
-                        local iDataR = ITEM_DATA[ingredient]
-                        if iDataR.icon and not (iDataR.noTrash or iDataR.skipItem) then
-                            table.insert(items, cookedData.result)
-                        end
-                        renderContents = cookedData.inheritContents
+            for i, c in ipairs(children) do
+                if c.oContents == ITEM_BURNT then
+                    table.insert(items, ITEM_BURNT)
+                else
+                    local iDataC = ITEM_DATA[c.oBehParams]
+                    if iDataC.icon and not (iDataC.noTrash or iDataC.skipItem) then
+                        table.insert(items, c.oBehParams)
                     end
+                    
+                    if c.oContentCount ~= 0 then
+                        local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
+                        allCooked = (iData.cookable and c.oCutOrCookTimer >= maxCookTime)
 
-                    if renderContents then
-                        for i=0,c.oContentCount-1 do
-                            local ingredient = (c.oContents >> (8 * i)) & 0xFF
-                            table.insert(items, ingredient)
+                        local cookedData = get_cooked_data(c)
+                        local renderContents = true
+                        if cookedData then
+                            allCooked = true
+                            local ingredient = cookedData.result
+                            local iDataR = ITEM_DATA[ingredient]
+                            if iDataR.icon and not (iDataR.noTrash or iDataR.skipItem) then
+                                table.insert(items, cookedData.result)
+                            end
+                            renderContents = cookedData.inheritContents
+                        end
+
+                        if renderContents then
+                            for i=0,c.oContentCount-1 do
+                                local ingredient = (c.oContents >> (8 * i)) & 0xFF
+                                table.insert(items, ingredient)
+                            end
                         end
                     end
                 end
             end
-        end
 
-        if #items ~= 0 then
+            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oNotifyTimer ~= 0 then
+                if radar.frameLastRendered + 1 ~= get_global_timer() then
+                    radar.prevX = radar.x
+                    radar.prevY = radar.y
+                    radar.prevScale = radar.scale
+                    radar.prevBarWidth = radar.barWidth
+                end
+                radar.frameLastRendered = get_global_timer()
+
+                djui_hud_set_color(255, 255, 255, 255)
+                local x, y, scale = radar.x, radar.y, radar.scale
+                local prevX, prevY, prevScale = radar.prevX, radar.prevY, radar.prevScale
+                local maxColumns = 3
+                local columns = math.min(#items, maxColumns)
+                if #items == 1 then
+                    render_ingredient_icon_interpolated(items[1], prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
+                elseif #items ~= 0 then
+                    y = y - 20 * scale * math.ceil(#items / columns)
+                    prevY = prevY - 20 * prevScale * math.ceil(#items / columns)
+                    for i, item in ipairs(items) do
+                        if i % columns == 1 then
+                            x = radar.x - 10 * scale * (columns - 1)
+                            prevX = radar.prevX - 10 * prevScale * (columns - 1)
+                            y = y + 20 * scale
+                            prevY = prevY + 20 * prevScale
+                        else
+                            x = x + 20 * scale
+                            prevX = prevX + 20 * prevScale
+                        end
+                        render_ingredient_icon_interpolated(item, prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
+                    end
+                end
+
+                -- cooking/cutting progress
+                if o.oCutOrCookTimer ~= 0 then
+                    x = radar.x - 20 * scale
+                    y = radar.y + 20 * scale
+                    prevX = radar.prevX - 20 * prevScale
+                    prevY = radar.prevY + 20 * prevScale
+                    radar.barWidth = 0
+                    if iData.cut then
+                        radar.barWidth = o.oCutOrCookTimer / 30
+                    elseif iData.cookable then
+                        local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
+                        radar.barWidth = o.oCutOrCookTimer / maxCookTime
+                    end
+
+                    if radar.barWidth ~= 0 and radar.barWidth ~= 1 then
+                        local width = 40 * radar.barWidth
+                        djui_hud_render_rect_interpolated(prevX, prevY, 40 * prevScale, 10 * prevScale, x, y, 40 * scale, 10 * scale)
+                        djui_hud_set_color(0, 255, 0, 255)
+                        djui_hud_render_rect_interpolated(prevX, prevY, width * prevScale, 10 * prevScale, x, y, width * scale, 10 * scale)
+                    end
+                end
+                -- notification for cooking progress
+                if o.oNotifyTimer ~= 0 then
+                    local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                    djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+                    x = radar.x
+                    y = radar.y + 8 * scale
+                    prevX = radar.prevX
+                    prevY = radar.prevY + 8 * prevScale
+                    local alpha = 255
+                    if o.oNotifyTimer > 20 then
+                        alpha = ((30 - o.oNotifyTimer) / 10) * alpha
+                    elseif o.oNotifyTimer < 10 then
+                        alpha = (o.oNotifyTimer / 10) * alpha
+                    end
+                    o.oNotifyTimer = o.oNotifyTimer - 1
+                    djui_hud_set_color(255, 255, 255, alpha)
+                    djui_hud_print_text_interpolated(text, prevX, prevY, prevScale, x, y, scale)
+                end
+
+                radar.prevX = radar.x
+                radar.prevY = radar.y
+                radar.prevScale = radar.scale
+                radar.prevBarWidth = radar.barWidth
+            end
+        else
             if radar.frameLastRendered + 1 ~= get_global_timer() then
                 radar.prevX = radar.x
                 radar.prevY = radar.y
@@ -378,65 +496,17 @@ function behind_hud_render()
             djui_hud_set_color(255, 255, 255, 255)
             local x, y, scale = radar.x, radar.y, radar.scale
             local prevX, prevY, prevScale = radar.prevX, radar.prevY, radar.prevScale
-            local maxColumns = 3
-            local columns = math.min(#items, maxColumns)
-            if #items == 1 then
-                render_ingredient_icon_interpolated(items[1], prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
-            else
-                y = y - 20 * scale * math.ceil(#items / columns)
-                prevY = prevY - 20 * prevScale * math.ceil(#items / columns)
-                for i, item in ipairs(items) do
-                    if i % columns == 1 then
-                        x = radar.x - 10 * scale * (columns - 1)
-                        prevX = radar.prevX - 10 * prevScale * (columns - 1)
-                        y = y + 20 * scale
-                        prevY = prevY + 20 * prevScale
-                    else
-                        x = x + 20 * scale
-                        prevX = prevX + 20 * prevScale
-                    end
-                    render_ingredient_icon_interpolated(item, prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
-                end
-            end
+            x = radar.x - 20 * scale
+            y = radar.y + 20 * scale
+            prevX = radar.prevX - 20 * prevScale
+            prevY = radar.prevY + 20 * prevScale
+            radar.barWidth = o.oPlateAppearTimer / (3 * 30)
 
-            -- cooking/cutting progress
-            if o.oCutOrCookTimer ~= 0 then
-                x = radar.x - 20 * scale
-                y = radar.y + 20 * scale
-                prevX = radar.prevX - 20 * prevScale
-                prevY = radar.prevY + 20 * prevScale
-                radar.barWidth = 0
-                if iData.cut then
-                    radar.barWidth = o.oCutOrCookTimer / 30
-                elseif iData.cookable then
-                    local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
-                    radar.barWidth = o.oCutOrCookTimer / maxCookTime
-                end
-
-                if radar.barWidth ~= 0 and radar.barWidth ~= 1 then
-                    local width = 40 * radar.barWidth
-                    djui_hud_render_rect_interpolated(prevX, prevY, 40 * prevScale, 10 * prevScale, x, y, 40 * scale, 10 * scale)
-                    djui_hud_set_color(0, 255, 0, 255)
-                    djui_hud_render_rect_interpolated(prevX, prevY, width * prevScale, 10 * prevScale, x, y, width * scale, 10 * scale)
-                end
-            end
-            -- notification for cooking progress
-            if o.oNotifyTimer ~= 0 then
-                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
-                djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
-                x = radar.x
-                y = radar.y + 8 * scale
-                prevX = radar.prevX
-                prevY = radar.prevY + 8 * prevScale
-                local alpha = 255
-                if o.oNotifyTimer > 20 then
-                    alpha = ((30 - o.oNotifyTimer) / 10) * alpha
-                elseif o.oNotifyTimer < 10 then
-                    alpha = (o.oNotifyTimer / 10) * alpha
-                end
-                o.oNotifyTimer = o.oNotifyTimer - 1
-                djui_hud_set_color(255, 255, 255, alpha)
-                djui_hud_print_text_interpolated(text, prevX, prevY, prevScale, x, y, scale)
+            if radar.barWidth ~= 0 and radar.barWidth ~= 1 then
+                local width = 40 * radar.barWidth
+                djui_hud_render_rect_interpolated(prevX, prevY, 40 * prevScale, 10 * prevScale, x, y, 40 * scale, 10 * scale)
+                djui_hud_set_color(0, 255, 0, 255)
+                djui_hud_render_rect_interpolated(prevX, prevY, width * prevScale, 10 * prevScale, x, y, width * scale, 10 * scale)
             end
 
             radar.prevX = radar.x

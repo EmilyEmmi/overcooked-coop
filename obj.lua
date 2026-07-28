@@ -8,6 +8,8 @@ define_custom_obj_fields({
     oRespawnTimer = "u32",
     oPlateAppearTimer = "u32",
     oNotifyTimer = "u32",
+    oPlateCounterNum = "u32",
+    oPlatesStackedExtra = "u32",
 })
 
 ---@param o Object
@@ -20,9 +22,6 @@ function bhv_ingredient_init(o)
     o.oFriction = 0.8
     o.oBuoyancy = 1.4
     o.oWallHitboxRadius = 50
-    o.oCutOrCookTimer = 0
-    o.oOvercookTimer = 0
-    o.oNotifyTimer = 0
     o.hookRender = 0xDA
     o.activeFlags = o.activeFlags | ACTIVE_FLAG_MOVE_THROUGH_GRATE
     if o.header.gfx.sharedChild then
@@ -35,7 +34,18 @@ function bhv_ingredient_init(o)
         spawn_child_object(o, id_bhvPanChild, E_MODEL_NONE, 0, 0, 0)
     end
 
-    network_init_object(o, true, {"oBehParams", "oContents", "oContentCount", "oCutOrCookTimer", "oOvercookTimer", "oRespawnTimer", "oPlateAppearTimer", "oParentSyncID", "oUsingSyncID"})
+    -- Set sync fields based on what type of item this is
+    local syncFields = {"oBehParams", "oContents", "oContentCount", "oCutOrCookTimer", "oOvercookTimer", "oParentSyncID", "oUsingSyncID"}
+    local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
+    if iData.noTrash then
+        table.insert(syncFields, "oRespawnTimer")
+    end
+    if iData.isPlate or iData.washItem then
+        table.insert(syncFields, "oPlateAppearTimer")
+        table.insert(syncFields, "oPlateCounterNum")
+        table.insert(syncFields, "oPlatesStackedExtra")
+    end
+    network_init_object(o, true, syncFields)
 end
 
 ---@param o Object
@@ -45,6 +55,10 @@ function bhv_ingredient_loop(o)
 
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
     local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
+    if o.oUsingSyncID == 0 or not iData.isPlate then
+        o.oPlateCounterNum = 0
+        o.oPlatesStackedExtra = 0
+    end
 
     -- update parentObj and usingObj with sync IDs
     if o.oParentSyncID ~= 0 and o.oHeldState == HELD_FREE then
@@ -54,12 +68,14 @@ function bhv_ingredient_loop(o)
     if o.oUsingSyncID ~= 0 then
         local using = sync_object_get_object(o.oUsingSyncID)
         if using and o.usingObj ~= using then
-            -- Mutual
             o.usingObj = using
-            using.usingObj = o
+            -- mutual relationship (only top item for stack of plates)
+            if o.oPlateCounterNum == 0 then
+                using.usingObj = o
+            end
         end
     end
-    
+
     local m
     if o.oHeldState == HELD_FREE then
         if obj_has_behavior_id(o.parentObj, id_bhvMario) ~= 0 then
@@ -74,16 +90,54 @@ function bhv_ingredient_loop(o)
 
     if o.oPlateAppearTimer ~= 0 then
         o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
-        o.oPlateAppearTimer = o.oPlateAppearTimer - 1
         o.oHeldState = HELD_FREE
+        if o.oPlateAppearTimer == 1 or not iData.washItem then
+            o.oPlateAppearTimer = o.oPlateAppearTimer - 1
+        end
+
         if o.oPlateAppearTimer == 0 then
             -- go to nearest plate counter
             local counter = obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(counter)
+                if iData.washItem then return counter.oBehParams2ndByte == COUNTER_TYPE_SINK end
                 return counter.oBehParams2ndByte == COUNTER_TYPE_PLATES
             end)
             if counter then
-                obj_copy_pos(o, counter)
-                o.oPosY = o.oPosY + (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
+                local sink = (iData.washItem and counter) or (obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(sink)
+                    return sink.oBehParams2ndByte == COUNTER_TYPE_SINK
+                end))
+                if sink and iData.dirtyItem then
+                    o.oBehParams = iData.dirtyItem
+                elseif iData.washItem then
+                    o.oBehParams = iData.washItem
+                    counter.oPlatesStackedExtra = counter.oPlatesStackedExtra - 1
+                end
+
+                if counter.usingObj == nil then
+                    counter.usingObj = o
+                    o.oPlateCounterNum, o.oPlatesStackedExtra = 0, 0
+
+                    o.usingObj = counter
+                    o.oUsingSyncID = counter.oSyncID
+                    ingredient_place_on_counter(o, counter)
+                elseif iData.washItem or not sink then
+                    local otherPlates = find_all_object_using(counter, id_bhvIngredient)
+                    local maxCounterNum = -1
+                    for i, other in ipairs(otherPlates) do
+                        if maxCounterNum < other.oPlateCounterNum then
+                            maxCounterNum = other.oPlateCounterNum
+                        end
+                        other.oPlatesStackedExtra = #otherPlates + 1
+                    end
+                    o.oPlateCounterNum = maxCounterNum + 1
+                    o.oPlatesStackedExtra = #otherPlates + 1
+
+                    o.usingObj = counter
+                    o.oUsingSyncID = counter.oSyncID
+                    ingredient_place_on_counter(o, counter)
+                else
+                    o.parentObj = counter.usingObj
+                    o.oParentSyncID = counter.usingObj.oSyncID
+                end
             else
                 obj_set_pos(o, o.oHomeX, o.oHomeY, o.oHomeZ)
                 spawn_mist_particles()
@@ -143,20 +197,18 @@ function bhv_ingredient_loop(o)
             attempt_item_place(o, m)
         else
             local counter = o.usingObj
-            if counter.usingObj ~= o then
+            if counter.usingObj ~= o and o.oPlateCounterNum == 0 then
                 o.usingObj = nil
                 o.oUsingSyncID = 0
             else
-                obj_copy_pos(o, counter)
-                o.oPosY = o.oPosY + (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
+                ingredient_place_on_counter(o, counter)
 
-                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT and o.oContentCount ~= 0 and o.oContents ~= ITEM_BURNT then
-                    if iData.cookable then
+                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT then
+                    if o.oContentCount ~= 0 and o.oContents ~= ITEM_BURNT and iData.cookable then
                         if o.oCutOrCookTimer < maxCookTime then
                             o.oCutOrCookTimer = o.oCutOrCookTimer + 1
                             o.oOvercookTimer = 0
 
-                            -- TEMP
                             if o.oCutOrCookTimer == maxCookTime then
                                 --djui_chat_message_create("done!")
                                 o.oNotifyTimer = 30
@@ -182,6 +234,26 @@ function bhv_ingredient_loop(o)
                                 o.oOvercookTimer = 0
                                 o.oNotifyTimer = 0
                                 o.oContents = ITEM_BURNT
+                            end
+                        end
+                    end
+                end
+
+                if o.oPlatesStackedExtra ~= 0 then
+                    -- update plate stack
+                    local otherPlates = find_all_object_using(counter, id_bhvIngredient)
+                    if o.oPlatesStackedExtra ~= #otherPlates - 1 then
+                        local minCounterNum = 100
+                        for i, other in ipairs(otherPlates) do
+                            if minCounterNum > other.oPlateCounterNum then
+                                minCounterNum = other.oPlateCounterNum
+                            end
+                            other.oPlatesStackedExtra = #otherPlates - 1
+                        end
+                        for i, other in ipairs(otherPlates) do
+                            other.oPlateCounterNum = other.oPlateCounterNum - minCounterNum
+                            if other.oPlateCounterNum == 0 then
+                                counter.usingObj = o
                             end
                         end
                     end
@@ -260,7 +332,7 @@ function ingredient_render_setup(o)
     end
 
     if not plated then
-        oGFX.shadowInvisible = (iData.isPlate or false) -- temporary solution
+        oGFX.shadowInvisible = (iData.isPlate or (iData.washItem ~= nil) or false) -- temporary solution
         if iData.billboard then
             obj_set_billboard(o)
         else
@@ -299,7 +371,7 @@ function ingredient_render_setup(o)
         end
 
         local plateHeight = 2
-        if o.parentObj.oBehParams == ITEM_PAN then
+        if o.parentObj.oBehParams == ITEM_PAN or o.oBehParams == ITEM_DIRTY_PLATE then
             plateHeight = 5
         end
         oGFX.angle.y = oGFX.angle.y + o.oFaceAngleYaw
@@ -345,12 +417,17 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
         local dist = (counter and dist_between_objects(o, counter)) or 10000
         if dist > 150 or ((isHeld or o.oForwardVel < 5) and dist > 100) then return false, false end
         o2 = counter.usingObj
+        -- dirty plates ignore items in sink
+        if counter.oBehParams2ndByte == COUNTER_TYPE_SINK and iData.washItem then o2 = nil end
+
         -- empty, default counters have a smaller auto-snap range
         if (not o2) and counter.oBehParams2ndByte == COUNTER_TYPE_DEFAULT and dist > 100 then return false, false end
 
         -- Non-throwables will only snap to empty counters
         if (iData.noThrow or o.oContentCount ~= 0) and o2 then return false, false end
     end
+    -- dirty plates ignore items in sink
+    if counter and counter.oBehParams2ndByte == COUNTER_TYPE_SINK and iData.washItem then o2 = nil end
 
     if o2 then
         local forceCounterPlace = false
@@ -514,8 +591,8 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
             else
                 if m and m.playerIndex == 0 then
                     obj_mark_for_deletion(o)
-                    return true, false
                 end
+                return true, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
             if not iData.isPlate then
@@ -524,6 +601,8 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 end
                 allowPlace = false
             else
+                o.oPlateAppearTimer = 5 * 30
+                o.usingObj, o.oUsingSyncID = nil, 0
                 if m and m.playerIndex == 0 then
                     local items = {}
                     local children = find_all_object_children(o, id_bhvIngredient)
@@ -533,14 +612,33 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                     end
     
                     attempt_serve_order(items)
-
-                    o.oPlateAppearTimer = 5 * 30
                     network_send_object(o, true)
                 end
                 return true, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_PLATES then
             allowPlace = false
+        elseif counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+            allowPlace = false
+            if iData.washItem then
+                local plates = 1
+                local children = find_all_object_children(o, id_bhvIngredient)
+                for i,c in ipairs(children) do
+                    c.parentObj = c
+                    c.oParentSyncID = 0
+                    c.oPlateAppearTimer = 5 * 30
+                    plates = plates + 1
+                    if m and m.playerIndex == 0 then network_send_object(c, true) end
+                end
+
+                o.oPlateAppearTimer = 5 * 30
+                counter.oPlatesStackedExtra = counter.oPlatesStackedExtra + plates
+                if m and m.playerIndex == 0 then
+                    network_send_object(o, true)
+                    network_send_object(counter, true)
+                end
+                return true, false
+            end
         end
 
         if not allowPlace then return true, true end
@@ -548,10 +646,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
         counter.usingObj = o
         o.usingObj = counter
         o.oUsingSyncID = counter.oSyncID
-        o.oForwardVel = 0
-        o.oVelY = 0
-        obj_copy_pos(o, counter)
-        o.oPosY = o.oPosY + (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
+        ingredient_place_on_counter(o, counter)
         if m and m.playerIndex == 0 then
             network_send_object(o, true)
         end
@@ -787,9 +882,25 @@ function attempt_serve_order(items)
     return false
 end
 
+function ingredient_place_on_counter(o, counter)
+    o.oForwardVel = 0
+    o.oVelY = 0
+    obj_copy_pos(o, counter)
+    if counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+        o.oPosX = o.oPosX + coss(counter.oFaceAngleYaw) * 52
+        o.oPosZ = o.oPosZ - sins(counter.oFaceAngleYaw) * 52
+    end
+
+    local height = (COUNTER_HEIGHT[counter.oBehParams2ndByte] or 34) * counter.header.gfx.scale.y
+    if o.oPlatesStackedExtra ~= 0 then
+        height = height + (o.oPlatesStackedExtra - o.oPlateCounterNum) * 5
+    end
+    o.oPosY = o.oPosY + height
+end
+
 ---@param o Object
 function bhv_counter_init(o)
-    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE | OBJ_FLAG_SET_FACE_ANGLE_TO_MOVE_ANGLE
     obj_scale_xyz(o, 1.5, 1.6, 1.5)
 
     o.collisionData = smlua_collision_util_get("main_counter_center_collision")
@@ -797,11 +908,18 @@ function bhv_counter_init(o)
 
     if o.oBehParams2ndByte == COUNTER_TYPE_CUT then
         spawn_child_object(o, id_bhvCuttingBoard, E_MODEL_CHOPPING_BOARD, 0, 0, 0, nil)
-    elseif o.oBehParams2ndByte == COUNTER_TYPE_SERVING then
+    elseif o.oBehParams2ndByte == COUNTER_TYPE_SERVING or o.oBehParams2ndByte == COUNTER_TYPE_SINK then
         o.collisionData = smlua_collision_util_get("sink_collision")
     end
 
-    network_init_object(o, false, {"oOvercookTimer"})
+    local syncFields = {}
+    if o.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT then
+        table.insert(syncFields, "oOvercookTimer")
+    elseif o.oBehParams2ndByte == COUNTER_TYPE_SINK then
+        table.insert(syncFields, "oPlatesStackedExtra")
+        table.insert(syncFields, "oPlateAppearTimer")
+    end
+    network_init_object(o, false, syncFields)
 end
 
 ---@param o Object
@@ -843,6 +961,8 @@ function bhv_counter_loop(o)
                 network_send_object(o, false)
             end
         end
+    elseif o.oBehParams2ndByte == COUNTER_TYPE_SINK then
+        smlua_anim_util_set_animation(o, "sink_plate_"..math.min(o.oPlatesStackedExtra, 3))
     end
 end
 

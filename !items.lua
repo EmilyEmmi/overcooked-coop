@@ -22,6 +22,7 @@ E_MODEL_INGREDIENT_BOX = smlua_model_util_get_id("box_geo")
 E_MODEL_HEAT = smlua_model_util_get_id("heat_geo")
 E_MODEL_SERVING = smlua_model_util_get_id("service_counter_geo")
 E_MODEL_PLATE_COUNTER = smlua_model_util_get_id("plate_counter_geo")
+E_MODEL_SINK = smlua_model_util_get_id("sink_geo")
 
 E_MODEL_KNIFE = smlua_model_util_get_id("knife_geo")
 E_MODEL_BARRIER = smlua_model_util_get_id("barrier_geo")
@@ -57,6 +58,7 @@ ITEM_PAN = 15
 ITEM_BURNT = 16
 ITEM_CHEESE = 17
 ITEM_CHEESE_CUT = 18
+ITEM_DIRTY_PLATE = 19
 
 SALAD_COMBO = {[ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1}
 BURGER_COMBO = {[ITEM_MEAT_COOKED] = 1, [ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1}
@@ -77,6 +79,7 @@ ITEM_DATA = {
         noTrash = true,
         noThrow = true,
         isPlate = true,
+        dirtyItem = ITEM_DIRTY_PLATE,
     },
     [ITEM_POT] = {
         model = E_MODEL_POT,
@@ -206,7 +209,8 @@ ITEM_DATA = {
         icon = ICON_PAN,
     },
     [ITEM_BURNT] = {
-        model = E_MODEL_PATTY
+        model = E_MODEL_PATTY,
+        icon = ICON_HEAT, -- TEMP
     },
     [ITEM_CHEESE] = {
         model = E_MODEL_CHEESE,
@@ -219,6 +223,12 @@ ITEM_DATA = {
         plateCombine = BURGER_COMBO,
         icon = ICON_CHEESE,
         subIcon = ICON_CUT,
+    },
+    [ITEM_DIRTY_PLATE] = {
+        model = E_MODEL_PLATE,
+        noTrash = true,
+        noThrow = true,
+        washItem = ITEM_PLATE,
     },
 }
 
@@ -256,6 +266,7 @@ COUNTER_TYPE_INGREDIENT = 3
 COUNTER_TYPE_HEAT = 4
 COUNTER_TYPE_SERVING = 5
 COUNTER_TYPE_PLATES = 6
+COUNTER_TYPE_SINK = 7
 
 COUNTER_HEIGHT = {
     [COUNTER_TYPE_HEAT] = 36,
@@ -267,6 +278,7 @@ SPECIAL_COUNTER_MODELS = {
     [COUNTER_TYPE_HEAT] = E_MODEL_HEAT,
     [COUNTER_TYPE_SERVING] = E_MODEL_SERVING,
     [COUNTER_TYPE_PLATES] = E_MODEL_PLATE_COUNTER,
+    [COUNTER_TYPE_SINK] = E_MODEL_SINK,
 }
 
 ORDER_PLAIN_SALAD = 0

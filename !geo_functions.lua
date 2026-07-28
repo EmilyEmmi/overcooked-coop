@@ -97,8 +97,8 @@ end
 --- @param n GraphNode | FnGraphNode
 function plate_switch(n)
     local switch = cast_graph_node(n)
-    -- local o = geo_get_current_object()
-    switch.selectedCase = 0
+    local o = geo_get_current_object()
+    switch.selectedCase = (o.oBehParams == ITEM_DIRTY_PLATE and 1) or 0
 end
 
 --- @param n GraphNode | FnGraphNode

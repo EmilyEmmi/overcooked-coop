@@ -40,13 +40,14 @@ for i=0,MAX_PLAYERS-1 do
     local c = gOvercookedExtraStates[i]
     local sMario = gPlayerSyncTable[i]
     sMario.cutTimer = 0
+    sMario.washTimer = 0
     sMario.kitchen = 1
     sMario.spawnID = 0
     sMario.selObjSyncID = 0
     sMario.selCounterSyncID = 0
     sMario.readyToStart = false
     sMario.spectator = false
-    c.cutAnimTimer = 0
+    c.actionAnimTimer = 0
 end
 
 GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
@@ -274,10 +275,11 @@ function mario_update(m)
     local c = gOvercookedExtraStates[m.playerIndex]
     local sMario = gPlayerSyncTable[m.playerIndex]
     if sMario.cutTimer ~= 0 then
+        -- Handle cutting
         set_mario_animation(m, CHAR_ANIM_FIRST_PUNCH)
-        set_anim_to_frame(m, c.cutAnimTimer)
-        c.cutAnimTimer = (c.cutAnimTimer + 1) % 6
-        if c.cutAnimTimer == 1 then
+        set_anim_to_frame(m, c.actionAnimTimer)
+        c.actionAnimTimer = (c.actionAnimTimer + 1) % 6
+        if c.actionAnimTimer == 1 then
             play_sound(SOUND_ACTION_UNK55, m.marioObj.header.gfx.cameraToObject)
             
             local o, counter = selectedItem, selectedCounter
@@ -301,8 +303,46 @@ function mario_update(m)
         if sMario.cutTimer == 0 and m.playerIndex == 0 then
             sync_value(sMario, "cutTimer")
         end
+    elseif sMario.washTimer ~= 0 then
+        -- Handle washing
+        set_mario_animation(m, CHAR_ANIM_SECOND_PUNCH_FAST)
+        set_anim_to_frame(m, c.actionAnimTimer // 2)
+        c.actionAnimTimer = (c.actionAnimTimer + 1) % 12
+        play_sound(SOUND_ENV_WATER, m.marioObj.header.gfx.cameraToObject)
+        local counter = selectedCounter
+        if m.playerIndex ~= 0 then
+            counter = sync_object_get_object(sMario.selCounterSyncID)
+        end
+
+        if counter and counter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
+            counter.oPlateAppearTimer = counter.oPlateAppearTimer + 1
+            if counter.oPlateAppearTimer >= 3 * 30 then
+                counter.oPlateAppearTimer = 0
+                local o = obj_get_nearest_behavior_id_with_condition(counter, id_bhvIngredient, function(o)
+                    local iData = ITEM_DATA[o.oBehParams]
+                    return iData and iData.washItem and o.oPlateAppearTimer > 1
+                end)
+
+                if o then
+                    o.oPlateAppearTimer = 1
+                    if m.playerIndex == 0 then
+                        network_send_object(o, true)
+                    end
+                else
+                    counter.oPlatesStackedExtra = 0
+                end
+            end
+            
+            if m.playerIndex == 0 and counter.oPlateAppearTimer % 30 == 0 then
+                network_send_object(counter, true)
+            end
+        end
+        set_without_sync(sMario, "washTimer", sMario.washTimer - 1)
+        if sMario.cutTimer == 0 and m.playerIndex == 0 then
+            sync_value(sMario, "washTimer")
+        end
     else
-        c.cutAnimTimer = 0
+        c.actionAnimTimer = 0
     end
     
     -- move romhack cam up
@@ -453,13 +493,16 @@ function before_mario_update(m)
             end
         end
     elseif m.controller.buttonDown & X_BUTTON ~= 0 and (not m.heldObj)
-    and selectedCounter and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT then
+    and selectedCounter and (selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK) then
         local counter = selectedCounter
         local o = counter.usingObj
         local iData = (o and ITEM_DATA[o.oBehParams]) or ITEM_DATA[0]
 
-        if o and o ~= counter and iData and iData.cut then
+        if selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT
+        and o and o ~= counter and iData and iData.cut then
             sMario.cutTimer = 6
+        elseif selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
+            sMario.washTimer = 6
         end
     end
 end
@@ -653,16 +696,16 @@ function counter_command(msg)
     dir = dir + 0x4000
     x = (x + counterSize // 2) // counterSize * counterSize
     z = (z + counterSize // 2) // counterSize * counterSize
-    if counterType == COUNTER_TYPE_SERVING then
+    if counterType == COUNTER_TYPE_SERVING or counterType == COUNTER_TYPE_SINK then
         x = x + sins(dir) * counterSize // 2
         z = z + coss(dir) * counterSize // 2
     end
 
     local model = SPECIAL_COUNTER_MODELS[counterType] or E_MODEL_COUNTER_CENTER
     spawn_sync_object(id_bhvCounter, model, x, y, z, function(o)
-        o.oFaceAngleYaw = dir - 0x4000
-        o.oFaceAnglePitch = 0
-        o.oFaceAngleRoll = 0
+        o.oMoveAngleYaw = dir - 0x4000
+        o.oMoveAnglePitch = 0
+        o.oMoveAngleRoll = 0
         o.oBehParams2ndByte = counterType
         o.oBehParams = (o.oBehParams2ndByte << 16)
         if counterType == COUNTER_TYPE_INGREDIENT then
