@@ -72,7 +72,7 @@ function get_order_fail_time()
     -- Uses the lower amount of players expected per kitchen
     local data = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
     local maxKitchens = gGlobalSyncTable.maxKitchens
-    local lowPlayers = math.clamp(network_player_connected_count() // maxKitchens, 1, 4)
+    local lowPlayers = math.clamp(gGlobalSyncTable.peakPlayers // maxKitchens, 1, 4)
     return data.failTime[lowPlayers] or 240
 end
 
@@ -82,6 +82,63 @@ function clear_pending_orders_table()
         table.insert(pending_orders_all, {})
     end
     pending_orders = pending_orders_all[gPlayerSyncTable[0].kitchen] or {}
+end
+
+-- Returns the kitchen with the least amount of players
+-- Also returns the spawn ID (-1 if all kitchens are full)
+function join_smallest_kitchen(index)
+    local kitchenCount = {}
+    local kitchenFreeSpawnIDs = {}
+    for i=1,gGlobalSyncTable.maxKitchens do
+        kitchenCount[i] = 0
+        kitchenFreeSpawnIDs[i] = {}
+        for a=0,3 do
+            kitchenFreeSpawnIDs[i][a] = 1
+        end
+    end
+
+    for i=0,MAX_PLAYERS-1 do
+        local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
+        local kitchen = sMario.kitchen or 0
+        if i ~= index and np.connected and (not sMario.spectator)
+        and kitchen >= 1 and kitchen <= gGlobalSyncTable.maxKitchens then
+            kitchenCount[i] = kitchenCount[i] + 1
+            kitchenFreeSpawnIDs[i][sMario.spawnID] = nil
+        end
+    end
+
+    local smallestKitchens = {}
+    local smallestCount = 99
+    for kitchen, count in ipairs(kitchenCount) do
+        if count < smallestCount then
+            smallestCount = count
+            smallestKitchens = {kitchen}
+        elseif count == smallestCount then
+            table.insert(smallestKitchens, kitchen)
+        end
+    end
+
+    if #smallestKitchens == 0 then return 1, -1 end -- failsafe
+
+    local kitchen = table.remove(smallestKitchens)
+    if smallestCount >= 4 then return kitchen, -1 end
+    for spawnID=0,3 do
+        if kitchenFreeSpawnIDs[kitchen][spawnID] then
+            return kitchen, spawnID
+        end
+    end
+    return kitchen, -1
+end
+
+function get_active_player_count()
+    local totalPlayers = 0
+    for i=0,MAX_PLAYERS-1 do
+        local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
+        if np.connected and not sMario.spectator then
+            totalPlayers = totalPlayers + 1
+        end
+    end
+    return totalPlayers
 end
 
 -- Returns if table1 and table2 contain the same amount of each element (ignoring order)

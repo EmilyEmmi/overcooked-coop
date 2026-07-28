@@ -183,7 +183,7 @@ function end_hud()
     local neededPoints = {9999, 9999, 9999, 9999}
     if lData and lData.starScores then
         local maxKitchens = gGlobalSyncTable.maxKitchens
-        local maxPlayers = network_player_connected_count()
+        local maxPlayers = gGlobalSyncTable.peakPlayers
 
         if maxKitchens == 1 then
             neededPoints = lData.starScores[math.clamp(maxPlayers, 1, 4)]
