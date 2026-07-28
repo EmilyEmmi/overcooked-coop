@@ -751,11 +751,11 @@ function attempt_serve_order(items)
         table.insert(item_lookup[item.type], contentTable)
     end
     
-    local myKitchen = gPlayerSyncTable[0].kitchen
+    local pending_orders = pending_orders_all[gPlayerSyncTable[0].kitchen] or {}
     for a,pending_data in ipairs(pending_orders) do
         local orderID = pending_data.id or ORDER_PLAIN_SALAD
         local order = ORDER_DATA[orderID]
-        if order and #order.items == #items and pending_data.kitchen == myKitchen and pending_data.vanishTimer == nil then
+        if order and #order.items == #items and pending_data.vanishTimer == nil then
             local valid = true
             for a, item in ipairs(order.items) do
                 valid = false

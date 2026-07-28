@@ -1,30 +1,31 @@
 function on_packet_order(data, self)
     if not data.orderID then return end
 
+    local pending_orders = pending_orders_all[data.kitchen or 1]
     local order = {}
     order.id = data.orderID
     order.time = data.time or (get_order_fail_time() * 30)
     order.prevTime = order.time
     order.maxTime = data.maxTime or order.time
-    order.kitchen = data.kitchen or 0
     table.insert(pending_orders, order)
 end
 
 function on_packet_served_order(data, self)
-    if #pending_orders == 0 or not data.orderID then return end
+    if not data.orderID then return end
 
     local fromLocalIndex = (self and 0) or network_local_index_from_global(data.from)
-    local fromKitchen = gPlayerSyncTable[fromLocalIndex].kitchen or 0
+    local fromKitchen = gPlayerSyncTable[fromLocalIndex].kitchen or 1
+    local pending_orders = pending_orders_all[fromKitchen]
     local existingOrders = 0
     for a,pending_data in ipairs(pending_orders) do
         local orderID = pending_data.id
-        if pending_data.kitchen == fromKitchen and pending_data.vanishTimer == nil then
-            existingOrders = existingOrders + 1
+        if pending_data.vanishTimer == nil then
+            existingOrders = existingOrders + 1 or {}
             if orderID == data.orderID then
                 pending_data.vanishTimer = 15
                 play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
                 if network_is_server() then
-                    gGlobalSyncTable.servedOrders = gGlobalSyncTable.servedOrders + 1
+                    gGlobalSyncTable["servedOrders"..fromKitchen] = gGlobalSyncTable["servedOrders"..fromKitchen] + 1
                 end
                 if self then
                     local order = ORDER_DATA[orderID]
@@ -70,15 +71,17 @@ function on_packet_request_orders(data, self)
     if #pending_orders == 0 or not data.from then return end
 
     local toLocalIndex = network_local_index_from_global(data.from)
-    for i,pending_data in ipairs(pending_orders) do
-        if pending_data.vanishTimer == nil then
-            network_send_to(toLocalIndex, true, {
-                id = PACKET_ORDER,
-                orderID = pending_data.id,
-                time = pending_data.time,
-                maxTime = pending_data.maxTime,
-                kitchen = pending_data.kitchen,
-            })
+    for kitchen, pending_orders in ipairs(pending_orders_all) do
+        for i,pending_data in ipairs(pending_orders) do
+            if pending_data.vanishTimer == nil then
+                network_send_to(toLocalIndex, true, {
+                    id = PACKET_ORDER,
+                    orderID = pending_data.id,
+                    time = pending_data.time,
+                    maxTime = pending_data.maxTime,
+                    kitchen = kitchen,
+                })
+            end
         end
     end
 end

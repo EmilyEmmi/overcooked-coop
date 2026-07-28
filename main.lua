@@ -7,6 +7,7 @@
 selectedItem = nil
 selectedCounter = nil
 
+pending_orders_all = {}
 pending_orders = {}
 
 GAME_STATE_LEVEL_SELECT = 0
@@ -21,12 +22,13 @@ gGlobalSyncTable.gameState = GAME_STATE_LEVEL_SELECT
 gGlobalSyncTable.ocLevel = 0
 gGlobalSyncTable.score = 0
 gGlobalSyncTable.timeLeft = 0
-gGlobalSyncTable.servedOrders = 0
 gGlobalSyncTable.maxKitchens = 1
 -- one kitchen for every 4 players
 MAX_KITCHENS = math.ceil(MAX_PLAYERS / 4)
-for i=0,MAX_KITCHENS-1 do
+for i=1,MAX_KITCHENS do
     gGlobalSyncTable["tipMulti"..i] = 1
+    gGlobalSyncTable["servedOrders"..i] = 0
+    table.insert(pending_orders_all, {})
 end
 
 local subTimer = 0
@@ -37,9 +39,10 @@ for i=0,MAX_PLAYERS-1 do
     local c = gOvercookedExtraStates[i]
     local sMario = gPlayerSyncTable[i]
     sMario.cutTimer = 0
-    sMario.kitchen = 0
+    sMario.kitchen = 1
     sMario.spawnID = 0
     sMario.selObjSyncID = 0
+    sMario.selCounterSyncID = 0
     sMario.readyToStart = false
     c.cutAnimTimer = 0
 end
@@ -49,6 +52,8 @@ GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
 gLevelValues.disableActs = 1
 
 function update()
+    pending_orders = pending_orders_all[gPlayerSyncTable[0].kitchen] or {}
+
     local newTempo = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
     if newTempo ~= BASE_TEMPO * BASE_MULTI then
         BASE_TEMPO = newTempo
@@ -70,7 +75,7 @@ function update()
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
         local np = gNetworkPlayers[0]
-        local act = gPlayerSyncTable[0].kitchen + 1
+        local act = gPlayerSyncTable[0].kitchen
         if (np.currLevelNum ~= lData.level or np.currActNum ~= act) and np.currAreaSyncValid then
             warp_to_level(lData.level, 1, act)
         end
@@ -94,26 +99,32 @@ function update()
                 end
             end
 
-            for i, pending_data in ipairs(pending_orders) do
-                pending_data.prevTime = pending_data.time
-                pending_data.time = pending_data.time - 1
-                if pending_data.time <= 0 then
-                    pending_data.time = pending_data.maxTime
-                    play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
-                    if network_is_server() then
-                        local kitchen = pending_data.kitchen or 0
-                        gGlobalSyncTable["tipMulti"..kitchen] = 1
-                        gGlobalSyncTable.score = gGlobalSyncTable.score - 30
+            for kitchen, pending_orders in ipairs(pending_orders_all) do
+                for i, pending_data in ipairs(pending_orders) do
+                    pending_data.prevTime = pending_data.time
+                    pending_data.time = pending_data.time - 1
+                    if pending_data.time <= 0 then
+                        pending_data.time = pending_data.maxTime
+                        if kitchen == gPlayerSyncTable[0].kitchen then
+                            play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+                        end
+                        if network_is_server() then
+                            gGlobalSyncTable["tipMulti"..kitchen] = 1
+                            gGlobalSyncTable.score = gGlobalSyncTable.score - 30
+                        end
                     end
                 end
             end
 
-            -- automatically add orders (TODO: split among kitchens properly)
+            -- automatically add orders
             if network_is_server() then
-                expected_orders = math.clamp(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10 - gGlobalSyncTable.servedOrders, 2, 5) * gGlobalSyncTable.maxKitchens
-                while #pending_orders < expected_orders do
-                    local orderID = lData.orders[math.random(1, #lData.orders)]
-                    network_send_include_self(true, {id = PACKET_ORDER, orderID = orderID, kitchen = math.random(0, gGlobalSyncTable.maxKitchens-1)})
+                for kitchen, pending_orders in ipairs(pending_orders_all) do
+                    local servedOrders = gGlobalSyncTable["servedOrders"..kitchen]
+                    expected_orders = math.clamp(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10 - servedOrders, 2, 5)
+                    while #pending_orders < expected_orders do
+                        local orderID = lData.orders[math.random(1, #lData.orders)]
+                        network_send_include_self(true, {id = PACKET_ORDER, orderID = orderID, kitchen = kitchen})
+                    end
                 end
             end
         else
@@ -122,7 +133,8 @@ function update()
                 set_mario_action(m0, ACT_SELECT_START, 0)
             end
 
-            pending_orders = {}
+            clear_pending_orders_table()
+    
             subTimer = subTimer + 1
             if subTimer >= 30 then
                 subTimer = 0
@@ -153,7 +165,7 @@ function update()
                             for i=0,MAX_PLAYERS-1 do
                                 local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
                                 if np.connected then
-                                    local spotID = (sMario.kitchen << 2) + sMario.spawnID
+                                    local spotID = ((sMario.kitchen-1) << 2) + sMario.spawnID
                                     if (not isFilled[spotID]) and sMario.readyToStart
                                     and sMario.kitchen < maxKitchens and sMario.spawnID < maxSpawnID then
                                         isFilled[spotID] = 1
@@ -164,10 +176,10 @@ function update()
                             end
 
                             -- Reassign players to force an even split
-                            for kitchen=0,maxKitchens-1 do
+                            for kitchen=1,maxKitchens do
                                 for spawnID=0,maxSpawnID-1 do
                                     if #playerNeedsSpot == 0 then break end
-                                    local spotID = (kitchen << 2) + spawnID
+                                    local spotID = ((kitchen-1) << 2) + spawnID
                                     if (not isFilled[spotID]) and kitchen <= maxKitchens and spawnID <= maxSpawnID then
                                         local index = table.remove(playerNeedsSpot)
                                         local sMario = gPlayerSyncTable[index]
@@ -184,7 +196,7 @@ function update()
             end
         end
     elseif gGlobalSyncTable.gameState == GAME_STATE_END then
-        pending_orders = {}
+        clear_pending_orders_table()
         subTimer = subTimer + 1
         if subTimer >= 30 then
             subTimer = 0
@@ -211,7 +223,7 @@ function on_sync_valid()
 
     if not (network_is_server() or didInitialJoin) then
         didInitialJoin = true
-        pending_orders = {}
+        clear_pending_orders_table()
         network_send_to(1, true, {
             id = PACKET_REQUEST_ORDERS,
             from = network_global_index_from_local(0),
@@ -235,12 +247,13 @@ function mario_update(m)
         if c.cutAnimTimer == 1 then
             play_sound(SOUND_ACTION_UNK55, m.marioObj.header.gfx.cameraToObject)
             
-            local o = selectedItem
+            local o, counter = selectedItem, selectedCounter
             if m.playerIndex ~= 0 then
-                o = sync_object_get_object(sMario.selObjSyncID)
+                o, counter = sync_object_get_object(sMario.selObjSyncID), sync_object_get_object(sMario.selCounterSyncID)
             end
 
-            if o and ITEM_DATA[o.oBehParams] and ITEM_DATA[o.oBehParams].cut then
+            if o and ITEM_DATA[o.oBehParams] and ITEM_DATA[o.oBehParams].cut
+            and counter and counter.oBehParams2ndByte == COUNTER_TYPE_CUT then
                 o.oCutOrCookTimer = o.oCutOrCookTimer + 6
                 if o.oCutOrCookTimer >= 30 then
                     o.oBehParams = ITEM_DATA[o.oBehParams].cut
@@ -300,6 +313,7 @@ function before_mario_update(m)
         end
     end
     sMario.selObjSyncID = (selectedItem and selectedItem.oSyncID) or 0
+    sMario.selCounterSyncID = (selectedCounter and selectedCounter.oSyncID) or 0
 
     -- might be changed
     if selectedCounter or selectedItem then
@@ -478,7 +492,7 @@ function act_select_start(m)
         local maxKitchens = gGlobalSyncTable.maxKitchens
         local maxSpawnID = math.ceil(network_player_connected_count() / maxKitchens)
         if m.actionArg == 0 then
-            sMario.kitchen = (sMario.kitchen + change) % maxKitchens
+            sMario.kitchen = (sMario.kitchen + change - 1) % maxKitchens + 1
         else
             sMario.spawnID = (sMario.spawnID + change) % maxSpawnID
         end
@@ -655,10 +669,10 @@ function start_level_command(msg)
     gGlobalSyncTable.score = 0
     gGlobalSyncTable.ocLevel = oc_level
     gGlobalSyncTable.timeLeft = 21
-    gGlobalSyncTable.servedOrders = 0
-    gGlobalSyncTable.maxKitchens = math.clamp(math.ceil(network_player_connected_count() / 4), 1, MAX_KITCHENS)
-    for i=0,MAX_KITCHENS-1 do
+    gGlobalSyncTable.maxKitchens = 4--math.clamp(math.ceil(network_player_connected_count() / 4), 1, MAX_KITCHENS)
+    for i=1,MAX_KITCHENS do
         gGlobalSyncTable["tipMulti"..i] = 1
+        gGlobalSyncTable["servedOrders"..i] = 0
     end
     return true
 end

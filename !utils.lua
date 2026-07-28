@@ -76,6 +76,14 @@ function get_order_fail_time()
     return data.failTime[lowPlayers] or 240
 end
 
+function clear_pending_orders_table()
+    pending_orders_all = {}
+    for i=1,MAX_KITCHENS do
+        table.insert(pending_orders_all, {})
+    end
+    pending_orders = pending_orders_all[gPlayerSyncTable[0].kitchen] or {}
+end
+
 -- Returns if table1 and table2 contain the same amount of each element (ignoring order)
 -- No this function isn't AI, I just felt like being descriptive today
 function tables_contain_same_elements(table1, table2)
