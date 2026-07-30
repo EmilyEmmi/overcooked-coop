@@ -80,6 +80,36 @@ function spawn_child_object(parent, id, model, offsetX, offsetY, offsetZ, initFu
     end)
 end
 
+---@param o Object
+function obj_position_relative_to_parent(o)
+    if not o then return end
+    local parent = o.parentObj;
+    if not parent then return end
+
+    local relTranslation = {x = o.oParentRelativePosX, y = o.oParentRelativePosY, z = o.oParentRelativePosZ}
+    local relRotation = {x = o.oParentRelativeAnglePitch, y = o.oParentRelativeAngleYaw, z = o.oParentRelativeAngleRoll}
+    local mtx = gMat4Zero()
+    mtxf_rotate_zxy_and_translate(mtx, relTranslation, relRotation);
+    local mtx2 = gMat4Zero()
+    local toRotate = {x = o.parentObj.oFaceAnglePitch, y = o.parentObj.oFaceAngleYaw, z = o.parentObj.oFaceAngleRoll}
+    mtxf_rotate_zxy_and_translate(mtx2, {x = 0, y = 0, z = 0}, toRotate);
+    mtxf_mul(mtx, mtx, mtx2)
+
+    local prevPosX, prevPosY, prevPosZ = o.oPosX, o.oPosY, o.oPosZ
+    local prevPitch, prevYaw, prevRoll = o.oFaceAnglePitch, o.oFaceAngleYaw, o.oFaceAngleRoll
+    o.oPosX = o.parentObj.oPosX + mtx.m30
+    o.oPosY = o.parentObj.oPosY + mtx.m31
+    o.oPosZ = o.parentObj.oPosZ + mtx.m32
+    o.oFaceAnglePitch = radians_to_sm64(math.asin(-mtx.m21))
+    o.oFaceAngleYaw = radians_to_sm64(math.atan(mtx.m20, mtx.m22))
+    o.oFaceAngleRoll = radians_to_sm64(math.atan(mtx.m01, mtx.m11))
+
+    o.oVelX, o.oVelY, o.oVelZ = o.oPosX - prevPosX, o.oPosY - prevPosY, o.oPosZ - prevPosZ
+    o.oAngleVelPitch = o.oFaceAnglePitch - prevPitch
+    o.oAngleVelYaw = o.oFaceAngleYaw - prevYaw
+    o.oAngleVelRoll = o.oFaceAngleRoll - prevRoll
+end
+
 function get_order_fail_time()
     -- Uses the lower amount of players expected per kitchen
     local data = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]

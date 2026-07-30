@@ -10,6 +10,9 @@ define_custom_obj_fields({
     oNotifyTimer = "u32",
     oPlateCounterNum = "u32",
     oPlatesStackedExtra = "u32",
+    oParentRelativeAnglePitch = "s32",
+    oParentRelativeAngleYaw = "s32",
+    oParentRelativeAngleRoll = "s32",
 })
 
 ---@param o Object
@@ -55,7 +58,7 @@ function bhv_ingredient_loop(o)
 
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
     local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
-    if o.oUsingSyncID == 0 or not iData.isPlate then
+    if o.oParentSyncID == 0 and (o.oUsingSyncID == 0 or not iData.isPlate) then
         o.oPlateCounterNum = 0
         o.oPlatesStackedExtra = 0
     end
@@ -89,8 +92,10 @@ function bhv_ingredient_loop(o)
     end
 
     if o.oPlateAppearTimer ~= 0 then
+        local isWashable = (iData.washItem ~= nil)
         o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
         o.oHeldState = HELD_FREE
+        o.parentObj, o.oParentSyncID = nil, 0
         if o.oPlateAppearTimer == 1 or not iData.washItem then
             o.oPlateAppearTimer = o.oPlateAppearTimer - 1
         end
@@ -107,10 +112,11 @@ function bhv_ingredient_loop(o)
                 end))
                 if sink and iData.dirtyItem then
                     o.oBehParams = iData.dirtyItem
-                elseif iData.washItem then
+                elseif isWashable then
                     o.oBehParams = iData.washItem
                     counter.oPlatesStackedExtra = counter.oPlatesStackedExtra - 1
                 end
+                iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
 
                 if counter.usingObj == nil then
                     counter.usingObj = o
@@ -119,7 +125,7 @@ function bhv_ingredient_loop(o)
                     o.usingObj = counter
                     o.oUsingSyncID = counter.oSyncID
                     ingredient_place_on_counter(o, counter)
-                elseif iData.washItem or not sink then
+                elseif isWashable or not sink then
                     local otherPlates = find_all_object_using(counter, id_bhvIngredient)
                     local maxCounterNum = -1
                     for i, other in ipairs(otherPlates) do
@@ -135,6 +141,7 @@ function bhv_ingredient_loop(o)
                     o.oUsingSyncID = counter.oSyncID
                     ingredient_place_on_counter(o, counter)
                 else
+                    o.oPlateCounterNum = #find_all_object_children(counter.usingObj, id_bhvIngredient)
                     o.parentObj = counter.usingObj
                     o.oParentSyncID = counter.usingObj.oSyncID
                 end
@@ -165,8 +172,12 @@ function bhv_ingredient_loop(o)
 
     -- plated
     if o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE then
-        obj_copy_pos(o, o.parentObj)
-        return
+        if obj_has_behavior_id(o.parentObj, id_bhvIngredient) ~= 0 then
+            obj_copy_pos(o, o.parentObj)
+            return
+        else
+            o.parentObj, o.oParentSyncID = nil, 0
+        end
     end
 
     -- failsafe if multiple people are holding: use gIndex priority
@@ -194,7 +205,54 @@ function bhv_ingredient_loop(o)
     if (o.oHeldState == HELD_FREE) then
         if o.usingObj == nil or o.usingObj == o then
             object_step_without_floor_orient()
-            attempt_item_place(o, m)
+
+            local trash = false
+            local height, floor = find_floor(o.oPosX, o.oPosY, o.oPosZ)
+            if floor then
+                if (o.oPosY == height and (floor.type == SURFACE_BURNING or surface_is_quicksand(floor)))
+                or (o.oPosY < height + 2048 and (floor.type == SURFACE_DEATH_PLANE or floor.type == SURFACE_VERTICAL_WIND)) then
+                    trash = true
+                else
+                    o.platform = floor.object
+                    apply_platform_displacement(o, o.platform)
+                end
+            else
+                trash = true
+            end
+
+            if trash then
+                if iData.noTrash then
+                    o.oRespawnTimer = 5 * 30
+                    if iData.isPlate then
+                        local children = find_all_object_children(o, id_bhvIngredient)
+                        for i,c in ipairs(children) do
+                            obj_mark_for_deletion(c)
+                        end
+                    elseif iData.washItem then
+                        o.oBehParams = iData.washItem
+                        o.oPlateAppearTimer = o.oRespawnTimer
+                        o.oRespawnTimer = 0
+                        local children = find_all_object_children(o, id_bhvIngredient)
+                        for i,c in ipairs(children) do
+                            c.oBehParams = o.oBehParams
+                            c.oPlateAppearTimer = o.oPlateAppearTimer
+                            c.parentObj, c.oParentSyncID = c, 0
+                        end
+                    elseif o.oContentCount ~= 0 then
+                        o.oContents = 0
+                        o.oContentCount = 0
+                        o.oCutOrCookTimer = 0
+                    end
+
+                    if m and m.playerIndex == 0 then
+                        network_send_object(o, true)
+                    end
+                else
+                    obj_mark_for_deletion(o)
+                end
+            else
+                attempt_item_place(o, m)
+            end
         else
             local counter = o.usingObj
             if counter.usingObj ~= o and o.oPlateCounterNum == 0 then
@@ -338,11 +396,11 @@ function ingredient_render_setup(o)
         else
             oGFX.node.flags = oGFX.node.flags & ~GRAPH_RENDER_BILLBOARD
         end
-        if o.oHeldState ~= HELD_FREE then
+        --[[if o.oHeldState ~= HELD_FREE then
             local m = gMarioStates[o.heldByPlayerIndex]
             obj_set_pos(o, m.marioBodyState.heldObjLastPosition.x, m.marioBodyState.heldObjLastPosition.y, m.marioBodyState.heldObjLastPosition.z)
             obj_set_angle(o, 0, m.faceAngle.y, 0)
-        end
+        end]]
 
         obj_set_model_extended(o, iData.model or E_MODEL_ERROR_MODEL)
     else -- plated
@@ -371,7 +429,9 @@ function ingredient_render_setup(o)
         end
 
         local plateHeight = 2
-        if o.parentObj.oBehParams == ITEM_PAN or o.oBehParams == ITEM_DIRTY_PLATE then
+        if o.oBehParams == ITEM_DIRTY_PLATE then
+            plateHeight = 5 * (o.oPlateCounterNum + 1)
+        elseif o.parentObj.oBehParams == ITEM_PAN then
             plateHeight = 5
         end
         oGFX.angle.y = oGFX.angle.y + o.oFaceAngleYaw
@@ -896,13 +956,15 @@ function ingredient_place_on_counter(o, counter)
         height = height + (o.oPlatesStackedExtra - o.oPlateCounterNum) * 5
     end
     o.oPosY = o.oPosY + height
+    o.oFaceAngleYaw = o.oFaceAngleYaw + counter.oAngleVelYaw
 end
 
 ---@param o Object
 function bhv_counter_init(o)
-    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE | OBJ_FLAG_SET_FACE_ANGLE_TO_MOVE_ANGLE
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
     obj_scale_xyz(o, 1.5, 1.6, 1.5)
 
+    o.oCollisionDistance = 10000
     o.collisionData = smlua_collision_util_get("main_counter_center_collision")
     cur_obj_set_home_once()
 
@@ -924,6 +986,36 @@ end
 
 ---@param o Object
 function bhv_counter_loop(o)
+    -- Pair with object that has param 3 set to the same value as this counter's param 1
+    -- (param 3 is used because the rotating platforms in WF use param 1 for the speed)
+    if (o.oBehParams >> 24) ~= 0 then
+        if o.parentObj == o or o.parentObj == nil then
+            -- Find the first surface object (or type defined by counter's param 3)
+            local list = OBJ_LIST_SURFACE
+            if (o.oBehParams >> 8) & 0xFF ~= 0 then
+                list = (o.oBehParams >> 8) & 0xFF
+            end
+
+            local connectID = (o.oBehParams >> 24)
+            local parent = obj_get_first(list)
+            while parent do
+                if (parent.oBehParams >> 8) & 0xFF == connectID then
+                    o.parentObj = parent
+                    parent.oCollisionDistance = 10000 -- don't disable collision
+                    local relTranslation = {x = o.oPosX - parent.oPosX, y = o.oPosY - parent.oPosY, z = o.oPosZ - parent.oPosZ}
+                    local toRotate = {x = -parent.oFaceAnglePitch, y = -parent.oFaceAngleYaw, z = -parent.oFaceAngleRoll}
+                    vec3f_rotate_zxy(relTranslation, toRotate)
+                    obj_set_parent_relative_pos(o, relTranslation.x, relTranslation.y, relTranslation.z)
+                    o.oParentRelativeAnglePitch, o.oParentRelativeAngleYaw, o.oParentRelativeAngleRoll = o.oFaceAnglePitch - parent.oFaceAnglePitch, o.oFaceAngleYaw - parent.oFaceAngleYaw, o.oFaceAngleRoll - parent.oFaceAngleRoll
+                    break
+                end
+                parent = obj_get_next(parent)
+            end
+        else
+            obj_position_relative_to_parent(o)
+        end
+    end
+
     load_object_collision_model()
 
     -- validate object on counter
@@ -962,6 +1054,7 @@ function bhv_counter_loop(o)
             end
         end
     elseif o.oBehParams2ndByte == COUNTER_TYPE_SINK then
+        if o.oPlatesStackedExtra == 0 then o.oPlateAppearTimer = 0 end
         smlua_anim_util_set_animation(o, "sink_plate_"..math.min(o.oPlatesStackedExtra, 3))
     end
 end

@@ -268,7 +268,8 @@ hook_event(HOOK_ON_SYNC_VALID, on_sync_valid)
 
 ---@param m MarioState
 function mario_update(m)
-    if m.prevAction == ACT_HOLD_WALKING and m.action ~= ACT_HOLD_WALKING then
+    m.health = 0x880 -- no health in this mod
+    if m.marioBodyState.allowPartRotation == 15 and m.action ~= ACT_HOLD_WALKING then
         m.marioBodyState.allowPartRotation = 0
     end
 
@@ -519,7 +520,7 @@ function act_select_start(m)
     local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
     if spawnObj then
         m.pos.x, m.pos.y, m.pos.z = spawnObj.oPosX, spawnObj.oPosY, spawnObj.oPosZ
-        m.faceAngle.y = spawnObj.oMoveAngleYaw
+        m.faceAngle.y = spawnObj.oFaceAngleYaw
     else
         vec3f_copy(m.pos, m.spawnInfo.startPos)
         vec3s_copy(m.faceAngle, m.spawnInfo.startAngle)
@@ -642,7 +643,7 @@ function act_custom_hold_walking(m)
     val02 = math.clamp(val02, -0x1555, 0x1555)
     val00 = math.clamp(val00, 0x0, 0x1555)
 
-    m.marioBodyState.allowPartRotation = 1
+    m.marioBodyState.allowPartRotation = 15
     m.marioBodyState.torsoAngle.z = approach_s32(m.marioBodyState.torsoAngle.z, val02, 0x400, 0x400)
     m.marioBodyState.torsoAngle.x = approach_s32(m.marioBodyState.torsoAngle.x, val00, 0x400, 0x400)
 
@@ -654,6 +655,29 @@ function act_custom_hold_walking(m)
 end
 
 hook_mario_action(ACT_HOLD_WALKING, act_custom_hold_walking)
+
+function on_death(m)
+    if m.area.camera and m.area.camera.cutscene ~= 0 then
+        m.area.camera.cutscene = 0
+        play_cutscene(m.area.camera)
+    end
+
+    local sMario = gPlayerSyncTable[m.playerIndex]
+    local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
+    if spawnObj then
+        m.pos.x, m.pos.y, m.pos.z = spawnObj.oPosX, spawnObj.oPosY, spawnObj.oPosZ
+        m.faceAngle.y = spawnObj.oFaceAngleYaw
+    else
+        vec3f_copy(m.pos, m.spawnInfo.startPos)
+        vec3s_copy(m.faceAngle, m.spawnInfo.startAngle)
+    end
+
+    set_mario_action(m, ACT_HARD_FORWARD_AIR_KB, 0)
+    mario_set_forward_vel(m, 0)
+
+    return false
+end
+hook_event(HOOK_ON_DEATH, on_death)
 
 -- keep timed things in sync
 function on_time_left_change(tag, oldVal, newVal)
@@ -703,9 +727,9 @@ function counter_command(msg)
 
     local model = SPECIAL_COUNTER_MODELS[counterType] or E_MODEL_COUNTER_CENTER
     spawn_sync_object(id_bhvCounter, model, x, y, z, function(o)
-        o.oMoveAngleYaw = dir - 0x4000
-        o.oMoveAnglePitch = 0
-        o.oMoveAngleRoll = 0
+        o.oFaceAngleYaw = dir - 0x4000
+        o.oFaceAnglePitch = 0
+        o.oFaceAngleRoll = 0
         o.oBehParams2ndByte = counterType
         o.oBehParams = (o.oBehParams2ndByte << 16)
         if counterType == COUNTER_TYPE_INGREDIENT then

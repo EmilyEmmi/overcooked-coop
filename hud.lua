@@ -295,6 +295,11 @@ function behind_hud_render()
 
         if validForRender then
             local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
+            if o.oHeldState ~= HELD_FREE then
+                vec3f_copy(pos, gMarioStates[o.heldByPlayerIndex].pos)
+                pos.y = pos.y + 160
+            end
+
             local out = gVec3fZero()
             djui_hud_world_pos_to_screen_pos(pos, out)
             if out.z < 0 then
