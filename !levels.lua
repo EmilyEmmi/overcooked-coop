@@ -38,14 +38,14 @@ OC_LEVEL_DATA = {
     [OC_LEVEL_WF] = {
         name = "Level 2",
         level = LEVEL_WF,
-        totalTime = 180,
+        totalTime = 210,
         failTime = {180, 150, 120, 90},
         orders = {ORDER_PLAIN_SALAD, ORDER_MIXED_SALAD},
         starScores = {
-            {200, 300, 450, 600},
-            {100, 300, 600, 800},
-            {100, 300, 600, 800},
-            {100, 300, 600, 800},
+            {100, 200, 350, 500},
+            {100, 300, 500, 700},
+            {100, 300, 500, 700},
+            {100, 300, 500, 700},
         },
     },
 }

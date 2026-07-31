@@ -54,15 +54,29 @@ GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
 
 gLevelValues.disableActs = 1
 
+local lastSeq = -1
 function update()
     local sMario = gPlayerSyncTable[0]
     pending_orders = pending_orders_all[sMario.kitchen] or {}
 
     -- update music
-    local newTempo = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
-    if newTempo ~= BASE_TEMPO * BASE_MULTI then
-        BASE_TEMPO = newTempo
+    local currSeq = get_current_background_music()
+    if gGlobalSyncTable.gameState == GAME_STATE_SETUP then
+        if currSeq ~= SEQ_MENU_FILE_SELECT then
+            currSeq = SEQ_MENU_FILE_SELECT
+            play_music(SEQ_PLAYER_LEVEL, currSeq, 0)
+        elseif gGlobalSyncTable.timeLeft <= 3 then
+            fadeout_level_music(600)
+        end
+    else
+        stop_background_music(SEQ_MENU_FILE_SELECT)
     end
+    
+    if currSeq ~= lastSeq then
+        BASE_TEMPO = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
+        lastSeq = currSeq
+    end
+
     if gGlobalSyncTable.gameState == GAME_STATE_PLAYING and gGlobalSyncTable.timeLeft <= 30 then
         BASE_MULTI = 1.5
         sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 3)
@@ -130,7 +144,8 @@ function update()
 
             -- automatically add orders
             if network_is_server() then
-                for kitchen, pending_orders in ipairs(pending_orders_all) do
+                for kitchen = 1, gGlobalSyncTable.maxKitchens do
+                    local pending_orders = pending_orders_all[kitchen]
                     local servedOrders = gGlobalSyncTable["servedOrders"..kitchen]
                     expected_orders = math.clamp(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10 - servedOrders, 2, 5)
                     while #pending_orders < expected_orders do
@@ -277,6 +292,14 @@ function mario_update(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     if sMario.cutTimer ~= 0 then
         -- Handle cutting
+        if m.action & ACT_FLAG_THROWING ~= 0 then
+            if m.action & ACT_FLAG_AIR ~= 0 then
+                set_mario_action(m, ACT_FREEFALL, 0)
+            else
+                set_mario_action(m, ACT_IDLE, 0)
+            end
+        end
+
         set_mario_animation(m, CHAR_ANIM_FIRST_PUNCH)
         set_anim_to_frame(m, c.actionAnimTimer)
         c.actionAnimTimer = (c.actionAnimTimer + 1) % 6
@@ -376,7 +399,7 @@ function before_mario_update(m)
             and (o.parentObj == nil or o.parentObj == o) and (counter == nil)
         end)
         selectedCounter = nil
-        if selectedItem == nil or dist > 100 then
+        if selectedItem == nil or dist > 115 then
             selectedItem = nil
             selectedCounter, dist = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
                 return true -- No condition yet
@@ -426,12 +449,14 @@ function before_mario_update(m)
             if not m.heldObj then
                 m.marioBodyState.allowPartRotation = 0
                 m.prevAction = m.action
-                if m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
+                if m.action & ACT_FLAG_SWIMMING ~= 0 then
+                    m.action = ACT_WATER_ACTION_END
+                elseif m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
                     m.action = ACT_JUMP
                 elseif m.action & ACT_FLAG_AIR ~= 0 then
                     m.action = ACT_FREEFALL
                 elseif m.action & ACT_FLAG_MOVING ~= 0 then
-                    m.action = ACT_WALKING
+                    set_mario_action(m, ACT_WALKING, 0)
                 else
                     m.action = ACT_IDLE
                 end
@@ -461,6 +486,11 @@ function before_mario_update(m)
                 end
             end
 
+            -- Disallows diving if we are close enough to a counter- okay I guess
+            if o or counter then
+                m.controller.buttonPressed = m.controller.buttonPressed &~ B_BUTTON
+            end
+
             if o and valid then
                 play_sound(GRAB_SOUND, gGlobalSoundSource)
                 m.usedObj = o
@@ -470,7 +500,9 @@ function before_mario_update(m)
                 mario_grab_used_object(m)
                 if m.action ~= ACT_DIVE then
                     m.prevAction = m.action
-                    if m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
+                    if m.action & ACT_FLAG_SWIMMING ~= 0 then
+                        m.action = ACT_HOLD_WATER_ACTION_END
+                    elseif m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
                         m.action = ACT_HOLD_JUMP
                     elseif m.action & ACT_FLAG_AIR ~= 0 then
                         m.action = ACT_HOLD_FREEFALL
@@ -478,8 +510,6 @@ function before_mario_update(m)
                         m.action = ACT_HOLD_IDLE
                     end
                 end
-
-                m.controller.buttonPressed = m.controller.buttonPressed &~ B_BUTTON
             end
         end
     elseif m.controller.buttonPressed & X_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) then
@@ -487,10 +517,12 @@ function before_mario_update(m)
         if obj_has_behavior_id(m.heldObj, id_bhvIngredient) == 0 or not (iData.noThrow or m.heldObj.oContentCount ~= 0) then
             m.marioBodyState.allowPartRotation = 0
             m.prevAction = m.action
-            if m.action & ACT_FLAG_AIR ~= 0 then
-                m.action = ACT_AIR_THROW
+            if m.action & ACT_FLAG_SWIMMING ~= 0 then
+                set_mario_action(m, ACT_WATER_THROW, 0)
+            elseif m.action & ACT_FLAG_AIR ~= 0 then
+                m.action = ACT_PREPARE_THROW_AIR
             else
-                m.action = ACT_THROWING
+                m.action = ACT_PREPARE_THROW
             end
         end
     elseif m.controller.buttonDown & X_BUTTON ~= 0 and (not m.heldObj)
@@ -515,7 +547,9 @@ confirmTime = 0
 ---@param m MarioState
 function act_select_start(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
-    set_character_animation(m, CHAR_ANIM_A_POSE)
+    local maxKitchens = gGlobalSyncTable.maxKitchens
+    local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / maxKitchens)
+    set_character_animation(m, CHAR_ANIM_FIRST_PERSON)
 
     local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
     if spawnObj then
@@ -535,7 +569,10 @@ function act_select_start(m)
     if m.playerIndex ~= 0 or m.actionState ~= 0 or gGlobalSyncTable.timeLeft <= 3 then return 0 end
 
     sMario.readyToStart = false
-    if m.controller.buttonDown & A_BUTTON ~= 0 then
+    if maxKitchens <= 1 and maxSpawnID <= 1 then
+        m.actionState = 1
+        sMario.readyToStart = true
+    elseif m.controller.buttonDown & A_BUTTON ~= 0 then
         confirmTime = confirmTime + 1
         if confirmTime >= 30 then
             confirmTime = 0
@@ -570,8 +607,6 @@ function act_select_start(m)
     end
     
     if change ~= 0 then
-        local maxKitchens = gGlobalSyncTable.maxKitchens
-        local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / maxKitchens)
         if m.actionArg == 0 then
             sMario.kitchen = (sMario.kitchen + change - 1) % maxKitchens + 1
         else
@@ -653,8 +688,100 @@ function act_custom_hold_walking(m)
 
     return 0
 end
-
 hook_mario_action(ACT_HOLD_WALKING, act_custom_hold_walking)
+
+--- @param m MarioState
+function act_custom_throwing(m)
+    if not m then return 0 end
+    if (m.heldObj and (m.heldObj.oInteractionSubtype & INT_SUBTYPE_HOLDABLE_NPC ~= 0)) then
+        return set_mario_action(m, ACT_PLACING_DOWN, 0)
+    end
+
+    if (m.input & INPUT_UNKNOWN_10 ~= 0) then
+        return drop_and_set_mario_action(m, ACT_SHOCKWAVE_BOUNCE, 0);
+    end
+
+    if (m.input & INPUT_OFF_FLOOR ~= 0) then
+        return drop_and_set_mario_action(m, ACT_FREEFALL, 0);
+    end
+
+    m.actionTimer = m.actionTimer + 1
+    if (m.actionTimer == 4) then
+        mario_throw_held_object(m);
+        play_character_sound_if_no_flag(m, CHAR_SOUND_WAH2, MARIO_MARIO_SOUND_PLAYED);
+        play_sound_if_no_flag(m, SOUND_ACTION_THROW, MARIO_ACTION_SOUND_PLAYED);
+        queue_rumble_data_mario(m, 3, 50);
+    end
+
+    animated_stationary_ground_step(m, CHAR_ANIM_GROUND_THROW, ACT_IDLE);
+    set_anim_to_frame(m, m.marioObj.header.gfx.animInfo.animFrame + 2)
+    return 0;
+end
+hook_mario_action(ACT_THROWING, act_custom_throwing)
+
+--- @param m MarioState
+function act_prepare_throw(m)
+    if not m then return 0 end
+    if (m.heldObj and (m.heldObj.oInteractionSubtype & INT_SUBTYPE_HOLDABLE_NPC ~= 0)) then
+        return set_mario_action(m, ACT_PLACING_DOWN, 0)
+    end
+
+    if (m.input & INPUT_UNKNOWN_10 ~= 0) then
+        return drop_and_set_mario_action(m, ACT_SHOCKWAVE_BOUNCE, 0);
+    elseif (m.input & INPUT_OFF_FLOOR ~= 0) then
+        return drop_and_set_mario_action(m, ACT_FREEFALL, 0);
+    elseif (m.input & INPUT_ABOVE_SLIDE ~= 0) then
+        return set_mario_action(m, ACT_HOLD_BEGIN_SLIDING, 0);
+    end
+
+    if m.controller.buttonDown & X_BUTTON == 0 then
+        return set_mario_action(m, ACT_THROWING, 0)
+    end
+
+    m.actionTimer = m.actionTimer + 1
+    if m.actionTimer > 3 then
+        m.faceAngle.y = m.intendedYaw
+    end
+
+    animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
+    set_anim_to_frame(m, 0)
+    return 0;
+end
+ACT_PREPARE_THROW = allocate_mario_action(ACT_GROUP_OBJECT | ACT_FLAG_MOVING)
+hook_mario_action(ACT_PREPARE_THROW, act_prepare_throw)
+
+--- @param m MarioState
+function act_prepare_throw_air(m)
+    if not m then return 0 end
+
+    set_character_animation(m, CHAR_ANIM_JUMP_WITH_LIGHT_OBJ);
+    update_air_without_turn(m)
+
+    if m.controller.buttonDown & X_BUTTON == 0 then
+        return set_mario_action(m, ACT_AIR_THROW, 0)
+    end
+
+    m.actionTimer = m.actionTimer + 1
+    if m.actionTimer > 3 then
+        m.faceAngle.y = m.intendedYaw
+        mario_set_forward_vel(m, 0)
+    end
+
+    local result = perform_air_step(m, 0)
+    if result == AIR_STEP_LANDED then
+        if (check_fall_damage_or_get_stuck(m, ACT_HARD_BACKWARD_GROUND_KB) == 0) then
+            m.action = ACT_PREPARE_THROW;
+        end
+    elseif result == AIR_STEP_HIT_WALL then
+        mario_set_forward_vel(m, 0.0)
+    elseif result == AIR_STEP_HIT_LAVA_WALL then
+        lava_boost_on_wall(m);
+    end
+
+    return 0;
+end
+ACT_PREPARE_THROW_AIR = allocate_mario_action(ACT_GROUP_OBJECT | ACT_FLAG_AIR | ACT_FLAG_ALLOW_VERTICAL_WIND_ACTION | ACT_FLAG_CONTROL_JUMP_HEIGHT)
+hook_mario_action(ACT_PREPARE_THROW_AIR, act_prepare_throw_air)
 
 function on_death(m)
     if m.area.camera and m.area.camera.cutscene ~= 0 then
@@ -662,6 +789,7 @@ function on_death(m)
         play_cutscene(m.area.camera)
     end
 
+    mario_drop_held_object(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
     if spawnObj then
@@ -672,7 +800,7 @@ function on_death(m)
         vec3s_copy(m.faceAngle, m.spawnInfo.startAngle)
     end
 
-    set_mario_action(m, ACT_HARD_FORWARD_AIR_KB, 0)
+    set_mario_action(m, ACT_HARD_FORWARD_GROUND_KB, 0)
     mario_set_forward_vel(m, 0)
 
     return false
@@ -702,7 +830,6 @@ function ingredient_command(msg)
 
     return true
 end
-hook_chat_command("ingredient", "[ITEM] - Create an ingredient", ingredient_command)
 
 function counter_command(msg)
     local args = {}
@@ -741,7 +868,6 @@ function counter_command(msg)
     m.pos.z = z + coss(dir) * counterSize
     return true
 end
-hook_chat_command("counter", "[TYPE,ITEM] - Create a counter", counter_command)
 
 function add_order_command(msg)
     local orderID = tonumber(msg)
@@ -760,7 +886,6 @@ function add_order_command(msg)
     djui_chat_message_create("Added order: "..order.name)
     return true
 end
-hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
 
 function start_level_command(msg)
     if gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
@@ -769,6 +894,10 @@ function start_level_command(msg)
     end
 
     local oc_level = tonumber(msg) or OC_LEVEL_TEST
+    if not OC_LEVEL_DATA[oc_level] then
+        djui_chat_message_create("That level is not available")
+        return true
+    end
     gGlobalSyncTable.gameState = GAME_STATE_SETUP
     gGlobalSyncTable.score = 0
     gGlobalSyncTable.ocLevel = oc_level
@@ -781,4 +910,12 @@ function start_level_command(msg)
     end
     return true
 end
-hook_chat_command("start-level", "[ID?] - Start this level - leave blank to start the test level", start_level_command)
+if network_is_server() then
+    hook_chat_command("start-level", "[ID?] - Start this level - leave blank to start the test level", start_level_command)
+end
+
+if _G.cheatsApi then
+    hook_chat_command("ingredient", "[ITEM] - Create an ingredient", ingredient_command)
+    hook_chat_command("counter", "[TYPE,ITEM] - Create a counter", counter_command)
+    hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
+end

@@ -1,3 +1,5 @@
+FLAME_ANIM = {"flame_seg3_texture_03017320", "flame_seg3_texture_03017B20", "flame_seg3_texture_03018320", "flame_seg3_texture_03018B20", "flame_seg3_texture_03019320", "flame_seg3_texture_03019B20", "flame_seg3_texture_0301A320", "flame_seg3_texture_0301AB20"}
+
 function playing_hud()
     local screenWidth = djui_hud_get_screen_width()
     local intendedX = 10
@@ -143,15 +145,21 @@ function playing_hud()
 
     -- score and tip combo
     scale = scale * 2
+    local tipMulti = gGlobalSyncTable["tipMulti"..gPlayerSyncTable[0].kitchen] or 1
     local x = 20
     y = djui_hud_get_screen_height() - 8 * scale
+    if tipMulti >= 4 then
+        djui_hud_set_color(255, 0, 0, 255)
+        local tex = get_texture_info(FLAME_ANIM[get_global_timer() % 16 // 2 + 1])
+        djui_hud_render_texture(tex, x - 8 * scale, y - 32 * scale, scale, scale)
+        djui_hud_reset_color()
+    end
     djui_hud_render_texture(gTextures.coin, x, y - 22 * scale, scale, scale)
     x = x + 16 * scale
     djui_hud_print_text(tostring(gGlobalSyncTable.score), x, y, scale)
     scale = scale / 2
     x = 20
     y = y + 16 * scale
-    local tipMulti = gGlobalSyncTable["tipMulti"..gPlayerSyncTable[0].kitchen] or 1
     djui_hud_print_text("Tip *"..tipMulti, x, y, scale)
     
     scale = scale * 2
@@ -161,14 +169,27 @@ function playing_hud()
     djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft), x, y, scale)
 end
 
+local lastHudScore = 0
+local lastHudStars = 0
 function end_hud()
     local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
     djui_hud_set_color(0, 0, 0, 100)
     djui_hud_render_rect(0, 0, screenWidth + 16, screenHeight + 16)
 
+    if gGlobalSyncTable.timeLeft < 3 then
+        lastHudScore = gGlobalSyncTable.score
+    elseif lastHudScore > gGlobalSyncTable.score then
+        lastHudScore = gGlobalSyncTable.score
+    elseif gGlobalSyncTable.timeLeft < 10 and get_global_timer() & 1 ~= 0 then
+        if lastHudScore < gGlobalSyncTable.score then
+            lastHudScore = math.min(lastHudScore + math.max(gGlobalSyncTable.score // (5 * 15), 1), gGlobalSyncTable.score)
+            play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+        end
+    end
+
     djui_hud_reset_color()
     local scale = 8
-    local text = tostring(gGlobalSyncTable.score)
+    local text = tostring(lastHudScore)
     local width = (16 + djui_hud_measure_text(text)) * scale
     local x = (screenWidth - width) / 2
     local y = screenHeight / 2 - 8 * scale
@@ -202,10 +223,14 @@ function end_hud()
         end
     end
     while stars > 0 do
-        if gGlobalSyncTable.score >= neededPoints[stars] then break end
+        if lastHudScore >= neededPoints[stars] then break end
         stars = stars - 1
     end
     local maxStars = math.clamp(stars + 1, 3, 4)
+    if lastHudStars < stars then
+        play_sound(SOUND_MENU_COLLECT_SECRET + ((stars + 2) << 16), gGlobalSoundSource)
+    end
+    lastHudStars = stars
 
     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
     x = screenWidth / 2 - (10 * (maxStars - 1)) * scale
@@ -225,16 +250,17 @@ function end_hud()
 end
 
 function setup_hud()
-    if gGlobalSyncTable.timeLeft <= 3 then return end
     local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
 
     local scale = 4
     local x = screenWidth / 2
     local y = 20
     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
-    djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft-1), x, y, scale)
+    local timeLeft = gGlobalSyncTable.timeLeft - 3
+    if timeLeft <= 0 then timeLeft = timeLeft + 3 end
+    djui_hud_print_text(time_format(timeLeft), x, y, scale)
 
-    if gMarioStates[0].actionState == 0 then
+    if gMarioStates[0].actionState == 0 and gGlobalSyncTable.timeLeft > 3 then
         x = x - 70 * scale
         y = screenHeight - 60 * scale
         if gMarioStates[0].actionArg ~= 0 then
@@ -245,14 +271,30 @@ function setup_hud()
         y = screenHeight - 60 * scale
         x = x + 20 * scale
         djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
-        djui_hud_print_text("Kitchen: "..(gPlayerSyncTable[0].kitchen), x, y, scale)
-        y = y + 20 * scale
-        djui_hud_print_text("Spawn Point: "..(gPlayerSyncTable[0].spawnID+1), x, y, scale)
 
+        local text = "Kitchen <"..(gPlayerSyncTable[0].kitchen) .. ">"
+        djui_hud_set_color(255, 255, 255, 255)
+        if gGlobalSyncTable.maxKitchens <= 1 then
+            text = "Kitchen: 1"
+            djui_hud_set_color(100, 100, 100, 255)
+        end
+        djui_hud_print_text(text, x, y, scale)
+
+        y = y + 20 * scale
+        local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / gGlobalSyncTable.maxKitchens)
+        text = "Spawn Point <"..(gPlayerSyncTable[0].spawnID+1) .. ">"
+        djui_hud_set_color(255, 255, 255, 255)
+        if maxSpawnID <= 1 then
+            text = "Spawn Point: 1"
+            djui_hud_set_color(100, 100, 100, 255)
+        end
+        djui_hud_print_text(text, x, y, scale)
+
+        djui_hud_set_color(255, 255, 255, 255)
         djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
         x = screenWidth / 2
         y = y + 20 * scale
-        djui_hud_print_text("Hold A to confirm...", x, y, scale)
+        djui_hud_print_text("[A] Confirm", x, y, scale)
     else
         y = screenHeight - 20 * scale
         djui_hud_print_text("Ready!", x, y, scale)
@@ -266,10 +308,12 @@ function on_hud_render()
     djui_hud_reset_text_color()
 
     if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+        lastHudScore = 0
         playing_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_END then
         end_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP then
+        lastHudScore = 0
         setup_hud()
     end
 end

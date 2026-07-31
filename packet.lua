@@ -17,52 +17,63 @@ function on_packet_served_order(data, self)
     local fromKitchen = gPlayerSyncTable[fromLocalIndex].kitchen or 1
     local pending_orders = pending_orders_all[fromKitchen]
     local existingOrders = 0
+    local servedOrderIndex = 0
+    local firstOrder = false
+    local minTime = -1
+    -- get order matching ID with the lowest time
     for a,pending_data in ipairs(pending_orders) do
         local orderID = pending_data.id
         if pending_data.vanishTimer == nil then
-            existingOrders = existingOrders + 1 or {}
-            if orderID == data.orderID then
-                pending_data.vanishTimer = 15
-                play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
-                if network_is_server() then
-                    gGlobalSyncTable["servedOrders"..fromKitchen] = gGlobalSyncTable["servedOrders"..fromKitchen] + 1
-                end
-                if self then
-                    local order = ORDER_DATA[orderID]
-                    
-                    -- score = base score + 20 * ingredient count + tip * multiplier
-                    local score = (order.baseScore or 0)
-                    for i, item in ipairs(order.items) do
-                        if not (ITEM_DATA[item.type].skipItem) then
-                            score = score + 20
-                        end
-                        if item.contents then
-                            score = score + 20 * #item.contents
-                        end
-                    end
-
-                    -- Tip based on how fast we served the order
-                    local tip = 8
-                    local timeRatio = pending_data.time / pending_data.maxTime
-                    local tipMultiField = "tipMulti"..fromKitchen
-                    if timeRatio < 0.33 then
-                        tip = 3
-                    elseif timeRatio < 0.66 then
-                        tip = 5
-                    end
-                    score = score + tip * (gGlobalSyncTable[tipMultiField] or 1)
-                    -- tip multiplier increases if we serve in order
-                    if existingOrders == 1 then
-                        gGlobalSyncTable[tipMultiField] = math.min(gGlobalSyncTable[tipMultiField] + 1, 4)
-                    else
-                        gGlobalSyncTable[tipMultiField] = 1
-                    end
-
-                    --djui_chat_message_create("Earned "..score.." points")
-                    gGlobalSyncTable.score = gGlobalSyncTable.score + score
-                end
-                break
+            existingOrders = existingOrders + 1
+            if orderID == data.orderID and (minTime == -1 or pending_data.time < minTime) then
+                servedOrderIndex = a
+                minTime = pending_data.time
+                firstOrder = (existingOrders == 1)
             end
+        end
+    end
+
+    if servedOrderIndex ~= 0 then
+        local pending_data = pending_orders[servedOrderIndex]
+        local orderID = pending_data.id
+        pending_data.vanishTimer = 15
+        play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+        if network_is_server() then
+            gGlobalSyncTable["servedOrders"..fromKitchen] = gGlobalSyncTable["servedOrders"..fromKitchen] + 1
+        end
+        if self then
+            local order = ORDER_DATA[orderID]
+            
+            -- score = base score + 20 * ingredient count + tip * multiplier
+            local score = (order.baseScore or 0)
+            for i, item in ipairs(order.items) do
+                if not (ITEM_DATA[item.type].skipItem) then
+                    score = score + 20
+                end
+                if item.contents then
+                    score = score + 20 * #item.contents
+                end
+            end
+
+            -- Tip based on how fast we served the order
+            local tip = 8
+            local timeRatio = pending_data.time / pending_data.maxTime
+            local tipMultiField = "tipMulti"..fromKitchen
+            if timeRatio < 0.33 then
+                tip = 3
+            elseif timeRatio < 0.66 then
+                tip = 5
+            end
+            score = score + tip * (gGlobalSyncTable[tipMultiField] or 1)
+            -- tip multiplier increases if we serve in order
+            if firstOrder then
+                gGlobalSyncTable[tipMultiField] = math.min(gGlobalSyncTable[tipMultiField] + 1, 4)
+            else
+                gGlobalSyncTable[tipMultiField] = 1
+            end
+
+            --djui_chat_message_create("Earned "..score.." points")
+            gGlobalSyncTable.score = gGlobalSyncTable.score + score
         end
     end
 end
