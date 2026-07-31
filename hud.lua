@@ -226,9 +226,12 @@ function end_hud()
         if lastHudScore >= neededPoints[stars] then break end
         stars = stars - 1
     end
-    local maxStars = math.clamp(stars + 1, 3, 4)
+    local maxStars = 3
+    if stars >= 3 and (stars >= 4 or lastHudScore == gGlobalSyncTable.score) then
+        maxStars = 4
+    end
     if lastHudStars < stars then
-        play_sound(SOUND_MENU_COLLECT_SECRET + ((stars + 2) << 16), gGlobalSoundSource)
+        play_sound(SOUND_MENU_COLLECT_SECRET + ((stars + 1) << 16), gGlobalSoundSource)
     end
     lastHudStars = stars
 

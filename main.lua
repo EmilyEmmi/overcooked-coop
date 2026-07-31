@@ -1,4 +1,4 @@
--- name: Overcooked! (WIP)
+-- name: Overcooked 64! (WIP)
 -- description: Collab with WBMarioo and denpakei32 for Blocky's gamemode competition.
 -- pausable: false
 -- category: gamemode
@@ -53,6 +53,7 @@ end
 GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
 
 gLevelValues.disableActs = 1
+gServerSettings.skipIntro = 1
 
 local lastSeq = -1
 function update()
@@ -735,7 +736,10 @@ function act_prepare_throw(m)
     end
 
     if m.controller.buttonDown & X_BUTTON == 0 then
-        return set_mario_action(m, ACT_THROWING, 0)
+        m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
+        m.action = ACT_THROWING
+        m.actionTimer = math.min(m.actionTimer, 3)
+        return 1
     end
 
     m.actionTimer = m.actionTimer + 1
@@ -758,7 +762,10 @@ function act_prepare_throw_air(m)
     update_air_without_turn(m)
 
     if m.controller.buttonDown & X_BUTTON == 0 then
-        return set_mario_action(m, ACT_AIR_THROW, 0)
+        m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
+        m.action = ACT_AIR_THROW
+        m.actionTimer = math.min(m.actionTimer, 3)
+        return 1
     end
 
     m.actionTimer = m.actionTimer + 1
