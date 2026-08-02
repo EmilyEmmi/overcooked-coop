@@ -128,16 +128,23 @@ function update()
 
             for kitchen, pending_orders in ipairs(pending_orders_all) do
                 for i, pending_data in ipairs(pending_orders) do
-                    pending_data.prevTime = pending_data.time
-                    pending_data.time = pending_data.time - 1
-                    if pending_data.time <= 0 then
-                        pending_data.time = pending_data.maxTime
-                        if kitchen == gPlayerSyncTable[0].kitchen then
-                            play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+                    if not pending_data.vanishTimer then
+                        pending_data.prevTime = pending_data.time
+                        pending_data.time = pending_data.time - 1
+                        if pending_data.time <= 0 then
+                            pending_data.time = pending_data.maxTime
+                            if kitchen == gPlayerSyncTable[0].kitchen then
+                                play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+                            end
+                            if network_is_server() then
+                                gGlobalSyncTable["tipMulti"..kitchen] = 1
+                                gGlobalSyncTable.score = gGlobalSyncTable.score - 30
+                            end
                         end
-                        if network_is_server() then
-                            gGlobalSyncTable["tipMulti"..kitchen] = 1
-                            gGlobalSyncTable.score = gGlobalSyncTable.score - 30
+                    else
+                        pending_data.vanishTimer = pending_data.vanishTimer - 1
+                        if pending_data.vanishTimer <= 0 then
+                            table.remove(pending_orders, i)
                         end
                     end
                 end
@@ -148,7 +155,8 @@ function update()
                 for kitchen = 1, gGlobalSyncTable.maxKitchens do
                     local pending_orders = pending_orders_all[kitchen]
                     local servedOrders = gGlobalSyncTable["servedOrders"..kitchen]
-                    expected_orders = math.clamp(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10 - servedOrders, 2, 5)
+                    local expected_orders = math.clamp(2 + (lData.totalTime - gGlobalSyncTable.timeLeft) // 10 - servedOrders, 2, 5)
+
                     while #pending_orders < expected_orders do
                         local orderID = lData.orders[math.random(1, #lData.orders)]
                         network_send_include_self(true, {id = PACKET_ORDER, orderID = orderID, kitchen = kitchen})
@@ -285,6 +293,7 @@ hook_event(HOOK_ON_SYNC_VALID, on_sync_valid)
 ---@param m MarioState
 function mario_update(m)
     m.health = 0x880 -- no health in this mod
+    m.numLives = 100 -- or lives
     if m.marioBodyState.allowPartRotation == 15 and m.action ~= ACT_HOLD_WALKING then
         m.marioBodyState.allowPartRotation = 0
     end
@@ -706,6 +715,15 @@ function act_custom_throwing(m)
         return drop_and_set_mario_action(m, ACT_FREEFALL, 0);
     end
 
+    if (m.input & INPUT_A_PRESSED) ~= 0 then
+        m.marioObj.header.gfx.animInfo.animID = -1
+        set_mario_y_vel_based_on_fspeed(m, 42, 0.25)
+        m.forwardVel = m.forwardVel * 0.8
+        m.action = ACT_AIR_THROW
+        djui_chat_message_create("!")
+        return 1
+    end
+
     m.actionTimer = m.actionTimer + 1
     if (m.actionTimer == 4) then
         mario_throw_held_object(m);
@@ -714,7 +732,26 @@ function act_custom_throwing(m)
         queue_rumble_data_mario(m, 3, 50);
     end
 
-    animated_stationary_ground_step(m, CHAR_ANIM_GROUND_THROW, ACT_IDLE);
+    -- act as walking
+    update_walking_speed(m)
+    set_character_animation(m, CHAR_ANIM_GROUND_THROW)
+    if is_anim_at_end(m) ~= 0 then
+        return set_mario_action(m, ACT_IDLE, 0)
+    end
+
+    local result = perform_ground_step(m)
+    if result == GROUND_STEP_LEFT_GROUND then
+        set_mario_action(m, ACT_HOLD_FREEFALL, 0)
+    elseif result == GROUND_STEP_HIT_WALL then
+        if (m.forwardVel > 16) then
+            mario_set_forward_vel(m, 16)
+        end
+    end
+
+    if (0.4 * m.intendedMag - m.forwardVel > 10) then
+        set_mario_particle_flags(m, PARTICLE_DUST, 0)
+    end
+
     set_anim_to_frame(m, m.marioObj.header.gfx.animInfo.animFrame + 2)
     return 0;
 end
@@ -743,11 +780,28 @@ function act_prepare_throw(m)
     end
 
     m.actionTimer = m.actionTimer + 1
-    if m.actionTimer > 3 then
+    if m.actionTimer > 5 then
         m.faceAngle.y = m.intendedYaw
+        animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
+    else
+        -- act as walking
+        update_walking_speed(m)
+        set_character_animation(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ)
+
+        local result = perform_ground_step(m)
+        if result == GROUND_STEP_LEFT_GROUND then
+            set_mario_action(m, ACT_HOLD_FREEFALL, 0)
+        elseif result == GROUND_STEP_HIT_WALL then
+            if (m.forwardVel > 16) then
+                mario_set_forward_vel(m, 16)
+            end
+        end
+
+        if (0.4 * m.intendedMag - m.forwardVel > 10) then
+            set_mario_particle_flags(m, PARTICLE_DUST, 0)
+        end
     end
 
-    animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
     set_anim_to_frame(m, 0)
     return 0;
 end
@@ -769,7 +823,7 @@ function act_prepare_throw_air(m)
     end
 
     m.actionTimer = m.actionTimer + 1
-    if m.actionTimer > 3 then
+    if m.actionTimer > 5 then
         m.faceAngle.y = m.intendedYaw
         mario_set_forward_vel(m, 0)
     end

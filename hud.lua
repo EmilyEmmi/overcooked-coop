@@ -31,13 +31,7 @@ function playing_hud()
 
         local alpha = 255
         if pending_data.vanishTimer then
-            if pending_data.vanishTimer <= 0 then
-                table.remove(pending_orders, i)
-                alpha = 0
-            else
-                alpha = (alpha * pending_data.vanishTimer // 30)
-                pending_data.vanishTimer = pending_data.vanishTimer - 1
-            end
+            alpha = (alpha * pending_data.vanishTimer // 30)
         end
 
         local order = ORDER_DATA[pending_data.id]
