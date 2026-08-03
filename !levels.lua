@@ -8,6 +8,7 @@ end
 OC_LEVEL_TEST = 0
 OC_LEVEL_BOB = 1
 OC_LEVEL_WF = 2
+OC_LEVEL_SHIP = 3
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -39,13 +40,26 @@ OC_LEVEL_DATA = {
         name = "Level 2",
         level = LEVEL_WF,
         totalTime = 210,
-        failTime = {180, 150, 120, 90},
+        failTime = {190, 160, 130, 100},
         orders = {ORDER_PLAIN_SALAD, ORDER_MIXED_SALAD},
         starScores = {
             {20, 100, 300, 500},
             {50, 150, 400, 600},
             {100, 200, 400, 700},
             {150, 300, 500, 800},
+        },
+    },
+    [OC_LEVEL_SHIP] = {
+        name = "Level 3",
+        level = LEVEL_JRB,
+        totalTime = 240,
+        failTime = {240, 210, 180, 160},
+        orders = {ORDER_TOMATO_SOUP, ORDER_ONION_SOUP, ORDER_MUSHROOM_SOUP},
+        starScores = {
+            {100, 200, 400, 700},
+            {250, 550, 900, 1200},
+            {350, 750, 1100, 1500},
+            {400, 800, 1200, 1700},
         },
     },
 }

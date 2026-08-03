@@ -328,17 +328,25 @@ function behind_hud_render()
     local toRenderObj = {}
     while o do
         local validForRender = true
-        if o.oHeldState == HELD_FREE and (o.header.gfx.node.flags & GRAPH_RENDER_INVISIBLE ~= 0 or o.header.gfx.node.flags & GRAPH_RENDER_ACTIVE == 0) then
-            validForRender = false
-        elseif (o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE) then
-            validForRender = false
+        if o.oHeldState == HELD_FREE then
+            if (o.header.gfx.node.flags & GRAPH_RENDER_INVISIBLE ~= 0 or o.header.gfx.node.flags & GRAPH_RENDER_ACTIVE == 0) then
+                validForRender = false
+            elseif (o.parentObj and o.parentObj ~= o) then
+                validForRender = false
+            end
+        else
+            local m = gMarioStates[o.heldByPlayerIndex]
+            if m.marioBodyState.mirrorMario or m.marioBodyState.updateHeadPosTime ~= get_global_timer() then
+                validForRender = false
+            end
         end
 
         if validForRender then
             local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
             if o.oHeldState ~= HELD_FREE then
-                vec3f_copy(pos, gMarioStates[o.heldByPlayerIndex].pos)
-                pos.y = pos.y + 160
+                local m = gMarioStates[o.heldByPlayerIndex]
+                vec3f_copy(pos, m.marioBodyState.headPos)
+                pos.y = pos.y + 80
             end
 
             local out = gVec3fZero()
@@ -393,7 +401,7 @@ function behind_hud_render()
 
                 radar.x = out.x
                 radar.y = out.y
-                radar.scale = 2000 / -out.z
+                radar.scale = -300 / out.z * djui_hud_get_fov_coeff()
                 table.insert(toRenderObj, {out.z, o})
             end
         end

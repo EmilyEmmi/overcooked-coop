@@ -481,7 +481,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
         if counter.oBehParams2ndByte == COUNTER_TYPE_SINK and iData.washItem then o2 = nil end
 
         -- empty, default counters have a smaller auto-snap range
-        if (not o2) and counter.oBehParams2ndByte == COUNTER_TYPE_DEFAULT and dist > 100 then return false, false end
+        if (not o2) and (counter.oBehParams2ndByte == COUNTER_TYPE_DEFAULT or counter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT) and dist > 100 then return false, false end
 
         -- Non-throwables will only snap to empty counters
         if (iData.noThrow or o.oContentCount ~= 0) and o2 then return false, false end
@@ -547,7 +547,11 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
 
             -- average cooking time
             if iData.pourable then
-                o2.oCutOrCookTimer = o2.oCutOrCookTimer + o.oCutOrCookTimer
+                if o.oContentCount == 0 then
+                    o2.oCutOrCookTimer = o2.oCutOrCookTimer * 2 -- keep same
+                else
+                    o2.oCutOrCookTimer = o2.oCutOrCookTimer + o.oCutOrCookTimer
+                end
                 o.oCutOrCookTimer = 0
             end
             o2.oCutOrCookTimer = o2.oCutOrCookTimer // 2
@@ -1136,10 +1140,47 @@ function bhv_player_barrier_init(o)
     obj_scale_xyz(o, o.oBehParams2ndByte * 1.04, 1, 1)
 
     o.collisionData = smlua_collision_util_get("barrier_collision")
+    o.oCollisionDistance = 10000 -- don't disable collision
 end
 
 function bhv_player_barrier_loop(o)
-    if is_other_player_active() ~= 0 then
+    -- Pair with object that has param 3 set to the same value as the barriers's param 1
+    -- (param 3 is used because the rotating platforms in WF use param 1 for the speed)
+    if (o.oBehParams >> 24) ~= 0 then
+        if o.parentObj == o or o.parentObj == nil then
+            -- Find the first surface object (or type defined by barrier's param 3)
+            local list = OBJ_LIST_SURFACE
+            if (o.oBehParams >> 8) & 0xFF ~= 0 then
+                list = (o.oBehParams >> 8) & 0xFF
+            end
+
+            local connectID = (o.oBehParams >> 24)
+            local parent = obj_get_first(list)
+            while parent do
+                if (parent.oBehParams >> 8) & 0xFF == connectID then
+                    o.parentObj = parent
+                    parent.oCollisionDistance = 10000 -- don't disable collision
+                    local relTranslation = {x = o.oPosX - parent.oPosX, y = o.oPosY - parent.oPosY, z = o.oPosZ - parent.oPosZ}
+                    local toRotate = {x = -parent.oFaceAnglePitch, y = -parent.oFaceAngleYaw, z = -parent.oFaceAngleRoll}
+                    vec3f_rotate_zxy(relTranslation, toRotate)
+                    obj_set_parent_relative_pos(o, relTranslation.x, relTranslation.y, relTranslation.z)
+                    o.oParentRelativeAnglePitch, o.oParentRelativeAngleYaw, o.oParentRelativeAngleRoll = o.oFaceAnglePitch - parent.oFaceAnglePitch, o.oFaceAngleYaw - parent.oFaceAngleYaw, o.oFaceAngleRoll - parent.oFaceAngleRoll
+                    break
+                end
+                parent = obj_get_next(parent)
+            end
+        else
+            obj_position_relative_to_parent(o)
+        end
+    end
+
+    local width = o.oBehParams2ndByte
+    if is_other_player_active() == 0 then
+        width = (o.oBehParams & 0xFF)
+    end
+
+    if width ~= 0 then
+        obj_scale_xyz(o, width * 1.04, 1, 1)
         load_object_collision_model()
         cur_obj_enable_rendering()
     else
@@ -1150,7 +1191,57 @@ end
 id_bhvPlayerBarrier = hook_behavior(nil, OBJ_LIST_SURFACE, false, bhv_player_barrier_init, bhv_player_barrier_loop, "bhvPlayerBarrier")
 
 -- Does nothing on its own; used to mark player spawns
-id_bhvOcSpawn = hook_behavior(nil, OBJ_LIST_GENACTOR, false, nil, nil, "bhvOcSpawn")
+id_bhvOcSpawn = hook_behavior(nil, OBJ_LIST_DEFAULT, false, nil, nil, "bhvOcSpawn")
+
+-- controls the movement of the counters/barriers in the ship level
+function ship_movement_controller_init(o)
+    o.oForwardVel = 0
+    cur_obj_set_home_once()
+end
+
+function ship_movement_controller_loop(o)
+    local correctPos = {x = o.oHomeX, y = o.oHomeY, z = o.oHomeZ}
+    if o.oAction ~= 0 then
+        correctPos.x = correctPos.x + sins(o.oFaceAngleYaw) * o.oBehParams2ndByte * 104
+        correctPos.z = correctPos.z + coss(o.oFaceAngleYaw) * o.oBehParams2ndByte * 104
+    end
+
+    -- move back and forth
+    local dist = dist_between_object_and_point(o, correctPos.x, correctPos.y, correctPos.z)
+    if dist > 1 then
+        if dist <= 55 and o.oForwardVel > 0 then
+            o.oForwardVel = o.oForwardVel - 1
+        elseif o.oForwardVel < 10 then
+            o.oForwardVel = o.oForwardVel + 1
+        end
+        o.oMoveAngleYaw = o.oFaceAngleYaw
+        if o.oAction == 0 then o.oMoveAngleYaw = o.oMoveAngleYaw + 0x8000 end
+        cur_obj_move_xz_using_fvel_and_yaw()
+    else
+        o.oForwardVel = 0
+        obj_set_pos(o, correctPos.x, correctPos.y, correctPos.z)
+    end
+
+    -- shift if not currently moving every 30s 
+    if o.oForwardVel == 0 and gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+        local newAction = 1 - ((gGlobalSyncTable.timeLeft - 1) // 30) % 2
+        if o.oAction ~= newAction then
+            cur_obj_change_action(newAction)
+        end
+    end
+end
+id_bhvShipMovementController = hook_behavior(nil, OBJ_LIST_DEFAULT, false, ship_movement_controller_init, ship_movement_controller_loop, "bhvShipMovementController")
+
+-- fix rotation based on network_area_timer to reduce desyncs between players (TODO)
+function custom_rotating_platform_loop(o)
+    local angleYaw = (o.oBehParams >> 24) << 4;
+    local expectedYaw = limit_angle(get_network_area_timer() * angleYaw)
+    if abs_angle_diff(o.oFaceAngleYaw, expectedYaw) >= angleYaw * 10 then -- off by 10 frames or more
+        o.oFaceAngleYaw = expectedYaw
+        --o.oAngleVelYaw = expectedYaw - o.oFaceAngleYaw -- Also moves items- commented out to be less disruptive
+    end
+end
+hook_behavior(id_bhvRotatingPlatform, OBJ_LIST_SURFACE, false, nil, custom_rotating_platform_loop)
 
 ---@param o Object
 function on_object_render(o)

@@ -118,6 +118,11 @@ function get_order_fail_time()
     return data.failTime[lowPlayers] or 240
 end
 
+-- from extended moveset
+function limit_angle(a)
+  return (a + 0x8000) % 0x10000 - 0x8000
+end
+
 function clear_pending_orders_table()
     pending_orders_all = {}
     for i=1,MAX_KITCHENS do

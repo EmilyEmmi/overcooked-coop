@@ -399,8 +399,8 @@ function before_mario_update(m)
     -- get selected item and counter
     if not sMario.spectator then
         local grabPos = {x = m.pos.x, y = m.pos.y, z = m.pos.z}
-        grabPos.x = grabPos.x + sins(m.faceAngle.y) * 35
-        grabPos.z = grabPos.z + coss(m.faceAngle.y) * 35
+        grabPos.x = grabPos.x + sins(m.faceAngle.y) * 52
+        grabPos.z = grabPos.z + coss(m.faceAngle.y) * 52
         --spawn_non_sync_object(id_bhvSparkleSpawn, E_MODEL_NONE, grabPos.x, grabPos.y, grabPos.z, nil)
         local dist = 0
         selectedItem, dist = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvIngredient, function(o)
@@ -561,6 +561,13 @@ function act_select_start(m)
     local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / maxKitchens)
     set_character_animation(m, CHAR_ANIM_FIRST_PERSON)
 
+    if sMario.kitchen > maxKitchens then
+        sMario.kitchen = 1
+    end
+    if sMario.spawnID > maxSpawnID then
+        sMario.maxSpawnID = 0
+    end
+
     local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
     if spawnObj then
         m.pos.x, m.pos.y, m.pos.z = spawnObj.oPosX, spawnObj.oPosY, spawnObj.oPosZ
@@ -720,7 +727,6 @@ function act_custom_throwing(m)
         set_mario_y_vel_based_on_fspeed(m, 42, 0.25)
         m.forwardVel = m.forwardVel * 0.8
         m.action = ACT_AIR_THROW
-        djui_chat_message_create("!")
         return 1
     end
 
