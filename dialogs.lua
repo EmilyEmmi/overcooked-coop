@@ -109,6 +109,12 @@ and their cooking time\
 will be averaged.\
 Use this if you make\
 a mistake.\
+Also, essential items like\
+plates and pots will\
+respawn if they are\
+destroyed, so sometimes it\
+may be advantageous to\
+destroy them on purpose.\
 Finally, did you know that\
 if multiple people work\
 together, you can chop\
