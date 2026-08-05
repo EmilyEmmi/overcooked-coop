@@ -369,7 +369,7 @@ function behind_hud_render()
 
                 radar.x = out.x
                 radar.y = out.y
-                radar.scale = 2000 / -out.z
+                radar.scale = -2000 / out.z * djui_hud_get_fov_coeff()
                 table.insert(toRenderObj, {out.z, o})
             end
         end
@@ -401,7 +401,7 @@ function behind_hud_render()
 
                 radar.x = out.x
                 radar.y = out.y
-                radar.scale = -300 / out.z * djui_hud_get_fov_coeff()
+                radar.scale = -2000 / out.z * djui_hud_get_fov_coeff()
                 table.insert(toRenderObj, {out.z, o})
             end
         end

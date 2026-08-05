@@ -775,10 +775,15 @@ function act_prepare_throw(m)
     if (m.input & INPUT_UNKNOWN_10 ~= 0) then
         return drop_and_set_mario_action(m, ACT_SHOCKWAVE_BOUNCE, 0);
     elseif (m.input & INPUT_OFF_FLOOR ~= 0) then
-        return drop_and_set_mario_action(m, ACT_FREEFALL, 0);
+        m.action = ACT_PREPARE_THROW_AIR
+        m.actionTimer = math.min(m.actionTimer, 3)
+        return 1
     elseif (m.input & INPUT_ABOVE_SLIDE ~= 0) then
         return set_mario_action(m, ACT_HOLD_BEGIN_SLIDING, 0);
     end
+
+    m.actionTimer = m.actionTimer + 1
+    animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
 
     if m.controller.buttonDown & X_BUTTON == 0 then
         m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
@@ -786,29 +791,7 @@ function act_prepare_throw(m)
         m.actionTimer = math.min(m.actionTimer, 3)
         return 1
     end
-
-    m.actionTimer = m.actionTimer + 1
-    if m.actionTimer > 5 then
-        m.faceAngle.y = m.intendedYaw
-        animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
-    else
-        -- act as walking
-        update_walking_speed(m)
-        set_character_animation(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ)
-
-        local result = perform_ground_step(m)
-        if result == GROUND_STEP_LEFT_GROUND then
-            set_mario_action(m, ACT_HOLD_FREEFALL, 0)
-        elseif result == GROUND_STEP_HIT_WALL then
-            if (m.forwardVel > 16) then
-                mario_set_forward_vel(m, 16)
-            end
-        end
-
-        if (0.4 * m.intendedMag - m.forwardVel > 10) then
-            set_mario_particle_flags(m, PARTICLE_DUST, 0)
-        end
-    end
+    m.faceAngle.y = m.intendedYaw
 
     set_anim_to_frame(m, 0)
     return 0;
