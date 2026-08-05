@@ -51,6 +51,7 @@ for i=0,MAX_PLAYERS-1 do
 end
 
 GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
+MAX_INGREDIENT_COUNT = 50
 
 gLevelValues.disableActs = 1
 gServerSettings.skipIntro = 1
@@ -93,6 +94,33 @@ function update()
     if network_is_server() then
         local totalPlayers = get_active_player_count()
         gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, gGlobalSyncTable.maxKitchens * 4)
+    end
+
+    -- limit the number of ingredients in the level
+    -- we prioritize deleting raw, uncut ingredients
+    local ingredientCount = obj_count_objects_with_behavior_id(id_bhvIngredient)
+    if ingredientCount > MAX_INGREDIENT_COUNT then
+        local o = obj_get_first_with_behavior_id(id_bhvIngredient)
+        local lastResortDelete = {}
+        while o and ingredientCount > MAX_INGREDIENT_COUNT do
+            local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
+            if not iData.noTrash then
+                if o.oContentCount == 0 and not iData.subIcon then
+                    obj_mark_for_deletion(o)
+                    ingredientCount = ingredientCount - 1
+                else
+                    table.insert(lastResortDelete, o)
+                end
+            end
+            o = obj_get_next_with_same_behavior_id(o)
+        end
+
+        -- delete last resort items
+        while #lastResortDelete ~= 0 and ingredientCount > MAX_INGREDIENT_COUNT do
+            o = table.remove(lastResortDelete, 1)
+            obj_mark_for_deletion(o)
+            ingredientCount = ingredientCount - 1
+        end
     end
 
     if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then

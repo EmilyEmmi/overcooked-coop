@@ -70,7 +70,7 @@ OC_LEVEL_DATA = {
         failTime = {210, 210, 180, 160},
         orders = {ORDER_PLAIN_BURGER, ORDER_CHEESE_BURGER},
         starScores = {
-            {50, 100, 300, 500},
+            {50, 100, 300, 550},
             {100, 250, 500, 900},
             {250, 450, 700, 1200},
             {300, 600, 900, 1500},

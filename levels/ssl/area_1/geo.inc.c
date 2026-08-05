@@ -4,7 +4,7 @@ const GeoLayout ssl_area_1_geo[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, ssl_dl_Lava_mesh_layer_1),
-		GEO_TRANSLATE_NODE_WITH_DL(LAYER_OPAQUE, 1500, 0, 0, ssl_dl_Platforms_mesh_layer_1_with_revert),
+		GEO_TRANSLATE_NODE_WITH_DL(LAYER_OPAQUE, 1400, 0, 0, ssl_dl_Platforms_mesh_layer_1_with_revert),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
