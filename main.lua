@@ -54,6 +54,8 @@ GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
 
 gLevelValues.disableActs = 1
 gServerSettings.skipIntro = 1
+gServerSettings.playerInteractions = PLAYER_INTERACTIONS_SOLID
+gServerSettings.playerKnockbackStrength = 20
 
 local lastSeq = -1
 function update()

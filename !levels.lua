@@ -9,6 +9,7 @@ OC_LEVEL_TEST = 0
 OC_LEVEL_BOB = 1
 OC_LEVEL_WF = 2
 OC_LEVEL_SHIP = 3
+OC_LEVEL_LAVA = 4
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -60,6 +61,19 @@ OC_LEVEL_DATA = {
             {250, 550, 900, 1200},
             {350, 750, 1100, 1500},
             {400, 800, 1200, 1700},
+        },
+    },
+    [OC_LEVEL_LAVA] = {
+        name = "Level 4",
+        level = LEVEL_SSL,
+        totalTime = 210,
+        failTime = {210, 210, 180, 160},
+        orders = {ORDER_PLAIN_BURGER, ORDER_CHEESE_BURGER},
+        starScores = {
+            {50, 100, 300, 500},
+            {100, 250, 500, 900},
+            {250, 450, 700, 1200},
+            {300, 600, 900, 1500},
         },
     },
 }
