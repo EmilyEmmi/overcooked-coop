@@ -1,21 +1,23 @@
 #include "src/game/envfx_snow.h"
 
-const GeoLayout ssl_area_1_geo[] = {
+const GeoLayout lll_area_1_geo[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
-		GEO_TRANSLATE_NODE_WITH_DL(LAYER_OPAQUE, 1400, 0, 0, ssl_dl_Platforms_mesh_layer_1),
-		GEO_DISPLAY_LIST(LAYER_OPAQUE, ssl_dl_Quicksand_mesh_layer_1_with_revert),
+		GEO_TRANSLATE_NODE_WITH_DL(LAYER_OPAQUE, 0, 25, 0, lll_dl_Border_mesh_layer_1),
+		GEO_TRANSLATE_NODE_WITH_DL(LAYER_OPAQUE, 720, 0, -720, lll_dl_Corner_mesh_layer_1),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, lll_dl_Corner_001_mesh_layer_1),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, lll_dl_Lava_mesh_layer_1_with_revert),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
-const GeoLayout ssl_area_1[] = {
+const GeoLayout lll_area_1[] = {
 	GEO_NODE_SCREEN_AREA(10, SCREEN_WIDTH/2, SCREEN_HEIGHT/2, SCREEN_WIDTH/2, SCREEN_HEIGHT/2),
 	GEO_OPEN_NODE(),
 		GEO_ZBUFFER(0),
 		GEO_OPEN_NODE(),
 			GEO_NODE_ORTHO(100.0000),
 			GEO_OPEN_NODE(),
-				GEO_BACKGROUND(BACKGROUND_DESERT, geo_skybox_main),
+				GEO_BACKGROUND(BACKGROUND_FLAMING_SKY, geo_skybox_main),
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),
 		GEO_ZBUFFER(1),
@@ -24,9 +26,9 @@ const GeoLayout ssl_area_1[] = {
 			GEO_OPEN_NODE(),
 				GEO_CAMERA(CAMERA_MODE_8_DIRECTIONS, 0, 0, 0, 0, -100, 0, geo_camera_main),
 				GEO_OPEN_NODE(),
-					GEO_BRANCH(1, ssl_area_1_geo),
+					GEO_BRANCH(1, lll_area_1_geo),
 					GEO_RENDER_OBJ(),
-					GEO_ASM(ENVFX_MODE_NONE, geo_envfx_main),
+					GEO_ASM(ENVFX_LAVA_BUBBLES, geo_envfx_main),
 				GEO_CLOSE_NODE(),
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),

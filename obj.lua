@@ -330,6 +330,7 @@ function bhv_ingredient_loop(o)
         --cur_obj_enable_rendering()
         o.oForwardVel = (o.oHeldState == HELD_THROWN and 60) or 0
         o.oVelY = (o.oHeldState == HELD_THROWN and 10) or 0
+        o.oTimer = 0
 
         o.oFaceAngleYaw = o.oMoveAngleYaw
         -- consistent throwing height (based on Mario's)
@@ -475,7 +476,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
     else
         counter = obj_get_nearest_object_with_behavior_id(o, id_bhvCounter)
         local dist = (counter and dist_between_objects(o, counter)) or 10000
-        if dist > 150 or ((isHeld or o.oForwardVel < 5) and dist > 100) then return false, false end
+        if dist > 150 or ((isHeld or o.oForwardVel < 5 or o.oTimer < 3) and dist > 100) then return false, false end
         o2 = counter.usingObj
         -- dirty plates ignore items in sink
         if counter.oBehParams2ndByte == COUNTER_TYPE_SINK and iData.washItem then o2 = nil end
@@ -1232,7 +1233,23 @@ function ship_movement_controller_loop(o)
 end
 id_bhvShipMovementController = hook_behavior(nil, OBJ_LIST_DEFAULT, false, ship_movement_controller_init, ship_movement_controller_loop, "bhvShipMovementController")
 
--- fix rotation based on network_area_timer to reduce desyncs between players (TODO)
+-- version of BitFS Sinking Cage Platform without the pole
+---@param o Object
+function falling_rising_platform_init(o)
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
+    o.collisionData = gGlobalObjectCollisionData.bitfs_seg7_collision_sinking_cage_platform
+    cur_obj_set_home_once()
+end
+
+---@param o Object
+function falling_rising_platform_loop(o)
+    bhv_bitfs_sinking_cage_platform_loop()
+    load_object_collision_model()
+end
+id_bhvFallingRisingPlatform = hook_behavior(nil, OBJ_LIST_SURFACE, false, falling_rising_platform_init, falling_rising_platform_loop, "bhvFallingRisingPlatform")
+
+-- fix rotation based on network_area_timer to reduce desyncs between players
+---@param o Object
 function custom_rotating_platform_loop(o)
     local angleYaw = (o.oBehParams >> 24) << 4;
     local expectedYaw = limit_angle(get_network_area_timer() * angleYaw)
@@ -1242,6 +1259,48 @@ function custom_rotating_platform_loop(o)
     end
 end
 hook_behavior(id_bhvRotatingPlatform, OBJ_LIST_SURFACE, false, nil, custom_rotating_platform_loop)
+
+-- make puzzle pieces move more slowly
+---@param o Object
+function custom_puzzle_piece_init(o)
+    o.oFlags = o.oFlags | (OBJ_FLAG_COMPUTE_DIST_TO_MARIO | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)
+    o.collisionData = gGlobalObjectCollisionData.lll_seg7_collision_puzzle_piece
+    cur_obj_set_home_once()
+    o.oCollisionDistance = 3000
+end
+
+---@param o Object
+function custom_puzzle_piece_loop(o)
+    -- skip spawning coins
+    if o.parentObj and o.parentObj ~= o and o.parentObj.oAction == BOWSER_PUZZLE_ACT_WAIT_FOR_COMPLETE then
+        o.parentObj.oAction = BOWSER_PUZZLE_ACT_DONE
+    end
+
+    if o.oBowserPuzzlePieceContinuePerformingAction == 0 then
+        bhv_lll_bowser_puzzle_piece_loop()
+        if o.oBowserPuzzlePieceContinuePerformingAction == 0 then return end
+    end
+
+    -- normally 20 frames, now uses 60 (2 seconds)
+    if (o.oTimer < 60) then
+        o.oBowserPuzzlePieceOffsetY = 0.0
+        -- more obvious movement tell
+        if (o.oTimer % 6 > 2) or o.oAction == 2 then
+            o.header.gfx.node.flags = o.header.gfx.node.flags & ~GRAPH_RENDER_INVISIBLE
+        else
+            o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+        end
+
+        o.oPosX = o.oBowserPuzzlePieceOffsetX + o.oHomeX
+        o.oPosY = o.oBowserPuzzlePieceOffsetY + o.oHomeY
+        o.oPosZ = o.oBowserPuzzlePieceOffsetZ + o.oHomeZ
+    else
+        o.oTimer = o.oTimer - 40
+        bhv_lll_bowser_puzzle_piece_loop()
+        o.oTimer = o.oTimer + 40
+    end
+end
+hook_behavior(id_bhvLllBowserPuzzlePiece, OBJ_LIST_SURFACE, true, custom_puzzle_piece_init, custom_puzzle_piece_loop)
 
 ---@param o Object
 function on_object_render(o)

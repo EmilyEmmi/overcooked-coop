@@ -10,6 +10,7 @@ OC_LEVEL_BOB = 1
 OC_LEVEL_WF = 2
 OC_LEVEL_SHIP = 3
 OC_LEVEL_LAVA = 4
+OC_LEVEL_SAND = 5
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -65,6 +66,19 @@ OC_LEVEL_DATA = {
     },
     [OC_LEVEL_LAVA] = {
         name = "Level 4",
+        level = LEVEL_LLL,
+        totalTime = 240,
+        failTime = {240, 240, 210, 180},
+        orders = {ORDER_TOMATO_SOUP, ORDER_ONION_SOUP, ORDER_MUSHROOM_SOUP},
+        starScores = {
+            {20, 50, 200, 500},
+            {50, 200, 400, 800},
+            {150, 300, 500, 1000},
+            {200, 500, 700, 1200},
+        },
+    },
+    [OC_LEVEL_SAND] = {
+        name = "Level 5",
         level = LEVEL_SSL,
         totalTime = 210,
         failTime = {210, 210, 180, 160},
