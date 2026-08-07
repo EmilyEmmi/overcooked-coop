@@ -434,15 +434,21 @@ function before_mario_update(m)
         grabPos.x = grabPos.x + sins(m.faceAngle.y) * 52
         grabPos.z = grabPos.z + coss(m.faceAngle.y) * 52
         --spawn_non_sync_object(id_bhvSparkleSpawn, E_MODEL_NONE, grabPos.x, grabPos.y, grabPos.z, nil)
+        
+        -- select ingredient from ground
         local dist = 0
         selectedItem, dist = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvIngredient, function(o)
             local counter = o.usingObj
             return o.oHeldState == HELD_FREE and o.oPlateAppearTimer == 0 and o.oRespawnTimer == 0
             and (o.parentObj == nil or o.parentObj == o) and (counter == nil)
         end)
-        selectedCounter = nil
-        if selectedItem == nil or dist > 115 then
+        if dist > 115 then
             selectedItem = nil
+        end
+
+        -- select counter (when not holding an item, ground ingredients take priority, otherwise counters do)
+        selectedCounter = nil
+        if selectedItem == nil or m.heldObj then
             selectedCounter, dist = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
                 return true -- No condition yet
             end)
@@ -584,6 +590,15 @@ function before_mario_update(m)
     end
 end
 hook_event(HOOK_BEFORE_MARIO_UPDATE, before_mario_update)
+
+-- don't interact with ingredients; have THEM be pushed around instead
+function allow_interact(m, o, type)
+    if type == INTERACT_GRABBABLE and obj_has_behavior_id(o, id_bhvIngredient) ~= 0 then
+        obj_resolve_object_collisions_custom(m.marioObj, o) -- runs from Mario object
+        return false
+    end
+end
+hook_event(HOOK_ALLOW_INTERACT, allow_interact)
 
 local lastDirX = 0
 local lastDirY = 0

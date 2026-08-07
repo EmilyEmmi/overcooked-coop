@@ -79,6 +79,7 @@ ITEM_DATA = {
         noTrash = true,
         noThrow = true,
         isPlate = true,
+        noHitbox = true,
         dirtyItem = ITEM_DIRTY_PLATE,
     },
     [ITEM_POT] = {
@@ -105,6 +106,7 @@ ITEM_DATA = {
     [ITEM_LETTUCE_CUT] = {
         model = E_MODEL_PLATE_LETTUCE,
         plateable = true,
+        noHitbox = true,
         plateCombine = BURGER_COMBO,
         icon = ICON_LETTUCE,
         subIcon = ICON_CUT,
@@ -228,6 +230,7 @@ ITEM_DATA = {
         model = E_MODEL_PLATE,
         noTrash = true,
         noThrow = true,
+        noHitbox = true,
         washItem = ITEM_PLATE,
     },
 }

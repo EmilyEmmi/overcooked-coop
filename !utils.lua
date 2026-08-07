@@ -110,6 +110,53 @@ function obj_position_relative_to_parent(o)
     o.oAngleVelRoll = o.oFaceAngleRoll - prevRoll
 end
 
+---@param o Object
+---@param otherObject Object?
+function obj_resolve_object_collisions_custom(o, otherObject)
+    if not o then return 0 end
+    local dx;
+    local dz;
+    local angle;
+    local radius;
+    local otherRadius;
+    local relativeRadius;
+    local newCenterX;
+    local newCenterZ;
+
+    if (otherObject == nil and o.numCollidedObjs ~= 0) then
+        otherObject = o.collidedObjs[1]
+    end
+
+    if otherObject and (otherObject.oInteractType & INTERACT_PLAYER == 0) then
+        --! If one object moves after collisions are detected and this code
+        --  runs, the objects can move toward each other (transport cloning)
+        dx = otherObject.oPosX - o.oPosX;
+        dz = otherObject.oPosZ - o.oPosZ;
+        angle = atan2s(dx, dz); -- This should be atan2s(dz, dx) (not fixed b/c it is still broken)
+
+        radius = o.hitboxRadius;
+        otherRadius = otherObject.hitboxRadius;
+        relativeRadius = radius / (radius + otherRadius);
+
+        newCenterX = o.oPosX + dx * relativeRadius;
+        newCenterZ = o.oPosZ + dz * relativeRadius;
+
+        o.oPosX = newCenterX - radius * coss(angle);
+        o.oPosZ = newCenterZ - radius * sins(angle);
+
+        otherObject.oPosX = newCenterX + otherRadius * coss(angle);
+        otherObject.oPosZ = newCenterZ + otherRadius * sins(angle);
+
+        if (abs_angle_diff(o.oMoveAngleYaw, angle) < 0x4000) then
+            -- Bounce off object
+            local targetYaw = limit_angle(angle - o.oMoveAngleYaw + angle + 0x8000);
+            return 1, targetYaw;
+        end
+    end
+
+    return 0, 0;
+end
+
 function get_order_fail_time()
     -- Uses the lower amount of players expected per kitchen
     local data = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]

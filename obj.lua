@@ -19,8 +19,15 @@ define_custom_obj_fields({
 function bhv_ingredient_init(o)
     o.oFlags = (OBJ_FLAG_HOLDABLE | OBJ_FLAG_COMPUTE_DIST_TO_MARIO | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)
     ingredient_render_setup(o)
-    
-    o.oInteractType = INTERACT_GRABBABLE
+
+    local hitbox = get_temp_object_hitbox()
+    hitbox.radius = 37
+    hitbox.height = 50
+    hitbox.hurtboxRadius = 0
+    hitbox.hurtboxHeight = 0
+    hitbox.interactType = INTERACT_GRABBABLE
+    obj_set_hitbox(o, hitbox)
+
     o.oGravity = 2.5
     o.oFriction = 0.8
     o.oBuoyancy = 1.4
@@ -54,7 +61,6 @@ end
 ---@param o Object
 function bhv_ingredient_loop(o)
     if o.activeFlags == ACTIVE_FLAG_DEACTIVATED then return end
-    cur_obj_become_intangible()
 
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
     local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
@@ -204,6 +210,12 @@ function bhv_ingredient_loop(o)
 
     if (o.oHeldState == HELD_FREE) then
         if o.usingObj == nil or o.usingObj == o then
+            if iData.noHitbox then
+                cur_obj_become_intangible()
+            else
+                cur_obj_become_tangible()
+            end
+            obj_resolve_object_collisions()
             object_step_without_floor_orient()
 
             local trash = false
@@ -259,6 +271,7 @@ function bhv_ingredient_loop(o)
                 o.usingObj = nil
                 o.oUsingSyncID = 0
             else
+                cur_obj_become_intangible()
                 ingredient_place_on_counter(o, counter)
 
                 if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT then
@@ -319,6 +332,7 @@ function bhv_ingredient_loop(o)
             end
         end
     elseif (o.oHeldState == HELD_HELD) then
+        cur_obj_become_intangible()
         if o.usingObj then
             o.usingObj.usingObj = nil
             o.usingObj = nil
@@ -347,7 +361,7 @@ function bhv_ingredient_loop(o)
     o.oInteractStatus = 0
 end
 
-id_bhvIngredient = hook_behavior(nil, OBJ_LIST_GENACTOR, false, bhv_ingredient_init, bhv_ingredient_loop, "bhvIngredient")
+id_bhvIngredient = hook_behavior(nil, OBJ_LIST_PUSHABLE, false, bhv_ingredient_init, bhv_ingredient_loop, "bhvIngredient")
 
 local heldObjMtx = {}
 ---@param o Object
@@ -476,13 +490,15 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
     else
         counter = obj_get_nearest_object_with_behavior_id(o, id_bhvCounter)
         local dist = (counter and dist_between_objects(o, counter)) or 10000
-        if dist > 150 or ((isHeld or o.oForwardVel < 5 or o.oTimer < 3) and dist > 100) then return false, false end
+        if dist > 150 or ((isHeld or o.oForwardVel < 5) and dist > 100) then return false, false end
         o2 = counter.usingObj
         -- dirty plates ignore items in sink
         if counter.oBehParams2ndByte == COUNTER_TYPE_SINK and iData.washItem then o2 = nil end
 
         -- empty, default counters have a smaller auto-snap range
         if (not o2) and (counter.oBehParams2ndByte == COUNTER_TYPE_DEFAULT or counter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT) and dist > 100 then return false, false end
+        -- cutting boards only have large range for cuttable objects
+        if counter.oBehParams2ndByte == COUNTER_TYPE_CUT and (not iData.cut) and dist > 100 then return false, false end
 
         -- Non-throwables will only snap to empty counters
         if (iData.noThrow or o.oContentCount ~= 0) and o2 then return false, false end
@@ -1283,18 +1299,16 @@ function custom_puzzle_piece_loop(o)
 
     -- normally 20 frames, now uses 60 (2 seconds)
     if (o.oTimer < 60) then
-        o.oBowserPuzzlePieceOffsetY = 0.0
         -- more obvious movement tell
-        if (o.oTimer % 6 > 2) or o.oAction == 2 then
-            o.header.gfx.node.flags = o.header.gfx.node.flags & ~GRAPH_RENDER_INVISIBLE
-        else
-            o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+        if o.oAction ~= 2 then
+            o.oBowserPuzzlePieceOffsetY = sins(o.oTimer * 0x1000) * 10
         end
 
         o.oPosX = o.oBowserPuzzlePieceOffsetX + o.oHomeX
         o.oPosY = o.oBowserPuzzlePieceOffsetY + o.oHomeY
         o.oPosZ = o.oBowserPuzzlePieceOffsetZ + o.oHomeZ
     else
+        o.oBowserPuzzlePieceOffsetY = 0.0
         o.oTimer = o.oTimer - 40
         bhv_lll_bowser_puzzle_piece_loop()
         o.oTimer = o.oTimer + 40
