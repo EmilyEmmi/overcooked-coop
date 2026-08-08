@@ -329,7 +329,7 @@ function update()
                 if allOut then
                     gGlobalSyncTable.gameState = GAME_STATE_SETUP
                     gGlobalSyncTable.score = 0
-                    gGlobalSyncTable.timeLeft = 21
+                    gGlobalSyncTable.timeLeft = 23
                     gGlobalSyncTable.peakPlayers = get_active_player_count()
                     gGlobalSyncTable.maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
                     for i=1,MAX_KITCHENS do
