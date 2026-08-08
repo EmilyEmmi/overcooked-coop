@@ -292,6 +292,7 @@ function update()
             end
         end
     elseif gGlobalSyncTable.gameState == GAME_STATE_PREPARE then
+        clear_pending_orders_table()
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
         subTimer = subTimer + 1
         if subTimer >= 30 and gGlobalSyncTable.timeLeft ~= 0 then
@@ -318,7 +319,7 @@ function update()
                     if np.connected and (np.currLevelNum == lData.level or not np.currAreaSyncValid) then
                         allOut = false
                         if i == 0 and np.currAreaSyncValid then
-                            warp_to_start_level()
+                            warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
                             restartTransition = true
                         end
                         break
@@ -339,7 +340,8 @@ function update()
             else
                 local np = gNetworkPlayers[0]
                 if np.currLevelNum == lData.level then
-                    warp_to_start_level()
+                    warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+                    restartTransition = true
                 end
             end
         end
