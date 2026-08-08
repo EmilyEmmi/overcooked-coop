@@ -6,6 +6,7 @@
 
 selectedItem = nil
 selectedCounter = nil
+waitOpenDJUI = false
 
 pending_orders_all = {}
 pending_orders = {}
@@ -14,6 +15,9 @@ GAME_STATE_LEVEL_SELECT = 0
 GAME_STATE_SETUP = 1
 GAME_STATE_PLAYING = 2
 GAME_STATE_END = 3
+GAME_STATE_PREPARE = 4
+
+ACTION_BUTTONS = {X_BUTTON, Y_BUTTON, L_TRIG, B_BUTTON}
 
 BASE_TEMPO = 0
 BASE_MULTI = 1
@@ -47,6 +51,7 @@ for i=0,MAX_PLAYERS-1 do
     sMario.selCounterSyncID = 0
     sMario.readyToStart = false
     sMario.spectator = false
+    sMario.throwButtonIndex = throwButtonIndex
     c.actionAnimTimer = 0
 end
 
@@ -60,6 +65,11 @@ gServerSettings.playerKnockbackStrength = 20
 
 local lastSeq = -1
 function update()
+    if waitOpenDJUI then
+        djui_open_pause_menu()
+        waitOpenDJUI = false
+    end
+
     local sMario = gPlayerSyncTable[0]
     pending_orders = pending_orders_all[sMario.kitchen] or {}
 
@@ -93,7 +103,8 @@ function update()
     -- update player count this round
     if network_is_server() then
         local totalPlayers = get_active_player_count()
-        gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, gGlobalSyncTable.maxKitchens * 4)
+        local max = (gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT and MAX_PLAYERS) or (gGlobalSyncTable.maxKitchens * 4)
+        gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, max)
     end
 
     -- limit the number of ingredients in the level
@@ -136,6 +147,7 @@ function update()
         if (np.currLevelNum ~= lData.level or np.currActNum ~= act) and np.currAreaSyncValid then
             warp_to_level(lData.level, 1, act)
         end
+        restartTransition = false
 
         if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
             sMario.readyToStart = false
@@ -149,6 +161,7 @@ function update()
                         if gGlobalSyncTable.timeLeft == 0 then
                             gGlobalSyncTable.timeLeft = 10
                             gGlobalSyncTable.gameState = GAME_STATE_END
+                            gGlobalSyncTable.newRecord = save_new_score()
                         end
                     else
                         set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
@@ -276,6 +289,58 @@ function update()
                 end
             else
                 set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
+            end
+        end
+    elseif gGlobalSyncTable.gameState == GAME_STATE_PREPARE then
+        local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
+        subTimer = subTimer + 1
+        if subTimer >= 30 and gGlobalSyncTable.timeLeft ~= 0 then
+            subTimer = 0
+            if network_is_server() then
+                gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
+            else
+                set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
+            end
+        end
+
+        if restartTransition then
+            play_transition(WARP_TRANSITION_FADE_INTO_STAR, 1, 255, 255, 255)
+        end
+
+        if subTimer == 1 and gGlobalSyncTable.timeLeft == 10 then
+            play_sound(SOUND_MENU_STAR_SOUND_OKEY_DOKEY, gGlobalSoundSource)
+            play_transition(WARP_TRANSITION_FADE_INTO_STAR, 15, 255, 255, 255)
+        elseif restartTransition or not is_transition_playing() then
+            if network_is_server() then
+                local allOut = true
+                for i=0,MAX_PLAYERS-1 do
+                    local np = gNetworkPlayers[i]
+                    if np.connected and (np.currLevelNum == lData.level or not np.currAreaSyncValid) then
+                        allOut = false
+                        if i == 0 and np.currAreaSyncValid then
+                            warp_to_start_level()
+                            restartTransition = true
+                        end
+                        break
+                    end
+                end
+
+                if allOut then
+                    gGlobalSyncTable.gameState = GAME_STATE_SETUP
+                    gGlobalSyncTable.score = 0
+                    gGlobalSyncTable.timeLeft = 21
+                    gGlobalSyncTable.peakPlayers = get_active_player_count()
+                    gGlobalSyncTable.maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
+                    for i=1,MAX_KITCHENS do
+                        gGlobalSyncTable["tipMulti"..i] = 1
+                        gGlobalSyncTable["servedOrders"..i] = 0
+                    end
+                end
+            else
+                local np = gNetworkPlayers[0]
+                if np.currLevelNum == lData.level then
+                    warp_to_start_level()
+                end
             end
         end
     end
@@ -426,7 +491,20 @@ local INVALID_GRAB_ACTION = {
 function before_mario_update(m)
     if m.playerIndex ~= 0 then return end
 
+    local GRAB_BUTTON = ACTION_BUTTONS[grabButtonIndex+1]
+    local ACTION_BUTTON = ACTION_BUTTONS[actionButtonIndex+1]
+    local THROW_BUTTON = ACTION_BUTTONS[throwButtonIndex+1]
+
     local sMario = gPlayerSyncTable[0]
+    if (not inMenu) and pressed_pause()
+    and not (cheatsApi and m.controller.buttonDown & L_TRIG ~= 0) then
+        play_sound(SOUND_MENU_PAUSE, gGlobalSoundSource)
+        open_menu()
+        m.controller.buttonPressed = m.controller.buttonPressed & ~START_BUTTON
+    end
+    if inMenu then
+        menu_controls(m)
+    end
 
     -- get selected item and counter
     if not sMario.spectator then
@@ -464,6 +542,7 @@ function before_mario_update(m)
     end
     sMario.selObjSyncID = (selectedItem and selectedItem.oSyncID) or 0
     sMario.selCounterSyncID = (selectedCounter and selectedCounter.oSyncID) or 0
+    sMario.throwButtonIndex = throwButtonIndex
 
     -- Sparkles at selected (might be changed)
     if selectedCounter or selectedItem then
@@ -480,33 +559,54 @@ function before_mario_update(m)
         end)
     end
 
-    if m.controller.buttonPressed & B_BUTTON ~= 0 and not INVALID_GRAB_ACTION[m.action] then
+    local overrideNextAction = false
+    if m.controller.buttonDown & ACTION_BUTTON ~= 0 and (not m.heldObj)
+    and selectedCounter and (selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK) then
+        local counter = selectedCounter
+        local o = counter.usingObj
+        local iData = (o and ITEM_DATA[o.oBehParams]) or ITEM_DATA[0]
+
+        if selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT
+        and o and o ~= counter and iData and iData.cut then
+            sMario.cutTimer = 6
+            m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
+            overrideNextAction = true
+        elseif selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
+            sMario.washTimer = 6
+            m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
+            overrideNextAction = true
+        end
+    end
+    
+    if m.controller.buttonPressed & GRAB_BUTTON ~= 0 and not (INVALID_GRAB_ACTION[m.action] or overrideNextAction) then
         if m.heldObj then
             local o = m.heldObj
-            
             local placed, stillHolding = attempt_item_place(o, m, selectedItem, selectedCounter, true)
-            if not stillHolding then
-                mario_drop_held_object(m)
-            end
-            if placed or not stillHolding then
-                play_sound(GRAB_SOUND, gGlobalSoundSource) -- TODO: pick better sfx
-            end
-            
-            m.controller.buttonPressed = m.controller.buttonPressed &~ B_BUTTON
+            if placed or GRAB_BUTTON ~= THROW_BUTTON then
+                if placed or not stillHolding then
+                    play_sound(GRAB_SOUND, gGlobalSoundSource)
+                    if not stillHolding then
+                        mario_drop_held_object(m)
+                    end
+                end
+                
+                m.controller.buttonPressed = m.controller.buttonPressed &~ GRAB_BUTTON
+                overrideNextAction = true
 
-            if not m.heldObj then
-                m.marioBodyState.allowPartRotation = 0
-                m.prevAction = m.action
-                if m.action & ACT_FLAG_SWIMMING ~= 0 then
-                    m.action = ACT_WATER_ACTION_END
-                elseif m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
-                    m.action = ACT_JUMP
-                elseif m.action & ACT_FLAG_AIR ~= 0 then
-                    m.action = ACT_FREEFALL
-                elseif m.action & ACT_FLAG_MOVING ~= 0 then
-                    set_mario_action(m, ACT_WALKING, 0)
-                else
-                    m.action = ACT_IDLE
+                if not m.heldObj then
+                    m.marioBodyState.allowPartRotation = 0
+                    m.prevAction = m.action
+                    if m.action & ACT_FLAG_SWIMMING ~= 0 then
+                        m.action = ACT_WATER_ACTION_END
+                    elseif m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
+                        m.action = ACT_JUMP
+                    elseif m.action & ACT_FLAG_AIR ~= 0 then
+                        m.action = ACT_FREEFALL
+                    elseif m.action & ACT_FLAG_MOVING ~= 0 then
+                        set_mario_action(m, ACT_WALKING, 0)
+                    else
+                        m.action = ACT_IDLE
+                    end
                 end
             end
         else
@@ -536,7 +636,8 @@ function before_mario_update(m)
 
             -- Disallows diving if we are close enough to a counter- okay I guess
             if o or counter then
-                m.controller.buttonPressed = m.controller.buttonPressed &~ B_BUTTON
+                m.controller.buttonPressed = m.controller.buttonPressed &~ GRAB_BUTTON
+                overrideNextAction = true
             end
 
             if o and valid then
@@ -562,11 +663,14 @@ function before_mario_update(m)
                 end
             end
         end
-    elseif m.controller.buttonPressed & X_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) then
+    end
+    
+    if m.controller.buttonPressed & THROW_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) and not overrideNextAction then
         local iData = ITEM_DATA[m.heldObj.oBehParams] or ITEM_DATA[0]
         if obj_has_behavior_id(m.heldObj, id_bhvIngredient) == 0 or not (iData.noThrow or m.heldObj.oContentCount ~= 0) then
             m.marioBodyState.allowPartRotation = 0
             m.prevAction = m.action
+            m.controller.buttonPressed = m.controller.buttonPressed &~ THROW_BUTTON
             if m.action & ACT_FLAG_SWIMMING ~= 0 then
                 set_mario_action(m, ACT_WATER_THROW, 0)
             elseif m.action & ACT_FLAG_AIR ~= 0 then
@@ -574,18 +678,6 @@ function before_mario_update(m)
             else
                 m.action = ACT_PREPARE_THROW
             end
-        end
-    elseif m.controller.buttonDown & X_BUTTON ~= 0 and (not m.heldObj)
-    and selectedCounter and (selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK) then
-        local counter = selectedCounter
-        local o = counter.usingObj
-        local iData = (o and ITEM_DATA[o.oBehParams]) or ITEM_DATA[0]
-
-        if selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT
-        and o and o ~= counter and iData and iData.cut then
-            sMario.cutTimer = 6
-        elseif selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
-            sMario.washTimer = 6
         end
     end
 end
@@ -645,8 +737,8 @@ function act_select_start(m)
             m.actionState = 1
             sMario.readyToStart = true
         end
-    else
-        confirmTime = 0
+    elseif confirmTime ~= 0 then
+        confirmTime = confirmTime - 1
     end
 
     local change = 0
@@ -832,7 +924,8 @@ function act_prepare_throw(m)
     m.actionTimer = m.actionTimer + 1
     animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
 
-    if m.controller.buttonDown & X_BUTTON == 0 then
+    local THROW_BUTTON = gPlayerSyncTable[m.playerIndex].throwButtonIndex
+    if m.controller.buttonDown & THROW_BUTTON == 0 then
         m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
         m.action = ACT_THROWING
         m.actionTimer = math.min(m.actionTimer, 3)
@@ -853,7 +946,8 @@ function act_prepare_throw_air(m)
     set_character_animation(m, CHAR_ANIM_JUMP_WITH_LIGHT_OBJ);
     update_air_without_turn(m)
 
-    if m.controller.buttonDown & X_BUTTON == 0 then
+    local THROW_BUTTON = gPlayerSyncTable[m.playerIndex].throwButtonIndex
+    if m.controller.buttonDown & THROW_BUTTON == 0 then
         m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
         m.action = ACT_AIR_THROW
         m.actionTimer = math.min(m.actionTimer, 3)
@@ -909,9 +1003,9 @@ hook_event(HOOK_ON_DEATH, on_death)
 -- keep timed things in sync
 function on_time_left_change(tag, oldVal, newVal)
     if oldVal == newVal or oldVal == nil or newVal == nil then return end
-    if network_is_server() then return end
-
     subTimer = 0
+
+    if network_is_server() then return end
     local difference = newVal - oldVal
     for i, pending_data in ipairs(pending_orders) do
         pending_data.time = math.clamp(pending_data.time + difference * 30, 1, pending_data.maxTime)
@@ -997,23 +1091,16 @@ function start_level_command(msg)
         djui_chat_message_create("That level is not available")
         return true
     end
-    gGlobalSyncTable.gameState = GAME_STATE_SETUP
-    gGlobalSyncTable.score = 0
     gGlobalSyncTable.ocLevel = oc_level
-    gGlobalSyncTable.timeLeft = 21
-    gGlobalSyncTable.peakPlayers = get_active_player_count()
-    gGlobalSyncTable.maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
-    for i=1,MAX_KITCHENS do
-        gGlobalSyncTable["tipMulti"..i] = 1
-        gGlobalSyncTable["servedOrders"..i] = 0
-    end
+    gGlobalSyncTable.gameState = GAME_STATE_PREPARE
+    gGlobalSyncTable.timeLeft = 10
     return true
-end
-if network_is_server() then
-    hook_chat_command("start-level", "[ID?] - Start this level - leave blank to start the test level", start_level_command)
 end
 
 if _G.cheatsApi then
+    if network_is_server() then
+        hook_chat_command("start-level", "[ID?] - Start this level - leave blank to start the test level", start_level_command)
+    end
     hook_chat_command("ingredient", "[ITEM] - Create an ingredient", ingredient_command)
     hook_chat_command("counter", "[TYPE,ITEM] - Create a counter", counter_command)
     hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)

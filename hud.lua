@@ -1,5 +1,4 @@
 FLAME_ANIM = {"flame_seg3_texture_03017320", "flame_seg3_texture_03017B20", "flame_seg3_texture_03018320", "flame_seg3_texture_03018B20", "flame_seg3_texture_03019320", "flame_seg3_texture_03019B20", "flame_seg3_texture_0301A320", "flame_seg3_texture_0301AB20"}
-
 function playing_hud()
     local screenWidth = djui_hud_get_screen_width()
     local intendedX = 10
@@ -165,6 +164,7 @@ end
 
 local lastHudScore = 0
 local lastHudStars = 0
+local maxHudStars = 0
 function end_hud()
     local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
     djui_hud_set_color(0, 0, 0, 100)
@@ -181,6 +181,7 @@ function end_hud()
         end
     end
 
+    local reachedEnd = (lastHudScore == gGlobalSyncTable.score)
     djui_hud_reset_color()
     local scale = 8
     local text = tostring(lastHudScore)
@@ -192,37 +193,18 @@ function end_hud()
     djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
     djui_hud_print_text(text, x, y, scale)
 
-    -- Star requirements are based on how many players.
-    local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
     local stars = 4
-    local neededPoints = {9999, 9999, 9999, 9999}
-    if lData and lData.starScores then
-        local maxKitchens = gGlobalSyncTable.maxKitchens
-        local maxPlayers = gGlobalSyncTable.peakPlayers
-
-        if maxKitchens == 1 then
-            neededPoints = lData.starScores[math.clamp(maxPlayers, 1, 4)]
-        else
-            -- If there are more than 4 players, we add based on the amount of players in each kitchen.
-            -- For example, 5 players expects the 2 and 3 players scores added together.   
-            neededPoints = {0, 0, 0, 0}
-            while maxKitchens ~= 0 do
-                local players = math.clamp(math.ceil(maxPlayers / maxKitchens), 1, 4)
-                for i=1,4 do
-                    neededPoints[i] = neededPoints[i] + lData.starScores[players][i]
-                end
-                maxKitchens = maxKitchens - 1
-                maxPlayers = maxPlayers - players
-            end
-        end
-    end
+    local neededPoints = get_star_scores(gGlobalSyncTable.ocLevel)
     while stars > 0 do
         if lastHudScore >= neededPoints[stars] then break end
         stars = stars - 1
     end
-    local maxStars = 3
-    if stars >= 3 and (stars >= 4 or lastHudScore == gGlobalSyncTable.score) then
-        maxStars = 4
+    if maxHudStars == 0 then
+        maxHudStars = mod_storage_load_integer("record_"..gGlobalSyncTable.ocLevel.."_stars")
+        maxHudStars = math.clamp(maxHudStars + 1, 3, 4)
+    end
+    if stars >= 3 and (stars >= 4 or reachedEnd) then
+        maxHudStars = 4
     end
     if lastHudStars < stars then
         play_sound(SOUND_MENU_COLLECT_SECRET + ((stars + 1) << 16), gGlobalSoundSource)
@@ -230,8 +212,8 @@ function end_hud()
     lastHudStars = stars
 
     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
-    x = screenWidth / 2 - (10 * (maxStars - 1)) * scale
-    for i=1,maxStars do
+    x = screenWidth / 2 - (10 * (maxHudStars - 1)) * scale
+    for i=1,maxHudStars do
         y = screenHeight / 2 + 24 * scale
         if i <= stars then
             djui_hud_set_color(255, 255, 255, 255)
@@ -243,6 +225,13 @@ function end_hud()
         djui_hud_set_color(255, 255, 255, 255)
         djui_hud_print_text(tostring(neededPoints[i]), x, y, scale / 4)
         x = x + 20 * scale
+    end
+
+    if reachedEnd and gGlobalSyncTable.newRecord then
+        scale = scale / 4
+        x = screenWidth / 2
+        y = screenHeight - 24 * scale
+        djui_hud_print_text("NEW RECORD!!!", x, y, scale)
     end
 end
 
@@ -257,7 +246,7 @@ function setup_hud()
     if timeLeft <= 0 then timeLeft = timeLeft + 3 end
     djui_hud_print_text(time_format(timeLeft), x, y, scale)
 
-    if gMarioStates[0].actionState == 0 and gGlobalSyncTable.timeLeft > 3 then
+    if gMarioStates[0].action == ACT_SELECT_START and gMarioStates[0].actionState == 0 and gGlobalSyncTable.timeLeft > 3 then
         x = x - 70 * scale
         y = screenHeight - 60 * scale
         if gMarioStates[0].actionArg ~= 0 then
@@ -287,11 +276,18 @@ function setup_hud()
         end
         djui_hud_print_text(text, x, y, scale)
 
-        djui_hud_set_color(255, 255, 255, 255)
         djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
         x = screenWidth / 2
         y = y + 20 * scale
-        djui_hud_print_text("[A] Confirm", x, y, scale)
+        text = "[A] Confirm"
+        if confirmTime ~= 0 then
+            local width = djui_hud_measure_text(text) * scale
+            local barWidth = width * (confirmTime / 30)
+            djui_hud_set_color(0, 255, 0, 255)
+            djui_hud_render_rect(x - width / 2, y, barWidth, 18 * scale)
+        end
+        djui_hud_set_color(255, 255, 255, 255)
+        djui_hud_print_text(text, x, y, scale)
     else
         y = screenHeight - 20 * scale
         djui_hud_print_text("Ready!", x, y, scale)
@@ -304,13 +300,17 @@ function on_hud_render()
     djui_hud_reset_color()
     djui_hud_reset_text_color()
 
-    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+    if inMenu then
+        render_menu()
+    elseif gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         lastHudScore = 0
+        maxHudStars = 0
         playing_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_END then
         end_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP then
         lastHudScore = 0
+        maxHudStars = 0
         setup_hud()
     end
 end
@@ -571,6 +571,892 @@ function behind_hud_render()
     end
 end
 hook_event(HOOK_ON_HUD_RENDER_BEHIND, behind_hud_render)
+
+-- The menu format from geoguessr again...
+local MENU_COLORS = {
+    bg = {r = 0, g = 0, b = 25, a = 200},
+    bgTex = {r = 200, g = 200, b = 255, a = 50},
+    desc = {r = 255, g = 255, b = 255, a = 255},
+    option = {r = 0, g = 200, b = 200},
+    descBg = {r = 0, g = 25, b = 50, a = 255},
+    scrollBg = {r = 0, g = 10, b = 25, a = 255},
+    scrollBar = {r = 155, g = 180, b = 180, a = 155},
+}
+TEX_TRIANGLE = get_texture_info("triangle")
+
+function build_level_menu(menu)
+    local min = 0 -- Change to 1 when the debug level is no longer wanted
+
+    for i=min,#OC_LEVEL_DATA do
+        local lData = OC_LEVEL_DATA[i]
+        local desc = lData.desc or "No description available."
+        local savePrefix = "record_"..i.."_"
+        local bestScore = mod_storage_load_integer(savePrefix.."score")
+        local bestStars = mod_storage_load_integer(savePrefix.."stars")
+        local bestPlayers = mod_storage_load_integer(savePrefix.."players")
+        local maxStars = math.clamp(bestStars+1, 3, 4)
+
+        desc = desc .. "\n\n"
+        for stars=1,maxStars do
+            desc = desc .. string.rep("", stars) .. ": %d\n"
+        end
+        desc = desc .. "\nBest Score: %s"
+                
+        table.insert(menu, {
+            lData.name,
+            function()
+                if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
+                    start_level_command(tostring(i))
+                end
+                inMenu = false
+            end,
+            desc = desc,
+            true,
+            descExtra = function()
+                local maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
+                local neededPoints = get_star_scores(i, maxKitchens)
+                local result = {}
+                for stars=1,maxStars do
+                    table.insert(result, neededPoints[stars])
+                end
+                
+                local extraStr = tostring(bestScore)
+                if bestScore ~= 0 then
+                    if bestStars ~= 0 then
+                        extraStr = extraStr .. string.format(" (%s, %dP)", string.rep("", bestStars), bestPlayers)
+                    else
+                        extraStr = extraStr .. string.format(" (0, %dP)", bestPlayers)
+                    end
+                end
+                table.insert(result, extraStr)
+                return table.unpack(result)
+            end,
+        })
+
+        if i ~= 0 and bestStars == 0 and not cheatsApi then break end -- require 1 star to unlock the next level
+    end
+end
+
+grabButtonIndex = 3
+actionButtonIndex = 0
+throwButtonIndex = 0
+
+inMenu = false
+local menuOption = 1
+local menuID = 1
+local stickCooldownX = 0
+local stickCooldownY = 0
+local menu_history = {}
+local menuMotionEnabled = true
+local confirmText = ""
+local confirmFunc
+-- menu data
+local menu_data = {
+    [1] = {
+        {
+            "Continue",
+            function(x)
+                play_sound(SOUND_MENU_PAUSE, gGlobalSoundSource)
+                inMenu = false
+            end,
+            false,
+            desc = "Unpause the game.",
+        },
+        {
+            "Retry",
+            function(x)
+                confirmText = "Are you sure you want to restart? Any unsaved progress will be lost!"
+                confirmFunc = function(x)
+                    inMenu = false
+                    gGlobalSyncTable.gameState = GAME_STATE_PREPARE
+                    gGlobalSyncTable.timeLeft = 10
+                end
+                enter_menu(2)
+            end,
+            true,
+            function()
+                return gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP
+            end,
+            desc = "Restart the level.",
+        },
+        {
+            "Quit",
+            function(x)
+                confirmText = "Are you sure you want to quit? Any unsaved progress will be lost!"
+                confirmFunc = function(x)
+                    inMenu = false
+                    gGlobalSyncTable.gameState = GAME_STATE_LEVEL_SELECT
+                end
+                enter_menu(2)
+            end,
+            true,
+            function()
+                return gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP
+            end,
+            desc = "Exit the level.",
+        },
+        {
+            "Level Select",
+            function(x)
+                enter_menu(3)
+            end,
+            true,
+            function()
+                return gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT
+            end,
+            desc = "Pick a level to start.",
+        },
+        {
+            "Preferences",
+            function(x)
+                enter_menu(4)
+            end,
+            false,
+            desc = "Change settings for yourself. These don't affect other players.",
+        },
+        {
+            "DJUI Menu",
+            function(x)
+                waitOpenDJUI = true
+            end,
+            false,
+            desc = "Enter the DJUI menu. You can also press the R button to access this.",
+        },
+    },
+    [2] = {
+        {
+            "Yes",
+            function(x)
+                if confirmFunc == nil then return end
+                return confirmFunc(x)
+            end,
+            true,
+            desc = "%s",
+            descExtra = function()
+                return confirmText
+            end,
+        },
+        {
+            "No",
+            function(x)
+                if #menu_history ~= 0 then
+                    enter_menu(menu_history[#menu_history][1], menu_history[#menu_history][2], true)
+                    table.remove(menu_history, #menu_history)
+                else
+                    enter_menu(1, 1, true)
+                end
+            end,
+            true,
+            desc = "%s",
+            descExtra = function()
+                return confirmText
+            end,
+        },
+        title = "Confirm?",
+    },
+    [3] = {
+        buildFunc = build_level_menu,
+        title = "Level Select",
+    },
+    [4] = {
+        {
+            "Grab Button",
+            function(x)
+                grabButtonIndex = x
+            end,
+            runOnChange = true,
+            currNum = grabButtonIndex,
+            maxNum = 3,
+            nameRef = { "X", "Y", "L", "B" },
+            save = "grabButtonIndex",
+            localSave = true,
+            desc = "Use this button to place/pick up ingredients. Takes priority over the button's normal action.",
+        },
+        {
+            "Action Button",
+            function(x)
+                actionButtonIndex = x
+            end,
+            runOnChange = true,
+            currNum = actionButtonIndex,
+            maxNum = 3,
+            nameRef = { "X", "Y", "L", "B" },
+            save = "actionButtonIndex",
+            localSave = true,
+            desc = "Use this button to chop ingredients and wash dishes.\nNote that using B will cause these actions to take priority over grabbing.",
+        },
+        {
+            "Throw Button",
+            function(x)
+                throwButtonIndex = x
+            end,
+            runOnChange = true,
+            currNum = throwButtonIndex,
+            maxNum = 3,
+            nameRef = { "X", "Y", "L", "B" },
+            save = "throwButtonIndex",
+            localSave = true,
+            desc = "Use this button to throw ingredients.\nNote that grabbing/placing takes priority if using B.",
+        },
+        {
+            "Reduced Menu Motion",
+            function(x)
+                menuMotionEnabled = (x ~= 0)
+            end,
+            runOnChange = true,
+            currNum = (menuMotionEnabled and 1) or 0,
+            maxNum = 1,
+            nameRef = { "\\#50ff50\\On", "\\#ff5050\\Off" },
+            save = "menuMotionEnabled",
+            localSave = true,
+            desc = "Turns off moving parts in the menu.",
+        },
+        title = "Preferences",
+    },
+}
+
+-- load menu settings; never nesters be crying rn
+for a, menu in ipairs(menu_data) do
+    for b, button in ipairs(menu) do
+        if (network_is_server() or button.localSave) and button.save then
+            local value = tonumber(mod_storage_load(button.save))
+            local min = button.minNum or 0
+            local max = button.maxNum or 999
+            if value and value % 1 == 0 and button.currNum and value >= min and value <= max then
+                button[2](value)
+                button.currNum = value
+            end
+        end
+    end
+end
+
+-- show the menu
+local menuMotionY = 0
+local bgTexScroll = 0
+local menuMotionScrollY = -1
+local resetMenuMotion = false
+local menuMotionButton = {}
+local frameCounter = 0
+function render_menu()
+    djui_hud_set_resolution(RESOLUTION_DJUI)
+    djui_hud_set_font(djui_menu_get_font())
+
+    local screenWidth = djui_hud_get_screen_width()
+    local screenHeight = djui_hud_get_screen_height()
+
+    djui_hud_set_color_from_table(MENU_COLORS.bg)
+    djui_hud_render_rect(0, 0, screenWidth + 10, screenHeight + 10)
+
+    local tex = ICON_TOMATO
+    if gMarioStates[0].heldObj then
+        local o = gMarioStates[0].heldObj
+        tex = (ITEM_DATA[o.oBehParams] and ITEM_DATA[o.oBehParams].icon) or tex
+    end
+    local bgTexScale = 5
+    local maxTexX = math.ceil(screenWidth / (tex.width * bgTexScale))
+    local maxTexY = math.ceil(screenHeight / (tex.height * bgTexScale))
+    djui_hud_set_color_from_table(MENU_COLORS.bgTex)
+    for tileY=-1,maxTexY do
+        for tileX=-1,maxTexX do
+            if tileX % 2 == tileY % 2 then
+                djui_hud_render_texture(tex,
+                bgTexScroll + tex.width * tileX * bgTexScale,
+                bgTexScroll + tex.height * tileY * bgTexScale, bgTexScale, bgTexScale)
+            end
+        end
+    end
+    if menuMotionEnabled then
+        bgTexScroll = (bgTexScroll + 2) % (tex.width * bgTexScale)
+    else
+        bgTexScroll = 0
+    end
+    local arrowTex = TEX_TRIANGLE
+
+    local menu = menu_data[menuID]
+    if not menu then return end
+
+    frameCounter = frameCounter + 1
+    if frameCounter >= 60 then frameCounter = 0 end
+    
+    -- title
+    local scale = 3
+    local y = 64 * scale
+    local title = menu.title or "Menu"
+    if menu.title == nil and (gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT) then
+        local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
+        title = lData.name or title
+        y = y + 40 * scale
+    end
+
+    -- determine menu size
+    local scroll = false
+    local totalButtons = 0
+    local downBy = 0
+    local maxDownBy = 0
+    for i, button in ipairs(menu) do
+        if option_valid(button, true) then
+            totalButtons = totalButtons + 1
+
+            local buttonY = y + 32 * scale * (totalButtons - maxDownBy)
+            while buttonY > screenHeight do
+                maxDownBy = maxDownBy + 1
+                scroll = true
+                buttonY = y + 32 * scale * (totalButtons - maxDownBy)
+                if i == menuOption then
+                    downBy = maxDownBy
+                end
+            end
+        end
+    end
+    if not scroll then
+        y = math.max(y, screenHeight / 2 - 16 * scale * (totalButtons - 1))
+    end
+
+    local desc = ""
+    local x = 0
+    y = y - 40 * (scale-1) * downBy
+    if resetMenuMotion or (not menuMotionEnabled) then
+        menuMotionY = y
+        menuMotionScrollY = -1
+        menuMotionButton = {}
+        resetMenuMotion = false
+    else
+        local prevY = menuMotionY
+        y = smooth_approach(y, prevY, 0.25)
+        menuMotionY = y
+    end
+
+    for i, button in ipairs(menu) do
+        if option_valid(button, true) then
+            local text = button[1]
+            local origTextScale = scale
+            local textScale = origTextScale
+            local isSelectable = option_valid(button)
+            if i == menuOption then
+                if button.desc then
+                    desc = button.desc
+                    if type(desc) == "table" then
+                        local currNum = button.currNum or 0
+                        local min = button.minNum or 0
+                        desc = desc[currNum - min + 1] or desc[#desc] or ""
+                    end
+                    if button.descExtra then
+                        desc = string.format(desc, button.descExtra(button.currNum or 0))
+                    else
+                        desc = string.format(desc, button.currNum or 0)
+                    end
+                end
+            else
+                textScale = textScale - 1
+            end
+
+            if button.currNum then
+                local optionText = ""
+                local optionColor = string.format("\\#%02x%02x%02x\\", MENU_COLORS.option.r, MENU_COLORS.option.g, MENU_COLORS.option.b)
+                local min = button.minNum or 0
+                if button.playerRef then
+                    if button.currNum ~= -1 then
+                        local np = gNetworkPlayers[button.currNum]
+                        if not np.connected then
+                            button.currNum = 0
+                            np = gNetworkPlayers[0]
+                        end
+                        local playerColor = network_get_player_text_color_string(np.localIndex)
+                        optionText = playerColor .. np.name
+                    else
+                        optionText = "Random"
+                    end
+                elseif button.nameRef and button.nameRef[button.currNum - min + 1] then
+                    optionText = button.nameRef[button.currNum - min + 1]
+                elseif button.timeRef then
+                    if button.currNum ~= 0 then
+                        local seconds = button.currNum
+                        local minutes = seconds // 60
+                        seconds = seconds % 60
+                        optionText = string.format("%d:%02d", minutes, seconds)
+                    else
+                        optionText = "Infinite"
+                    end
+                elseif button.levelRef then
+                    local level = level_list[button.currNum] or 0
+                    local area = get_menu_option(menuID, i + 1) or 0
+                    optionText = get_level_name_custom(get_level_course_num(level), level, area)
+                else
+                    local numScale = button.scale or 1
+                    optionText = tostring(button.currNum * numScale)
+                    if button.optionPrefix then
+                        optionText = button.optionPrefix .. optionText
+                    end
+                end
+                if i == menuOption and isSelectable then
+                    optionText = " < " .. optionText .. optionColor .. " >"
+                else
+                    optionText = ": " .. optionText
+                end
+                optionText = optionColor .. " " .. optionText
+                text = text .. optionText
+            end
+
+            x = screenWidth * 0.35
+            local width = djui_hud_measure_text(text) * textScale
+            local testWidth = width / textScale * scale / 2
+            if x + 20 * scale + testWidth > screenWidth * 0.7 - arrowTex.width then
+                local origScale = textScale
+                textScale = textScale / 2
+                width = width / origScale * textScale
+            end
+
+            if menuMotionButton[i] == nil or (not menuMotionEnabled) then
+                menuMotionButton[i] = {}
+                menuMotionButton[i].x = x
+                menuMotionButton[i].scale = textScale
+            else
+                --local prevX = menuMotionButton[i].x
+                local prevScale = menuMotionButton[i].scale
+                local origScale = textScale
+                --x = smooth_approach(x, prevX, 0.25)
+                textScale = smooth_approach(textScale * 10, prevScale * 10, 0.25) / 10
+                menuMotionButton[i].x = x
+                menuMotionButton[i].scale = textScale
+                width = width / origScale * textScale
+            end
+        
+            --djui_hud_set_color(255, 255, 255, 255)
+            local valid = option_valid(button)
+            local alpha = (valid and 255) or 100
+            djui_hud_set_color(255, 255, 255, alpha)
+            djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_CENTER)
+            djui_hud_print_text(text, x, y, textScale)
+            if i == menuOption then
+                djui_hud_set_color(64, 128, 64, sins(frameCounter * 500) * 50 + 25)
+                frameCounter = frameCounter + 1
+                if frameCounter >= 60 then frameCounter = 0 end
+                local height = 32 * textScale
+                djui_hud_render_rect(x - width / 2 - 6, y - height / 2 + 6, width + 12, height + 12)
+                --[[if button.currNum and (not button.playerRef) and tonumber(button.maxNum) and button.maxNum >= 10 and isSelectable then
+                    x = x + width + 20
+                    djui_hud_set_color(255, 255, 255, 255)
+                    djui_hud_print_text("Hold X to change by 10", x, y+15*textScale, textScale*0.25)
+                end]]
+            end
+            y = y + 32 * origTextScale
+        end
+    end
+
+    -- title
+    local titleScale = scale * 2
+    djui_hud_reset_color()
+    djui_hud_reset_text_color()
+    djui_hud_set_font(FONT_CUSTOM_HUD)
+    djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+    x, y = screenWidth * 0.35, 20
+    local width = djui_hud_measure_text(title) * titleScale
+    if width > screenWidth * 0.5 then
+        titleScale = (screenWidth * 0.5 / width) * titleScale
+        width = screenWidth * 0.5
+    end
+    djui_hud_print_text(title, x, y, titleScale)
+
+    if menu.title == nil and (gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT) then
+        local starScale = scale * 2
+        local stars = 4
+        local maxStars = mod_storage_load_integer("record_"..gGlobalSyncTable.ocLevel.."_stars")
+        maxStars = math.clamp(maxStars + 1, 3, 4)
+        local neededPoints = get_star_scores(gGlobalSyncTable.ocLevel)
+        while stars > 0 do
+            if gGlobalSyncTable.score >= neededPoints[stars] then break end
+            stars = stars - 1
+        end
+
+        djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+        x = screenWidth * 0.35 - (10 * (maxStars - 1)) * starScale
+        for i=1,maxStars do
+            y = 32 + 32 * scale
+            if i <= stars then
+                djui_hud_set_color(255, 255, 255, 255)
+            else
+                djui_hud_set_color(0, 0, 0, 100)
+            end
+            djui_hud_render_texture(gTextures.star, x - 8 * starScale, y, starScale, starScale)
+            y = y + 16 * starScale
+            djui_hud_set_color(255, 255, 255, 255)
+            djui_hud_print_text(tostring(neededPoints[i]), x, y, starScale / 4)
+            x = x + 20 * starScale
+        end
+    end
+
+    -- desc
+    djui_hud_set_font(djui_menu_get_font())
+    djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
+    djui_hud_set_color_from_table(MENU_COLORS.descBg)
+    djui_hud_render_rect(screenWidth * 0.7, 0, screenWidth + 10, screenHeight + 10)
+    y = -arrowTex.height
+    while y < screenHeight do
+        djui_hud_render_texture(TEX_TRIANGLE, screenWidth * 0.7 - arrowTex.width, y, 1, 2)
+        y = y + arrowTex.height * 2
+    end
+    if #desc ~= 0 then
+        local descScale = 1
+        local lines = {}
+        local line = ""
+        desc = desc:gsub("\n", " \n ")
+        local words = split(desc, " ")
+        local width = 0
+        local spaceWidth = djui_hud_measure_text(" ") * descScale
+        for i, word in ipairs(words) do
+            if word == "\n" then
+                table.insert(lines, line)
+                line = ""
+                width = 0
+            else
+                local wordWidth = djui_hud_measure_text(word) * descScale
+                if width + wordWidth > screenWidth * 0.3 - 50 then
+                    table.insert(lines, line)
+                    line = ""
+                    width = 0
+                end
+                line = line .. word .. " "
+                width = width + wordWidth + spaceWidth
+            end
+        end
+        if #line ~= 0 then
+            table.insert(lines, line)
+        end
+        x = screenWidth * 0.7 + 25
+        y = (screenHeight / 2) - (#lines * 16 + 16) * descScale
+        for i,line in ipairs(lines) do
+            djui_hud_set_color_from_table(MENU_COLORS.desc)
+            djui_hud_print_text(line, x, y, descScale)
+            y = y + 32 * descScale
+        end
+    end
+
+    if scroll then
+        x = 50 - 16
+        y = 50
+        djui_hud_set_color_from_table(MENU_COLORS.scrollBg)
+        djui_hud_render_rect(x, y, 20, screenHeight - 100)
+        local portion = 1 / (maxDownBy+1)
+        local height = (screenHeight - 104) * portion
+        y = y + ((screenHeight - 104) - height) * downBy / maxDownBy
+        if menuMotionEnabled and menuMotionScrollY ~= -1 then
+            local prevY = menuMotionScrollY
+            y = smooth_approach(y, prevY, 0.25)
+            menuMotionScrollY = y
+        else
+            menuMotionScrollY = y
+        end
+        djui_hud_set_color_from_table(MENU_COLORS.scrollBar)
+        djui_hud_render_rect(x + 2, y + 2, 16, height)
+    end
+end
+
+-- menu controls
+sMenuInputsPressed = 0
+sMenuInputsDown = 0
+---@param m MarioState
+function menu_controls(m)
+    if m.playerIndex ~= 0 then return end
+
+    if m.freeze < 3 then m.freeze = 3 end
+
+    -- Disable controls for everything but the menu
+    sMenuInputsPressed = m.controller.buttonDown & (m.controller.buttonDown ~ sMenuInputsDown)
+    sMenuInputsDown = m.controller.buttonDown
+    m.controller.buttonDown = 0
+    m.controller.buttonPressed = 0
+    m.controller.stickX = 0
+    m.controller.stickY = 0
+
+    local stickX = m.controller.rawStickX
+    if (sMenuInputsDown & L_JPAD) ~= 0 then
+        stickX = stickX - 65
+    end
+    if (sMenuInputsDown & R_JPAD) ~= 0 then
+        stickX = stickX + 65
+    end
+    local stickY = m.controller.rawStickY
+    if (sMenuInputsDown & D_JPAD) ~= 0 then
+        stickY = stickY - 65
+    end
+    if (sMenuInputsDown & U_JPAD) ~= 0 then
+        stickY = stickY + 65
+    end
+
+    if stickCooldownY > 0 then stickCooldownY = stickCooldownY - 1 end
+    if stickCooldownX > 0 then stickCooldownX = stickCooldownX - 1 end
+
+    local menu = menu_data[menuID]
+    if not menu then
+        inMenu = false
+        return
+    end
+    local button = menu[menuOption]
+
+    if (sMenuInputsPressed & A_BUTTON) ~= 0 and button and button[2] and not button.runOnChange then
+        if not option_valid(button) then
+            play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+        else
+            play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource)
+            button[2](button.currNum)
+            if (network_is_server() or button.localSave) and button.save then
+                mod_storage_save(button.save, tostring(button.currNum))
+            end
+        end
+    elseif (sMenuInputsPressed & B_BUTTON) ~= 0 then
+        if #menu_history ~= 0 then
+            play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource)
+            enter_menu(menu_history[#menu_history][1], menu_history[#menu_history][2], true)
+            table.remove(menu_history, #menu_history)
+        else
+            play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource)
+            m.controller.buttonDown = B_BUTTON
+            inMenu = false
+        end
+    elseif (sMenuInputsPressed & L_TRIG) ~= 0 and button and button[2] and button.currNum then
+        if not option_valid(button) then
+            play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+        else
+            button.currNum = button.minNum or 0
+            play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource)
+
+            button[2](button.currNum)
+            if (network_is_server() or button.localSave) and button.save then
+                mod_storage_save(button.save, tostring(button.currNum))
+            end
+        end
+    elseif (sMenuInputsPressed & R_TRIG) ~= 0 then
+        djui_open_pause_menu()
+    elseif (sMenuInputsPressed & START_BUTTON) ~= 0 then
+        play_sound(SOUND_MENU_PAUSE, gGlobalSoundSource)
+        inMenu = false
+        m.controller.buttonDown = sMenuInputsDown
+        return
+    end
+
+    if not button then return end
+
+    if button.currNum and stickCooldownX == 0 then
+        local change = (sMenuInputsDown & (X_BUTTON | Z_TRIG) ~= 0 and 10) or 1
+        if stickX > 64 then
+            play_sound(SOUND_MENU_CHANGE_SELECT, gGlobalSoundSource)
+            button.currNum = button.currNum + change
+            local max = button.maxNum or 999
+            if max == "total_ss" then
+                max = #screenshots - 1
+                if max < 0 then max = 0 end
+            end
+
+            if max < button.currNum then
+                button.currNum = button.minNum or 0
+            elseif max == button.excludeNum then
+                button.currNum = button.currNum + 1
+            end
+
+            if button.playerRef then
+                local np = gNetworkPlayers[button.currNum]
+                while not np.connected do
+                    button.currNum = button.currNum + 1
+                    if max < button.currNum then
+                        button.currNum = button.minNum or 0
+                    elseif button.currNum == button.excludeNum then
+                        button.currNum = button.currNum + 1
+                    end
+                    np = gNetworkPlayers[button.currNum]
+                end
+            end
+
+            stickCooldownX = 5
+            if button.runOnChange and button[2] then
+                button[2](button.currNum)
+                if (network_is_server() or button.localSave) and button.save then
+                    mod_storage_save(button.save, tostring(button.currNum))
+                end
+            end
+        elseif stickX < -64 then
+            play_sound(SOUND_MENU_CHANGE_SELECT, gGlobalSoundSource)
+            button.currNum = button.currNum - change
+            local min = button.minNum or 0
+            local max = button.maxNum or 999
+            if button.currNum < min then
+                button.currNum = max
+            elseif button.currNum == button.excludeNum then
+                button.currNum = button.currNum - 1
+            end
+
+            if button.playerRef then
+                local np = gNetworkPlayers[button.currNum]
+                while not np.connected do
+                    button.currNum = button.currNum - 1
+                    if button.currNum < min then
+                        button.currNum = button.maxNum
+                    elseif button.currNum == button.excludeNum then
+                        button.currNum = button.currNum - 1
+                    end
+                    np = gNetworkPlayers[button.currNum]
+                end
+            end
+
+            stickCooldownX = 5
+            if button.runOnChange and button[2] then
+                button[2](button.currNum)
+                if (network_is_server() or button.localSave) and button.save then
+                    mod_storage_save(button.save, tostring(button.currNum))
+                end
+            end
+        end
+    end
+
+    if #menu > 1 and stickCooldownY == 0 then
+        if stickY > 64 then
+            play_sound(SOUND_MENU_CHANGE_SELECT, gGlobalSoundSource)
+            local valid = true
+            local LIMIT = #menu
+            while valid and LIMIT ~= 0 do
+                LIMIT = LIMIT - 1
+                menuOption = menuOption - 1
+                if menuOption < 1 then
+                    menuOption = #menu
+                end
+                button = menu[menuOption]
+                valid = not option_valid(button)
+            end
+            stickCooldownY = 5
+        elseif stickY < -64 then
+            play_sound(SOUND_MENU_CHANGE_SELECT, gGlobalSoundSource)
+            local valid = true
+            local LIMIT = #menu
+            while valid and LIMIT ~= 0 do
+                LIMIT = LIMIT - 1
+                menuOption = menuOption + 1
+                if #menu < menuOption then
+                    menuOption = 1
+                end
+                button = menu[menuOption]
+                valid = not option_valid(button)
+            end
+            stickCooldownY = 5
+        end
+    end
+end
+
+function open_menu()
+    inMenu = not inMenu
+    if inMenu then
+        sMenuInputsDown = gControllers[0].buttonDown
+        menu_history = {}
+        enter_menu(1, 1, true)
+    end
+    return true
+end
+
+function enter_menu(id, option, back)
+    if not back then
+        table.insert(menu_history, { menuID, menuOption })
+    end
+
+    menuID = id or 1
+    menuOption = option or 1
+
+    -- check for valid options
+    local menu = menu_data[menuID]
+    if not menu then
+        inMenu = false
+        return
+    elseif menu.buildFunc then
+        menu_data[menuID] = { buildFunc = menu.buildFunc, title = menu.title }
+        menu = menu_data[menuID]
+        menu.buildFunc(menu)
+    end
+    local totalValid = 0
+    local lastValidOption = 0
+    for i = 1, #menu do
+        if option_valid(menu[i]) then
+            totalValid = totalValid + 1
+            lastValidOption = i
+        elseif menuOption == i then
+            if lastValidOption == 0 then
+                menuOption = menuOption + 1
+            else
+                menuOption = lastValidOption
+            end
+        end
+    end
+
+    if totalValid == 0 then
+        if #menu_history ~= 0 then
+            enter_menu(menu_history[#menu_history][1], menu_history[#menu_history][2], true)
+            table.remove(menu_history, #menu_history)
+        else
+            inMenu = false
+        end
+        return
+    end
+
+    menu = menu_data[menuID]
+    for i, button in ipairs(menu) do
+        if button.save then
+            local value = 0
+            if not button.localSave then
+                value = gGlobalSyncTable[button.save]
+            else
+                value = _ENV[button.save]
+            end
+            if type(value) == "boolean" then
+                button.currNum = (value and 1) or 0
+            elseif type(value) == "number" and value % 1 == 0 then
+                button.currNum = value
+                local min = button.minNum or 0
+                local max = button.maxNum or 100
+                if value < min then
+                    button.currNum = min
+                elseif value > max then
+                    button.currNum = max
+                end
+            end
+        end
+        if button.updateNum then
+            button.updateNum(button)
+        end
+    end
+end
+
+function set_menu_option(id, option, value)
+    menu_data[id][option].currNum = value
+end
+
+function get_menu_option(id, option)
+    return menu_data[id][option].currNum
+end
+
+function option_valid(button, ignoreSelect)
+    if (not ignoreSelect) and button.selectInvalid and button.selectInvalid() then
+        return false
+    end
+
+    if button[3] and not (network_is_server() or network_is_moderator()) then
+        return false
+    elseif type(button[4]) == "function" then
+        return not (button[4]())
+    end
+    return true
+end
+
+function djui_hud_set_color_from_table(color, alpha)
+    djui_hud_set_color(color.r or 255, color.g or 255, color.b or 255, alpha or color.a or 255)
+end
+
+-- returns the current value approach the goal value at some rate (50% for going halfway there each time, etc)
+function smooth_approach(goal, current, rate)
+    local diff = (goal - current)
+    local result = goal
+    if diff > 1 then
+        result = current + math.ceil(diff * rate)
+    elseif diff < 1 then
+        result = current + math.floor(diff * rate)
+    end
+    return result
+end
 
 function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, forceHeatIcon)
     local tex = ITEM_DATA[item].icon

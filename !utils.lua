@@ -235,6 +235,68 @@ function get_active_player_count()
     return totalPlayers
 end
 
+-- Calculates level star requirements are based on how many players and kitchens are present.
+function get_star_scores(oc_level, maxKitchens, maxPlayers)
+    local lData = OC_LEVEL_DATA[oc_level]
+    local neededPoints = {9999, 9999, 9999, 9999}
+    if lData and lData.starScores then
+        maxKitchens = maxKitchens or gGlobalSyncTable.maxKitchens
+        maxPlayers = maxPlayers or gGlobalSyncTable.peakPlayers
+
+        if maxKitchens == 1 then
+            neededPoints = lData.starScores[math.clamp(maxPlayers, 1, 4)]
+        else
+            -- If there are more than 4 players, we add based on the amount of players in each kitchen.
+            -- For example, 5 players expects the 2 and 3 players scores added together.   
+            neededPoints = {0, 0, 0, 0}
+            while maxKitchens ~= 0 do
+                local players = math.clamp(math.ceil(maxPlayers / maxKitchens), 1, 4)
+                for i=1,4 do
+                    neededPoints[i] = neededPoints[i] + lData.starScores[players][i]
+                end
+                maxKitchens = maxKitchens - 1
+                maxPlayers = maxPlayers - players
+            end
+        end
+    end
+    return neededPoints
+end
+
+function save_new_score()
+    local oc_level = gGlobalSyncTable.ocLevel
+    local neededPoints = get_star_scores(oc_level)
+
+    -- global score
+    local savePrefix = string.format("record_%d_", oc_level)
+    local maxScore = mod_storage_load_integer(savePrefix..oc_level)
+    if maxScore < gGlobalSyncTable.score then
+        maxScore = gGlobalSyncTable.score
+        local stars = 4
+        while stars > 0 do
+            if maxScore >= neededPoints[stars] then break end
+            stars = stars - 1
+        end
+        mod_storage_save_integer(savePrefix.."score", maxScore)
+        mod_storage_save_integer(savePrefix.."stars", stars)
+        mod_storage_save_integer(savePrefix.."players", gGlobalSyncTable.peakPlayers)
+    end
+
+    -- per-player score
+    savePrefix = string.format("record_%d_%d_", oc_level, gGlobalSyncTable.peakPlayers)
+    local maxScorePlayers = mod_storage_load_integer(savePrefix.."score")
+    if maxScorePlayers < gGlobalSyncTable.score then
+        maxScorePlayers = gGlobalSyncTable.score
+        local stars = 4
+        while stars > 0 do
+            if maxScorePlayers >= neededPoints[stars] then break end
+            stars = stars - 1
+        end
+        mod_storage_save_integer(savePrefix.."score", maxScorePlayers)
+        mod_storage_save_integer(savePrefix.."stars", stars)
+        return true
+    end
+end
+
 -- Returns if table1 and table2 contain the same amount of each element (ignoring order)
 -- No this function isn't AI, I just felt like being descriptive today
 function tables_contain_same_elements(table1, table2)

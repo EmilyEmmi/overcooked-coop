@@ -14,6 +14,7 @@ OC_LEVEL_SAND = 5
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
+        desc = "Debug level containing all mechanics. Very challenging! Save it for last!",
         level = LEVEL_TEST,
         totalTime = 240,
         failTime = {210, 190, 160, 130},
@@ -26,7 +27,8 @@ OC_LEVEL_DATA = {
         },
     },
     [OC_LEVEL_BOB] = {
-        name = "Level 1",
+        name = "Bob-Omb Saladfield",
+        desc = "A simple level with salad that teaches the basic mechanics. Start here!",
         level = LEVEL_BOB,
         totalTime = 180,
         failTime = {180, 150, 120, 90},
@@ -39,7 +41,8 @@ OC_LEVEL_DATA = {
         },
     },
     [OC_LEVEL_WF] = {
-        name = "Level 2",
+        name = "Spinning Salads",
+        desc = "Tread carefully across the spinning platforms to create salads, and make sure you wash those dishes!",
         level = LEVEL_WF,
         totalTime = 210,
         failTime = {190, 160, 130, 100},
@@ -52,7 +55,8 @@ OC_LEVEL_DATA = {
         },
     },
     [OC_LEVEL_SHIP] = {
-        name = "Level 3",
+        name = "Soupy Sea",
+        desc = "Learn to make soup, but be careful- the counters will shift with the rocking boat...",
         level = LEVEL_JRB,
         totalTime = 240,
         failTime = {240, 210, 180, 160},
@@ -65,7 +69,8 @@ OC_LEVEL_DATA = {
         },
     },
     [OC_LEVEL_LAVA] = {
-        name = "Level 4",
+        name = "Lethal Lava Puzzle",
+        desc = "Make more soup, but watch your step! If you stand on a moving puzzle piece, you'll be dropped into lava!",
         level = LEVEL_LLL,
         totalTime = 240,
         failTime = {240, 240, 210, 180},
@@ -78,7 +83,8 @@ OC_LEVEL_DATA = {
         },
     },
     [OC_LEVEL_SAND] = {
-        name = "Level 5",
+        name = "Shifting Sand Burgers",
+        desc = "Learn to make burgers, but don't fall into the quicksand!",
         level = LEVEL_SSL,
         totalTime = 210,
         failTime = {210, 210, 180, 160},
