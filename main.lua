@@ -7,6 +7,7 @@
 selectedItem = nil
 selectedCounter = nil
 waitOpenDJUI = false
+gotNewRecord = false
 
 pending_orders_all = {}
 pending_orders = {}
@@ -101,10 +102,13 @@ function update()
     sequence_player_set_tempo(SEQ_PLAYER_LEVEL, BASE_TEMPO * BASE_MULTI)
 
     -- update player count this round
-    if network_is_server() then
+    if network_is_server() and gGlobalSyncTable.gameState ~= GAME_STATE_END then
         local totalPlayers = get_active_player_count()
-        local max = (gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT and MAX_PLAYERS) or (gGlobalSyncTable.maxKitchens * 4)
-        gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, max)
+        if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
+            gGlobalSyncTable.peakPlayers = math.max(totalPlayers, gGlobalSyncTable.peakPlayers)
+        else
+            gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, gGlobalSyncTable.maxKitchens * 4)
+        end
     end
 
     -- limit the number of ingredients in the level
@@ -161,7 +165,6 @@ function update()
                         if gGlobalSyncTable.timeLeft == 0 then
                             gGlobalSyncTable.timeLeft = 10
                             gGlobalSyncTable.gameState = GAME_STATE_END
-                            gGlobalSyncTable.newRecord = save_new_score()
                         end
                     else
                         set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
@@ -562,7 +565,6 @@ function before_mario_update(m)
         end)
     end
 
-    local overrideNextAction = false
     if m.controller.buttonDown & ACTION_BUTTON ~= 0 and (not m.heldObj)
     and selectedCounter and (selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK) then
         local counter = selectedCounter
@@ -573,15 +575,13 @@ function before_mario_update(m)
         and o and o ~= counter and iData and iData.cut then
             sMario.cutTimer = 6
             m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
-            overrideNextAction = true
         elseif selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
             sMario.washTimer = 6
             m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
-            overrideNextAction = true
         end
     end
     
-    if m.controller.buttonPressed & GRAB_BUTTON ~= 0 and not (INVALID_GRAB_ACTION[m.action] or overrideNextAction) then
+    if m.controller.buttonPressed & GRAB_BUTTON ~= 0 and not INVALID_GRAB_ACTION[m.action] then
         if m.heldObj then
             local o = m.heldObj
             local placed, stillHolding = attempt_item_place(o, m, selectedItem, selectedCounter, true)
@@ -592,9 +592,7 @@ function before_mario_update(m)
                         mario_drop_held_object(m)
                     end
                 end
-                
                 m.controller.buttonPressed = m.controller.buttonPressed &~ GRAB_BUTTON
-                overrideNextAction = true
 
                 if not m.heldObj then
                     m.marioBodyState.allowPartRotation = 0
@@ -640,7 +638,6 @@ function before_mario_update(m)
             -- Disallows diving if we are close enough to a counter- okay I guess
             if o or counter then
                 m.controller.buttonPressed = m.controller.buttonPressed &~ GRAB_BUTTON
-                overrideNextAction = true
             end
 
             if o and valid then
@@ -668,7 +665,7 @@ function before_mario_update(m)
         end
     end
     
-    if m.controller.buttonPressed & THROW_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) and not overrideNextAction then
+    if m.controller.buttonPressed & THROW_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) then
         local iData = ITEM_DATA[m.heldObj.oBehParams] or ITEM_DATA[0]
         if obj_has_behavior_id(m.heldObj, id_bhvIngredient) == 0 or not (iData.noThrow or m.heldObj.oContentCount ~= 0) then
             m.marioBodyState.allowPartRotation = 0
@@ -1009,6 +1006,15 @@ function on_death(m)
     return false
 end
 hook_event(HOOK_ON_DEATH, on_death)
+
+function on_state_change(tag, oldVal, newVal)
+    if oldVal == newVal or oldVal == nil or newVal == nil then return end
+
+    if newVal == GAME_STATE_END and not gPlayerSyncTable[0].spectator then
+        gotNewRecord = save_new_score()
+    end
+end
+hook_on_sync_table_change(gGlobalSyncTable, "gameState", "gameState", on_state_change)
 
 -- keep timed things in sync
 function on_time_left_change(tag, oldVal, newVal)

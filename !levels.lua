@@ -41,7 +41,7 @@ OC_LEVEL_DATA = {
         },
     },
     [OC_LEVEL_WF] = {
-        name = "Spinning Salads",
+        name = "Whomp's Spinning Salads",
         desc = "Tread carefully across the spinning platforms to create salads, and make sure you wash those dishes!",
         level = LEVEL_WF,
         totalTime = 210,

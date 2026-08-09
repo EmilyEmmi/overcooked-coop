@@ -10,16 +10,22 @@ function playing_hud()
     local screenWidth = djui_hud_get_screen_width()
     local intendedX = HUD_LOCATIONS[orderHUDLocation+1][1] or 10
     local fromRight = HUD_LOCATIONS[orderHUDLocation+1][2] or false
+    if fromRight then
+        intendedX = screenWidth - intendedX
+    end
 
     local y = 0
     local scale = 2
     local widthPerItem = 30
     for i, pending_data in ipairs(pending_orders) do
-        if fromRight then
+        if fromRight ~= reverseReading then
             i = #pending_orders - i + 1
             pending_data = pending_orders[i]
         end
         local x = screenWidth + intendedX
+        if reverseReading then
+            x = intendedX - screenWidth
+        end
         local prevX = x
         local timeRatio = (pending_data.time / pending_data.maxTime)
         if pending_data.inited then
@@ -65,8 +71,8 @@ function playing_hud()
         y = 0
         local width = math.max(#items, 2) * widthPerItem * scale
         if fromRight then
-            x = screenWidth - x - width
-            prevX = screenWidth - prevX - width
+            x = x - width
+            prevX = prevX - width
         end
         djui_hud_set_color(255, 255, 255, alpha)
         djui_hud_render_rect_interpolated(prevX, y, width, 40 * scale, x, y, width, 40 * scale)
@@ -146,7 +152,11 @@ function playing_hud()
             prevRectX = prevRectX + rectWidth + 5 * scale
         end
 
-        intendedX = intendedX + width + 10 * scale
+        local change = width + 10 * scale
+        if fromRight then
+            change = -change
+        end
+        intendedX = intendedX + change
     end
 
     djui_hud_reset_color()
@@ -181,7 +191,6 @@ end
 
 local lastHudScore = 0
 local lastHudStars = 0
-local maxHudStars = 0
 function end_hud()
     local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
     djui_hud_set_color(0, 0, 0, 100)
@@ -211,17 +220,16 @@ function end_hud()
     djui_hud_print_text(text, x, y, scale)
 
     local stars = 4
+    local maxStars = 3
     local neededPoints = get_star_scores(gGlobalSyncTable.ocLevel)
     while stars > 0 do
         if lastHudScore >= neededPoints[stars] then break end
         stars = stars - 1
     end
-    if maxHudStars == 0 then
-        maxHudStars = mod_storage_load_integer("record_"..gGlobalSyncTable.ocLevel.."_stars")
-        maxHudStars = math.clamp(maxHudStars + 1, 3, 4)
-    end
+    maxStars = get_star_record(gGlobalSyncTable.ocLevel)
+    maxStars = math.clamp(maxStars + 1, 3, 4)
     if stars >= 3 and (stars >= 4 or reachedEnd) then
-        maxHudStars = 4
+        maxStars = 4
     end
     if lastHudStars < stars then
         play_sound(SOUND_MENU_COLLECT_SECRET + ((stars + 1) << 16), gGlobalSoundSource)
@@ -229,11 +237,15 @@ function end_hud()
     lastHudStars = stars
 
     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
-    x = screenWidth / 2 - (10 * (maxHudStars - 1)) * scale
-    for i=1,maxHudStars do
+    x = screenWidth / 2 - (10 * (maxStars - 1)) * scale
+    for i=1,maxStars do
         y = screenHeight / 2 + 24 * scale
         if i <= stars then
-            djui_hud_set_color(255, 255, 255, 255)
+            if i < 4 then
+                djui_hud_set_color(255, 255, 255, 255)
+            else
+                djui_hud_set_color(255, 20, 20, 255)
+            end
         else
             djui_hud_set_color(0, 0, 0, 100)
         end
@@ -244,7 +256,7 @@ function end_hud()
         x = x + 20 * scale
     end
 
-    if reachedEnd and gGlobalSyncTable.newRecord then
+    if reachedEnd and gotNewRecord then
         scale = scale / 4
         x = screenWidth / 2
         y = screenHeight - 24 * scale
@@ -321,13 +333,11 @@ function on_hud_render()
         render_menu()
     elseif gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         lastHudScore = 0
-        maxHudStars = 0
         playing_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_END then
         end_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP then
         lastHudScore = 0
-        maxHudStars = 0
         setup_hud()
     end
 end
@@ -603,21 +613,60 @@ TEX_TRIANGLE = get_texture_info("triangle")
 
 function build_level_menu(menu)
     local min = 0 -- Change to 1 when the debug level is no longer wanted
+    local unclearedLevel = false
 
     for i=min,#OC_LEVEL_DATA do
         local lData = OC_LEVEL_DATA[i]
         local desc = lData.desc or "No description available."
-        local savePrefix = "record_"..i.."_"
-        local bestScore = mod_storage_load_integer(savePrefix.."score")
-        local bestStars = mod_storage_load_integer(savePrefix.."stars")
-        local bestPlayers = mod_storage_load_integer(savePrefix.."players")
-        local maxStars = math.clamp(bestStars+1, 3, 4)
-
         desc = desc .. "\n\n"
-        for stars=1,maxStars do
-            desc = desc .. string.rep("", stars) .. ": %d\n"
+        local savePrefix = "record_"..i.."_"
+        local bestOverallPlayers = mod_storage_load_integer(savePrefix.."players")
+        local bestOverallScore, bestOverallStars = 0, 0
+        if bestOverallPlayers ~= 0 then
+            local savePrefixBest = savePrefix..bestOverallPlayers.."_"
+            bestOverallScore = mod_storage_load_integer(savePrefixBest.."score")
+            bestOverallStars = mod_storage_load_integer(savePrefixBest.."stars")
         end
-        desc = desc .. "\nBest Score: %s"
+
+        local bestStars = 0
+        local maxStars = 3
+        if bestOverallScore ~= 0 then
+            -- score for this many players
+            local players = gGlobalSyncTable.peakPlayers
+            local savePrefixPlayers = "record_"..i.."_"..players.."_"
+            local bestPlayerScore = mod_storage_load_integer(savePrefixPlayers.."score")
+            local bestPlayerStars = mod_storage_load_integer(savePrefixPlayers.."stars")
+
+            -- score for the most stars obtained
+            local bestStarsPlayers = mod_storage_load_integer(savePrefix.."max_stars_players")
+            local bestStarsScore = 0
+            if bestStarsPlayers ~= 0 then
+                local savePrefixBestStars = savePrefix..bestStarsPlayers.."_"
+                bestStarsScore = mod_storage_load_integer(savePrefixBestStars.."score")
+                bestStars = mod_storage_load_integer(savePrefixBestStars.."stars")
+            end
+
+            maxStars = math.clamp(bestStars+1, 3, 4)
+            for stars=1,maxStars do
+                desc = desc .. string.rep("", stars) .. ": %d\n"
+            end
+
+            local starStrPlayer = (bestPlayerStars == 0 and "0") or string.rep("", bestPlayerStars)
+            local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
+            local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
+            if bestPlayerScore ~= 0 then
+                desc = desc .. string.format("\nBest %dP: %d (%s)", players, bestPlayerScore, starStrPlayer)
+            else
+                desc = desc .. string.format("\nBest %dP: 0", players)
+            end
+            desc = desc .. string.format("\nBest Stars: %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
+            desc = desc .. string.format("\nBest Overall: %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
+        else
+            for stars=1,maxStars do
+                desc = desc .. string.rep("", stars) .. ": %d\n"
+            end
+            desc = desc .. "\nNo scores saved."
+        end
                 
         table.insert(menu, {
             lData.name,
@@ -636,21 +685,25 @@ function build_level_menu(menu)
                 for stars=1,maxStars do
                     table.insert(result, neededPoints[stars])
                 end
-                
-                local extraStr = tostring(bestScore)
-                if bestScore ~= 0 then
-                    if bestStars ~= 0 then
-                        extraStr = extraStr .. string.format(" (%s, %dP)", string.rep("", bestStars), bestPlayers)
-                    else
-                        extraStr = extraStr .. string.format(" (0, %dP)", bestPlayers)
-                    end
-                end
-                table.insert(result, extraStr)
                 return table.unpack(result)
             end,
         })
 
-        if i ~= 0 and bestStars == 0 and not cheatsApi then break end -- require 1 star to unlock the next level
+        -- require 1 star to unlock the next level
+        if i ~= 0 and bestStars == 0 and i ~= #OC_LEVEL_DATA and not cheatsApi then
+            unclearedLevel = true
+            break
+        end
+    end
+
+    if unclearedLevel then
+        table.insert(menu, {
+            "???",
+            function()
+            end,
+            desc = "Earn at least 1 star on the previous level to unlock this level.",
+            true,
+        })
     end
 end
 
@@ -658,6 +711,7 @@ grabButtonIndex = 3
 actionButtonIndex = 0
 throwButtonIndex = 0
 orderHUDLocation = 0
+reverseReading = false
 
 inMenu = false
 local menuOption = 1
@@ -841,6 +895,19 @@ local menu_data = {
             save = "orderHUDLocation",
             localSave = true,
             desc = {"Orders appear on the left side of the screen.", "Orders appear on the right side of the screen.", "Orders appear on the left side of the screen, shifted right so the FPS counter doesn't cover them.", "Orders appear on the right side of the screen, shifted left so the popups don't cover them."},
+        },
+        {
+            "Order Priority",
+            function(x)
+                reverseReading = (x == 1)
+            end,
+            runOnChange = true,
+            currNum = (reverseReading and 1) or 0,
+            maxNum = 1,
+            nameRef = { "Left to Right", "Right to Left" },
+            save = "reverseReading",
+            localSave = true,
+            desc = {"The oldest order will be on the left side of the queue. Serve *left to right* to maintain the tip combo.", "The oldest order will be on the right side of the queue. Serve *right to left* to maintain the tip combo."},
         },
         title = "Preferences",
     },
@@ -1091,7 +1158,7 @@ function render_menu()
     if menu.title == nil and (gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT) then
         local starScale = scale * 2
         local stars = 4
-        local maxStars = mod_storage_load_integer("record_"..gGlobalSyncTable.ocLevel.."_stars")
+        local maxStars = get_star_record(gGlobalSyncTable.ocLevel)
         maxStars = math.clamp(maxStars + 1, 3, 4)
         local neededPoints = get_star_scores(gGlobalSyncTable.ocLevel)
         while stars > 0 do
@@ -1104,7 +1171,11 @@ function render_menu()
         for i=1,maxStars do
             y = 32 + 32 * scale
             if i <= stars then
-                djui_hud_set_color(255, 255, 255, 255)
+                if i < 4 then
+                    djui_hud_set_color(255, 255, 255, 255)
+                else
+                    djui_hud_set_color(255, 20, 20, 255)
+                end
             else
                 djui_hud_set_color(0, 0, 0, 100)
             end
