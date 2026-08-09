@@ -377,6 +377,7 @@ function on_sync_valid()
             else
                 gPlayerSyncTable[0].spectator = false
                 gPlayerSyncTable[0].spawnID = spawnID
+                gMarioStates[0].flags = gMarioStates[0].flags &~ MARIO_VANISH_CAP
             end
         else
             gPlayerSyncTable[0].spectator = false
@@ -685,14 +686,21 @@ function before_mario_update(m)
 end
 hook_event(HOOK_BEFORE_MARIO_UPDATE, before_mario_update)
 
--- don't interact with ingredients; have THEM be pushed around instead
 function allow_interact(m, o, type)
     if type == INTERACT_GRABBABLE and obj_has_behavior_id(o, id_bhvIngredient) ~= 0 then
+        -- don't interact with ingredients; have THEM be pushed around instead
         obj_resolve_object_collisions_custom(m.marioObj, o) -- runs from Mario object
+        return false
+    elseif type == INTERACT_WARP or type == INTERACT_WARP_DOOR then
         return false
     end
 end
 hook_event(HOOK_ALLOW_INTERACT, allow_interact)
+
+function on_player_disconnected(m)
+    local sMario = gPlayerSyncTable[m.playerIndex]
+    set_without_sync(sMario, "spectator", true)
+end
 
 local lastDirX = 0
 local lastDirY = 0
@@ -926,7 +934,7 @@ function act_prepare_throw(m)
     m.actionTimer = m.actionTimer + 1
     animated_stationary_ground_step(m, CHAR_ANIM_IDLE_WITH_LIGHT_OBJ, ACT_IDLE)
 
-    local THROW_BUTTON = gPlayerSyncTable[m.playerIndex].throwButtonIndex
+    local THROW_BUTTON = ACTION_BUTTONS[gPlayerSyncTable[m.playerIndex].throwButtonIndex+1]
     if m.controller.buttonDown & THROW_BUTTON == 0 then
         m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
         m.action = ACT_THROWING
@@ -948,7 +956,7 @@ function act_prepare_throw_air(m)
     set_character_animation(m, CHAR_ANIM_JUMP_WITH_LIGHT_OBJ);
     update_air_without_turn(m)
 
-    local THROW_BUTTON = gPlayerSyncTable[m.playerIndex].throwButtonIndex
+    local THROW_BUTTON = ACTION_BUTTONS[gPlayerSyncTable[m.playerIndex].throwButtonIndex+1]
     if m.controller.buttonDown & THROW_BUTTON == 0 then
         m.flags = m.flags & ~MARIO_MARIO_SOUND_PLAYED
         m.action = ACT_AIR_THROW
@@ -1107,3 +1115,8 @@ if _G.cheatsApi then
     hook_chat_command("counter", "[TYPE,ITEM] - Create a counter", counter_command)
     hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
 end
+
+function popup()
+    djui_popup_create("Test", 2)
+end
+hook_chat_command("popup", "popup", popup)

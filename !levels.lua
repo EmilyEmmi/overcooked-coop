@@ -63,9 +63,9 @@ OC_LEVEL_DATA = {
         orders = {ORDER_TOMATO_SOUP, ORDER_ONION_SOUP, ORDER_MUSHROOM_SOUP},
         starScores = {
             {100, 200, 400, 700},
-            {250, 550, 900, 1200},
-            {350, 750, 1100, 1500},
-            {400, 800, 1200, 1700},
+            {150, 300, 550, 800},
+            {200, 400, 700, 900},
+            {250, 500, 850, 1000},
         },
     },
     [OC_LEVEL_LAVA] = {

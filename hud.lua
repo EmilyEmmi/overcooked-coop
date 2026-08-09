@@ -1,11 +1,24 @@
-FLAME_ANIM = {"flame_seg3_texture_03017320", "flame_seg3_texture_03017B20", "flame_seg3_texture_03018320", "flame_seg3_texture_03018B20", "flame_seg3_texture_03019320", "flame_seg3_texture_03019B20", "flame_seg3_texture_0301A320", "flame_seg3_texture_0301AB20"}
+local FLAME_ANIM = {"flame_seg3_texture_03017320", "flame_seg3_texture_03017B20", "flame_seg3_texture_03018320", "flame_seg3_texture_03018B20", "flame_seg3_texture_03019320", "flame_seg3_texture_03019B20", "flame_seg3_texture_0301A320", "flame_seg3_texture_0301AB20"}
+local HUD_LOCATIONS = {
+    {10, false},
+    {10, true},
+    {180, false},
+    {430, true},
+}
+
 function playing_hud()
     local screenWidth = djui_hud_get_screen_width()
-    local intendedX = 10
+    local intendedX = HUD_LOCATIONS[orderHUDLocation+1][1] or 10
+    local fromRight = HUD_LOCATIONS[orderHUDLocation+1][2] or false
+
     local y = 0
     local scale = 2
     local widthPerItem = 30
     for i, pending_data in ipairs(pending_orders) do
+        if fromRight then
+            i = #pending_orders - i + 1
+            pending_data = pending_orders[i]
+        end
         local x = screenWidth + intendedX
         local prevX = x
         local timeRatio = (pending_data.time / pending_data.maxTime)
@@ -51,6 +64,10 @@ function playing_hud()
 
         y = 0
         local width = math.max(#items, 2) * widthPerItem * scale
+        if fromRight then
+            x = screenWidth - x - width
+            prevX = screenWidth - prevX - width
+        end
         djui_hud_set_color(255, 255, 255, alpha)
         djui_hud_render_rect_interpolated(prevX, y, width, 40 * scale, x, y, width, 40 * scale)
 
@@ -640,6 +657,7 @@ end
 grabButtonIndex = 3
 actionButtonIndex = 0
 throwButtonIndex = 0
+orderHUDLocation = 0
 
 inMenu = false
 local menuOption = 1
@@ -810,6 +828,19 @@ local menu_data = {
             save = "menuMotionEnabled",
             localSave = true,
             desc = "Turns off moving parts in the menu.",
+        },
+        {
+            "Order HUD Location",
+            function(x)
+                orderHUDLocation = x
+            end,
+            runOnChange = true,
+            currNum = orderHUDLocation,
+            maxNum = 3,
+            nameRef = { "Left", "Right", "Shift From Left", "Shift From Right" },
+            save = "orderHUDLocation",
+            localSave = true,
+            desc = {"Orders appear on the left side of the screen.", "Orders appear on the right side of the screen.", "Orders appear on the left side of the screen, shifted right so the FPS counter doesn't cover them.", "Orders appear on the right side of the screen, shifted left so the popups don't cover them."},
         },
         title = "Preferences",
     },

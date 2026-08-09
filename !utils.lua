@@ -196,8 +196,8 @@ function join_smallest_kitchen(index)
         local kitchen = sMario.kitchen or 0
         if i ~= index and np.connected and (not sMario.spectator)
         and kitchen >= 1 and kitchen <= gGlobalSyncTable.maxKitchens then
-            kitchenCount[i] = kitchenCount[i] + 1
-            kitchenFreeSpawnIDs[i][sMario.spawnID] = nil
+            kitchenCount[kitchen] = kitchenCount[kitchen] + 1
+            kitchenFreeSpawnIDs[kitchen][sMario.spawnID] = nil
         end
     end
 
@@ -268,7 +268,7 @@ function save_new_score()
 
     -- global score
     local savePrefix = string.format("record_%d_", oc_level)
-    local maxScore = mod_storage_load_integer(savePrefix..oc_level)
+    local maxScore = mod_storage_load_integer(savePrefix.."score")
     if maxScore < gGlobalSyncTable.score then
         maxScore = gGlobalSyncTable.score
         local stars = 4
