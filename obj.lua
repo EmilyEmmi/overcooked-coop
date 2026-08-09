@@ -1192,7 +1192,7 @@ function bhv_player_barrier_loop(o)
     end
 
     local width = o.oBehParams2ndByte
-    if is_other_player_active() == 0 then
+    if not is_active_player_in_area(2) then
         width = (o.oBehParams & 0xFF)
     end
 

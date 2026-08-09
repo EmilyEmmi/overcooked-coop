@@ -235,6 +235,20 @@ function get_active_player_count()
     return totalPlayers
 end
 
+function is_active_player_in_area(maxToCheck)
+    local total = 0
+    for i=0,MAX_PLAYERS-1 do
+        local m, sMario = gMarioStates[i], gPlayerSyncTable[i]
+        if is_player_active(m) ~= 0 and not sMario.spectator then
+            total = total + 1
+            if maxToCheck == nil or total >= maxToCheck then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- Calculates level star requirements are based on how many players and kitchens are present.
 function get_star_scores(oc_level, maxKitchens, maxPlayers)
     local lData = OC_LEVEL_DATA[oc_level]

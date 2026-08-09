@@ -8,6 +8,7 @@ selectedItem = nil
 selectedCounter = nil
 waitOpenDJUI = false
 gotNewRecord = false
+stayInSpectate = false
 
 pending_orders_all = {}
 pending_orders = {}
@@ -105,7 +106,7 @@ function update()
     if network_is_server() and gGlobalSyncTable.gameState ~= GAME_STATE_END then
         local totalPlayers = get_active_player_count()
         if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
-            gGlobalSyncTable.peakPlayers = math.max(totalPlayers, gGlobalSyncTable.peakPlayers)
+            gGlobalSyncTable.peakPlayers = totalPlayers
         else
             gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, gGlobalSyncTable.maxKitchens * 4)
         end
@@ -139,7 +140,6 @@ function update()
     end
 
     if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
-        sMario.spectator = false
         local np = gNetworkPlayers[0]
         if np.currLevelNum ~= LEVEL_CASTLE_GROUNDS and np.currAreaSyncValid then
             warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
@@ -212,7 +212,7 @@ function update()
         else
             local m0 = gMarioStates[0]
             if m0.action ~= ACT_SELECT_START then
-                set_mario_action(m0, ACT_SELECT_START, 0)
+                drop_and_set_mario_action(m0, ACT_SELECT_START, 0)
             end
 
             clear_pending_orders_table()
@@ -236,6 +236,7 @@ function update()
                                 end
                             end
                         end
+                        if totalPlayers < 1 then totalPlayers = 1 end
 
                         gGlobalSyncTable.timeLeft = math.min(gGlobalSyncTable.timeLeft, nonReadyPlayers * 20 // totalPlayers + 3)
                         if gGlobalSyncTable.timeLeft == 0 then
@@ -360,7 +361,7 @@ function on_sync_valid()
         end)
     end
     if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
-        set_mario_action(gMarioStates[0], ACT_SELECT_START, 0)
+        drop_and_set_mario_action(gMarioStates[0], ACT_SELECT_START, 0)
     end
 
     if not (network_is_server() or didInitialJoin) then
@@ -371,17 +372,14 @@ function on_sync_valid()
             from = network_global_index_from_local(0),
         })
 
-        if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+        if gGlobalSyncTable.gameState == GAME_STATE_PLAYING or gGlobalSyncTable.gameState == GAME_STATE_SETUP then
             local kitchen, spawnID = join_smallest_kitchen(0)
             gPlayerSyncTable[0].kitchen = kitchen
-            if spawnID == -1 then
-                gPlayerSyncTable[0].spectator = true
-                gPlayerSyncTable[0].spawnID = 0
-            else
-                gPlayerSyncTable[0].spectator = false
-                gPlayerSyncTable[0].spawnID = spawnID
-                gMarioStates[0].flags = gMarioStates[0].flags &~ MARIO_VANISH_CAP
-            end
+            gPlayerSyncTable[0].spawnID = 0
+            gPlayerSyncTable[0].spectator = true
+            stayInSpectate = true
+            open_menu()
+            enter_menu(5, 1, true)
         else
             gPlayerSyncTable[0].spectator = false
             gPlayerSyncTable[0].kitchen = 1
@@ -487,6 +485,26 @@ function mario_update(m)
     and set_cam_angle(0) ~= CAM_ANGLE_MARIO then
         m.statusForCamera.pos.y = m.statusForCamera.pos.y + 250
     end]]
+
+    if m.playerIndex == 0 and sMario.spectator and gNetworkPlayers[0].currAreaSyncValid and (not stayInSpectate) then
+        if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
+            sMario.spectator = false
+            m.flags = m.flags &~ MARIO_VANISH_CAP
+        elseif get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
+            local kitchen, spawnID = join_smallest_kitchen(0)
+            if spawnID ~= -1 then
+                sMario.spectator = false
+                sMario.spawnID = spawnID
+                m.flags = m.flags &~ MARIO_VANISH_CAP
+                if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
+                    on_death(m)
+                else
+                    drop_and_set_mario_action(m, ACT_SELECT_START, 0)
+                end
+                djui_chat_message_create("You're playing now!")
+            end
+        end
+    end
 end
 hook_event(HOOK_MARIO_UPDATE, mario_update)
 
@@ -698,6 +716,7 @@ function on_player_disconnected(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     set_without_sync(sMario, "spectator", true)
 end
+hook_event(HOOK_ON_PLAYER_DISCONNECTED, on_player_disconnected)
 
 local lastDirX = 0
 local lastDirY = 0

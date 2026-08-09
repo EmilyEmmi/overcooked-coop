@@ -779,6 +779,23 @@ local menu_data = {
             desc = "Pick a level to start.",
         },
         {
+            "Spectate",
+            function(x)
+                stayInSpectate = (x == 1)
+                if stayInSpectate then
+                    gPlayerSyncTable[0].spectator = true
+                end
+            end,
+            runOnChange = true,
+            currNum = (stayInSpectate and 1) or 0,
+            maxNum = 1,
+            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+            desc = {"You'll automatically join the action when an opening is available.", "You'll stay in spectate mode."},
+            updateNum = function(button)
+                button.currNum = (stayInSpectate and 1) or 0
+            end,
+        },
+        {
             "Preferences",
             function(x)
                 enter_menu(4)
@@ -910,6 +927,44 @@ local menu_data = {
             desc = {"The oldest order will be on the left side of the queue. Serve *left to right* to maintain the tip combo.", "The oldest order will be on the right side of the queue. Serve *right to left* to maintain the tip combo."},
         },
         title = "Preferences",
+    },
+    [5] = {
+        {
+            "Put Me In!",
+            function()
+                inMenu = false
+                stayInSpectate = false
+                local m, sMario = gMarioStates[0], gPlayerSyncTable[0]
+                local kitchen, spawnID = join_smallest_kitchen(0)
+                sMario.kitchen = kitchen
+                if spawnID == -1 then
+                    sMario.spectator = true
+                    sMario.spawnID = 0
+                    djui_chat_message_create("Too many cooks in the kitchen! Please wait until a spot opens up.")
+                else
+                    sMario.spectator = false
+                    sMario.spawnID = spawnID
+                    m.flags = m.flags &~ MARIO_VANISH_CAP
+                    if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
+                        on_death(m)
+                    else
+                        drop_and_set_mario_action(m, ACT_SELECT_START, 0)
+                    end
+                end
+            end,
+            desc = "Join the action right now, or until a spot opens up.",
+        },
+        {
+            "Don't wanna cook",
+            function()
+                inMenu = false
+                stayInSpectate = true
+                gPlayerSyncTable[0].spectator = true
+            end,
+            desc = "Become a spectator until you disable spectating in the pause menu.",
+        },
+        title = "Join?",
+        noBack = true,
     },
 }
 
@@ -1305,7 +1360,7 @@ function menu_controls(m)
                 mod_storage_save(button.save, tostring(button.currNum))
             end
         end
-    elseif (sMenuInputsPressed & B_BUTTON) ~= 0 then
+    elseif (sMenuInputsPressed & B_BUTTON) ~= 0 and not menu.noBack then
         if #menu_history ~= 0 then
             play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource)
             enter_menu(menu_history[#menu_history][1], menu_history[#menu_history][2], true)
@@ -1329,7 +1384,7 @@ function menu_controls(m)
         end
     elseif (sMenuInputsPressed & R_TRIG) ~= 0 then
         djui_open_pause_menu()
-    elseif (sMenuInputsPressed & START_BUTTON) ~= 0 then
+    elseif (sMenuInputsPressed & START_BUTTON) ~= 0 and not menu.noBack then
         play_sound(SOUND_MENU_PAUSE, gGlobalSoundSource)
         inMenu = false
         m.controller.buttonDown = sMenuInputsDown
