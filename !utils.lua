@@ -282,20 +282,20 @@ function save_new_score()
     end
 
     -- global score
-    savePrefix = string.format("record_%d_", oc_level)
-    local maxScore = mod_storage_load_integer(savePrefix.."score")
+    savePrefix = string.format("record_%d_players", oc_level)
+    local bestOverallPlayers = mod_storage_load_integer(savePrefix)
+    local maxScore = mod_storage_load_integer(string.format("record_%d_%d_score", oc_level, bestOverallPlayers))
     local saveMax = false
-    if maxScore < gGlobalSyncTable.score then
-        maxScore = gGlobalSyncTable.score
+    if maxScore < maxScorePlayers then
         saveMax = true
-        mod_storage_save_integer(savePrefix.."players", gGlobalSyncTable.peakPlayers)
+        mod_storage_save_integer(savePrefix, gGlobalSyncTable.peakPlayers)
     end
 
     -- most stars score
-    savePrefix = string.format("record_%d_max_stars_", oc_level)
-    local maxScoreStars = mod_storage_load_integer(savePrefix.."stars")
+    savePrefix = string.format("record_%d_max_stars_players", oc_level)
+    local maxScoreStars = get_star_record(oc_level)
     if maxScoreStars < stars then
-        mod_storage_save_integer(savePrefix.."players", gGlobalSyncTable.peakPlayers)
+        mod_storage_save_integer(savePrefix, gGlobalSyncTable.peakPlayers)
     end
     return saveMax
 end
