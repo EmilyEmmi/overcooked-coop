@@ -1,5 +1,5 @@
 Lights1 trash_trash_black_lights = gdSPDefLights1(
-	0xA, 0xA, 0xA,
+	0x0, 0x0, 0x0,
 	0x20, 0x20, 0x20, 0x28, 0x28, 0x28);
 
 Lights1 trash_trash_border_lights = gdSPDefLights1(
@@ -10,7 +10,15 @@ Lights1 trash_trash_bag_lights = gdSPDefLights1(
 	0x14, 0x36, 0xE,
 	0x33, 0x73, 0x27, 0x28, 0x28, 0x28);
 
-Vtx trash_trash_model_mesh_layer_1_vtx_0[24] = {
+Lights1 trash_trash_hole_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Texture trash_trash_hole_ia8[] = {
+	#include "actors/trash/trash_hole.ia8.inc.c"
+};
+
+Vtx trash_trash_model_mesh_layer_1_vtx_0[16] = {
 	{{{95, -2, 95}, 0, {368, 240}, {0x00, 0xD7, 0x78, 0xFF}}},
 	{{{-128, 95, 128}, 0, {554, -16}, {0x00, 0xD7, 0x78, 0xFF}}},
 	{{{-95, -2, 95}, 0, {368, -16}, {0x00, 0xD7, 0x78, 0xFF}}},
@@ -27,25 +35,14 @@ Vtx trash_trash_model_mesh_layer_1_vtx_0[24] = {
 	{{{128, 95, 128}, 0, {554, 240}, {0x78, 0xD7, 0x00, 0xFF}}},
 	{{{95, -2, 95}, 0, {368, 240}, {0x78, 0xD7, 0x00, 0xFF}}},
 	{{{128, 95, -128}, 0, {554, 496}, {0x78, 0xD7, 0x00, 0xFF}}},
-	{{{35, 70, -65}, 0, {725, 419}, {0xF3, 0x65, 0x4C, 0xFF}}},
-	{{{-35, 70, -65}, 0, {779, 419}, {0x0D, 0x65, 0x4C, 0xFF}}},
-	{{{-65, 70, -35}, 0, {803, 395}, {0x4C, 0x65, 0x0D, 0xFF}}},
-	{{{-65, 70, 35}, 0, {803, 341}, {0x4C, 0x65, 0xF3, 0xFF}}},
-	{{{-35, 70, 65}, 0, {779, 317}, {0x0D, 0x65, 0xB4, 0xFF}}},
-	{{{35, 70, 65}, 0, {725, 317}, {0xF3, 0x65, 0xB4, 0xFF}}},
-	{{{65, 70, 35}, 0, {701, 341}, {0xB4, 0x65, 0xF3, 0xFF}}},
-	{{{65, 70, -35}, 0, {701, 395}, {0xB4, 0x65, 0x0D, 0xFF}}},
 };
 
 Gfx trash_trash_model_mesh_layer_1_tri_0[] = {
-	gsSPVertex(trash_trash_model_mesh_layer_1_vtx_0 + 0, 24, 0),
+	gsSPVertex(trash_trash_model_mesh_layer_1_vtx_0 + 0, 16, 0),
 	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
 	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
 	gsSP2Triangles(8, 9, 10, 0, 8, 10, 11, 0),
 	gsSP2Triangles(12, 13, 14, 0, 12, 15, 13, 0),
-	gsSP2Triangles(16, 17, 18, 0, 18, 19, 16, 0),
-	gsSP2Triangles(19, 20, 16, 0, 20, 21, 16, 0),
-	gsSP2Triangles(21, 22, 16, 0, 22, 23, 16, 0),
 	gsSPEndDisplayList(),
 };
 
@@ -89,19 +86,15 @@ Gfx trash_trash_model_mesh_layer_1_tri_1[] = {
 	gsSPEndDisplayList(),
 };
 
-Vtx trash_trash_model_mesh_layer_1_vtx_2[24] = {
-	{{{-82, 129, 82}, 0, {850, 270}, {0x53, 0x30, 0xAD, 0xFF}}},
-	{{{82, 129, 82}, 0, {654, 270}, {0xAD, 0x30, 0xAD, 0xFF}}},
-	{{{-35, 70, 65}, 0, {779, 317}, {0x0D, 0x65, 0xB4, 0xFF}}},
-	{{{35, 70, 65}, 0, {725, 317}, {0xF3, 0x65, 0xB4, 0xFF}}},
-	{{{65, 70, 35}, 0, {701, 341}, {0xB4, 0x65, 0xF3, 0xFF}}},
-	{{{65, 70, -35}, 0, {701, 395}, {0xB4, 0x65, 0x0D, 0xFF}}},
-	{{{82, 129, -82}, 0, {654, 466}, {0xAD, 0x30, 0x53, 0xFF}}},
-	{{{35, 70, -65}, 0, {725, 419}, {0xF3, 0x65, 0x4C, 0xFF}}},
-	{{{-35, 70, -65}, 0, {779, 419}, {0x0D, 0x65, 0x4C, 0xFF}}},
-	{{{-82, 129, -82}, 0, {850, 466}, {0x53, 0x30, 0x53, 0xFF}}},
-	{{{-65, 70, -35}, 0, {803, 395}, {0x4C, 0x65, 0x0D, 0xFF}}},
-	{{{-65, 70, 35}, 0, {803, 341}, {0x4C, 0x65, 0xF3, 0xFF}}},
+Vtx trash_trash_model_mesh_layer_1_vtx_2[20] = {
+	{{{-82, 129, -82}, 0, {850, 466}, {0x50, 0x3A, 0x50, 0xFF}}},
+	{{{-82, 129, 82}, 0, {850, 270}, {0x50, 0x3A, 0xB0, 0xFF}}},
+	{{{-55, 54, 55}, 0, {778, 342}, {0x3B, 0x5F, 0xC5, 0xFF}}},
+	{{{55, 54, 55}, 0, {726, 342}, {0xC4, 0x5F, 0xC5, 0xFF}}},
+	{{{82, 129, 82}, 0, {654, 270}, {0xB0, 0x3A, 0xB0, 0xFF}}},
+	{{{55, 54, -55}, 0, {726, 394}, {0xC5, 0x5F, 0x3C, 0xFF}}},
+	{{{82, 129, -82}, 0, {654, 466}, {0xB0, 0x3A, 0x50, 0xFF}}},
+	{{{-55, 54, -55}, 0, {778, 394}, {0x3B, 0x5F, 0x3C, 0xFF}}},
 	{{{-133, 80, 0}, 0, {-16, 1008}, {0xFD, 0x94, 0x43, 0xFF}}},
 	{{{-148, 72, 148}, 0, {-16, 1008}, {0xBC, 0x53, 0x44, 0xFF}}},
 	{{{-123, 114, 123}, 0, {-16, 1008}, {0x26, 0xDF, 0x8B, 0xFF}}},
@@ -117,19 +110,47 @@ Vtx trash_trash_model_mesh_layer_1_vtx_2[24] = {
 };
 
 Gfx trash_trash_model_mesh_layer_1_tri_2[] = {
-	gsSPVertex(trash_trash_model_mesh_layer_1_vtx_2 + 0, 24, 0),
+	gsSPVertex(trash_trash_model_mesh_layer_1_vtx_2 + 0, 20, 0),
 	gsSP2Triangles(0, 1, 2, 0, 1, 3, 2, 0),
-	gsSP2Triangles(1, 4, 3, 0, 1, 5, 4, 0),
-	gsSP2Triangles(1, 6, 5, 0, 7, 5, 6, 0),
-	gsSP2Triangles(8, 7, 6, 0, 8, 6, 9, 0),
-	gsSP2Triangles(10, 8, 9, 0, 9, 0, 10, 0),
-	gsSP2Triangles(0, 11, 10, 0, 0, 2, 11, 0),
-	gsSP2Triangles(12, 13, 14, 0, 14, 13, 15, 0),
-	gsSP2Triangles(16, 14, 15, 0, 15, 17, 16, 0),
-	gsSP2Triangles(16, 17, 18, 0, 19, 16, 18, 0),
-	gsSP2Triangles(18, 20, 19, 0, 19, 20, 21, 0),
-	gsSP2Triangles(22, 19, 21, 0, 21, 23, 22, 0),
-	gsSP2Triangles(22, 23, 12, 0, 14, 22, 12, 0),
+	gsSP2Triangles(1, 4, 3, 0, 4, 5, 3, 0),
+	gsSP2Triangles(4, 6, 5, 0, 7, 5, 6, 0),
+	gsSP2Triangles(7, 6, 0, 0, 0, 2, 7, 0),
+	gsSP2Triangles(5, 7, 2, 0, 5, 2, 3, 0),
+	gsSP2Triangles(8, 9, 10, 0, 10, 9, 11, 0),
+	gsSP2Triangles(12, 10, 11, 0, 11, 13, 12, 0),
+	gsSP2Triangles(12, 13, 14, 0, 15, 12, 14, 0),
+	gsSP2Triangles(14, 16, 15, 0, 15, 16, 17, 0),
+	gsSP2Triangles(18, 15, 17, 0, 17, 19, 18, 0),
+	gsSP2Triangles(18, 19, 8, 0, 10, 18, 8, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx trash_trash_model_mesh_layer_5_vtx_0[12] = {
+	{{{-79, 128, 79}, 0, {37, 37}, {0x3C, 0x5E, 0xC4, 0xFF}}},
+	{{{79, 128, 79}, 0, {443, 37}, {0xC4, 0x5E, 0xC4, 0xFF}}},
+	{{{55, 98, 56}, 0, {426, 334}, {0xC4, 0x5E, 0xC4, 0xFF}}},
+	{{{55, 98, -55}, 0, {425, 334}, {0xC4, 0x5F, 0x3C, 0xFF}}},
+	{{{79, 128, -79}, 0, {443, 37}, {0xC4, 0x5F, 0x3C, 0xFF}}},
+	{{{-56, 98, -55}, 0, {54, 334}, {0x3C, 0x5F, 0x3C, 0xFF}}},
+	{{{-79, 128, -79}, 0, {37, 37}, {0x3C, 0x5F, 0x3C, 0xFF}}},
+	{{{-56, 98, 56}, 0, {54, 333}, {0x3C, 0x5E, 0xC4, 0xFF}}},
+	{{{47, 88, 47}, 0, {419, 442}, {0xD4, 0x6F, 0xD4, 0xFF}}},
+	{{{47, 87, -47}, 0, {419, 443}, {0xD4, 0x6F, 0x2C, 0xFF}}},
+	{{{-47, 88, -47}, 0, {60, 442}, {0x2C, 0x6F, 0x2C, 0xFF}}},
+	{{{-47, 88, 47}, 0, {60, 441}, {0x2C, 0x6F, 0xD4, 0xFF}}},
+};
+
+Gfx trash_trash_model_mesh_layer_5_tri_0[] = {
+	gsSPVertex(trash_trash_model_mesh_layer_5_vtx_0 + 0, 12, 0),
+	gsSP2Triangles(0, 1, 2, 0, 1, 3, 2, 0),
+	gsSP2Triangles(1, 4, 3, 0, 5, 3, 4, 0),
+	gsSP2Triangles(5, 4, 6, 0, 6, 7, 5, 0),
+	gsSP2Triangles(6, 0, 7, 0, 0, 2, 7, 0),
+	gsSP2Triangles(7, 2, 8, 0, 2, 9, 8, 0),
+	gsSP2Triangles(2, 3, 9, 0, 10, 9, 3, 0),
+	gsSP2Triangles(10, 3, 5, 0, 5, 11, 10, 0),
+	gsSP2Triangles(5, 7, 11, 0, 7, 8, 11, 0),
+	gsSP2Triangles(9, 11, 8, 0, 9, 10, 11, 0),
 	gsSPEndDisplayList(),
 };
 
@@ -179,6 +200,31 @@ Gfx mat_revert_trash_trash_bag[] = {
 	gsSPEndDisplayList(),
 };
 
+Gfx mat_trash_trash_hole[] = {
+	gsSPClearGeometryMode(G_CULL_BACK),
+	gsSPSetLights1(trash_trash_hole_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, PRIMITIVE, 0),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureFilter(G_TF_AVERAGE),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetPrimColor(0, 0, 255, 255, 255, 255),
+	gsDPSetTextureImage(G_IM_FMT_IA, G_IM_SIZ_8b_LOAD_BLOCK, 1, trash_trash_hole_ia8),
+	gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 127, 1024),
+	gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_8b, 2, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPSetTileSize(0, 0, 0, 60, 60),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_trash_trash_hole[] = {
+	gsSPSetGeometryMode(G_CULL_BACK),
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureFilter(G_TF_BILERP),
+	gsSPEndDisplayList(),
+};
+
 Gfx trash_trash_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_trash_trash_black),
 	gsSPDisplayList(trash_trash_model_mesh_layer_1_tri_0),
@@ -189,6 +235,20 @@ Gfx trash_trash_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_trash_trash_bag),
 	gsSPDisplayList(trash_trash_model_mesh_layer_1_tri_2),
 	gsSPDisplayList(mat_revert_trash_trash_bag),
+	gsDPPipeSync(),
+	gsSPSetGeometryMode(G_LIGHTING),
+	gsSPClearGeometryMode(G_TEXTURE_GEN),
+	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
+	gsSPTexture(65535, 65535, 0, 0, 0),
+	gsDPSetEnvColor(255, 255, 255, 255),
+	gsDPSetAlphaCompare(G_AC_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx trash_trash_model_mesh_layer_5[] = {
+	gsSPDisplayList(mat_trash_trash_hole),
+	gsSPDisplayList(trash_trash_model_mesh_layer_5_tri_0),
+	gsSPDisplayList(mat_revert_trash_trash_hole),
 	gsDPPipeSync(),
 	gsSPSetGeometryMode(G_LIGHTING),
 	gsSPClearGeometryMode(G_TEXTURE_GEN),

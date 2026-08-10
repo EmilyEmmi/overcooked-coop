@@ -27,6 +27,7 @@ const GeoLayout pot_geo[] = {
 			GEO_SCALE(LAYER_FORCE, 16384),
 			GEO_OPEN_NODE(),
 				GEO_DISPLAY_LIST(LAYER_OPAQUE, pot_pot_dl_mesh_layer_1),
+				GEO_DISPLAY_LIST(LAYER_TRANSPARENT, pot_pot_dl_mesh_layer_5),
 				GEO_SWITCH_CASE(0, pot_liquid_switch),
 				GEO_OPEN_NODE(),
 					GEO_NODE_START(),
@@ -40,6 +41,7 @@ const GeoLayout pot_geo[] = {
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, pot_material_revert_render_settings),
+		GEO_DISPLAY_LIST(LAYER_TRANSPARENT, pot_material_revert_render_settings),
 	GEO_CLOSE_NODE(),
 	GEO_END(),
 };

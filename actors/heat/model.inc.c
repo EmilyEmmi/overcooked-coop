@@ -479,15 +479,15 @@ Gfx heat_heat_model_mesh_layer_1_tri_3[] = {
 
 
 Gfx mat_heat_flame_New_layer5[] = {
-	gsSPGeometryMode(G_CULL_BACK, G_FRESNEL_COLOR_EXT | G_FRESNEL_ALPHA_EXT),
+	gsSPGeometryMode(G_CULL_BACK, G_FRESNEL_COLOR_EXT),
 	gsSPSetLights1(heat_flame_New_layer5_lights),
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(SHADE, 0, TEXEL0, ENVIRONMENT, 0, 0, 0, TEXEL0, SHADE, 0, TEXEL0, ENVIRONMENT, 0, 0, 0, TEXEL0),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, ENVIRONMENT, 0, 0, 0, TEXEL0, TEXEL0, 0, SHADE, ENVIRONMENT, 0, 0, 0, TEXEL0),
 	gsSPFresnel(0xff47, 0x00bd),
 	gsDPSetAlphaDither(G_AD_NOISE),
 	gsDPSetRenderMode(G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2),
 	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsDPSetEnvColor(0, 94, 94, 255),
+	gsDPSetEnvColor(0, 80, 86, 255),
 	gsDPSetTextureImage(G_IM_FMT_IA, G_IM_SIZ_8b_LOAD_BLOCK, 1, heat_flame_white_ia8),
 	gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
 	gsDPLoadBlock(7, 0, 0, 127, 1024),
@@ -497,7 +497,7 @@ Gfx mat_heat_flame_New_layer5[] = {
 };
 
 Gfx mat_revert_heat_flame_New_layer5[] = {
-	gsSPGeometryMode(G_FRESNEL_COLOR_EXT | G_FRESNEL_ALPHA_EXT, G_CULL_BACK),
+	gsSPGeometryMode(G_FRESNEL_COLOR_EXT, G_CULL_BACK),
 	gsDPPipeSync(),
 	gsDPSetAlphaDither(G_AD_DISABLE),
 	gsDPSetRenderMode(G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2),
