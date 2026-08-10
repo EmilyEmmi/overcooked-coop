@@ -129,7 +129,7 @@ ITEM_DATA = {
         plateAnim =  "tomato_idle",
         icon = ICON_TOMATO,
         subIcon = ICON_CUT,
-        cookItem = ITEM_POT,
+        cookIcon = ICON_POT,
     },
     [ITEM_ONION] = {
         model = E_MODEL_ONION,
@@ -145,7 +145,7 @@ ITEM_DATA = {
         pickupAnim = "onion_pickup",
         icon = ICON_ONION,
         subIcon = ICON_CUT,
-        cookItem = ITEM_POT,
+        cookIcon = ICON_POT,
     },
     [ITEM_MUSHROOM] = {
         model = E_MODEL_MUSHROOM,
@@ -161,7 +161,7 @@ ITEM_DATA = {
         pickupAnim = "mushroom_pickup",
         icon = ICON_MUSHROOM,
         subIcon = ICON_CUT,
-        cookItem = ITEM_POT,
+        cookIcon = ICON_POT,
     },
     [ITEM_SOUP] = {
         model = E_MODEL_POT,
@@ -196,7 +196,7 @@ ITEM_DATA = {
         isCooked = true,
         plateable = true,
         plateCombine = BURGER_COMBO,
-        cookItem = ITEM_PAN,
+        cookIcon = ICON_PAN,
         icon = ICON_MEAT,
         subIcon = ICON_CUT,
     },

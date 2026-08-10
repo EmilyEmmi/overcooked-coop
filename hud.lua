@@ -144,9 +144,10 @@ function playing_hud()
             local itemX = rectX + rectWidth / 2
             local prevItemX = prevRectX + rectWidth / 2
             render_ingredient_icon_interpolated(item, prevItemX, y, itemScale, itemScale, itemX, y, itemScale, itemScale)
-            if ITEM_DATA[item].cookItem and (mainIsCooked or ITEM_DATA[item].isCooked) then
+            if ITEM_DATA[item].cookIcon and (mainIsCooked or ITEM_DATA[item].isCooked) then
                 djui_hud_render_rect_interpolated(prevRectX, y + 18 * scale, rectWidth, 20 * scale, rectX, y + 18 * scale, rectWidth, 20 * scale)
-                render_ingredient_icon_interpolated(ITEM_DATA[item].cookItem, prevItemX, y + 20 * scale, itemScale, itemScale, itemX, y + 20 * scale, itemScale, itemScale)
+                local cookTex = ITEM_DATA[item].cookIcon
+                djui_hud_render_texture_interpolated(cookTex, prevItemX - cookTex.width * itemScale / 2, y + 20 * scale, itemScale, itemScale, itemX - cookTex.width * scale / 2, y + 20 * scale, itemScale, itemScale)
             end
             rectX = rectX + rectWidth + 5 * scale
             prevRectX = prevRectX + rectWidth + 5 * scale
