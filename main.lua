@@ -393,6 +393,7 @@ hook_event(HOOK_ON_SYNC_VALID, on_sync_valid)
 function mario_update(m)
     m.health = 0x880 -- no health in this mod
     m.numLives = 100 -- or lives
+    m.peakHeight = m.pos.y -- or fall damage
     if m.marioBodyState.allowPartRotation == 15 and m.action ~= ACT_HOLD_WALKING then
         m.marioBodyState.allowPartRotation = 0
     end
@@ -403,7 +404,7 @@ function mario_update(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     if sMario.cutTimer ~= 0 then
         -- Handle cutting
-        if m.action & ACT_FLAG_THROWING ~= 0 then
+        if m.action & (ACT_FLAG_THROWING | ACT_FLAG_STATIONARY) ~= 0 and m.action ~= ACT_IDLE then
             if m.action & ACT_FLAG_AIR ~= 0 then
                 set_mario_action(m, ACT_FREEFALL, 0)
             else
@@ -827,6 +828,7 @@ function act_custom_hold_walking(m)
     end
 
     if (m.input & INPUT_ZERO_MOVEMENT) ~= 0 then
+        m.forwardVel = math.max(m.forwardVel - 8, 0)
         return set_mario_action(m, ACT_HOLD_DECELERATING, 0)
     end
 
@@ -835,6 +837,8 @@ function act_custom_hold_walking(m)
     end
 
     update_walking_speed(m) -- normal walking speed
+    -- turn more sharply
+    m.faceAngle.y = m.intendedYaw - approach_s32(limit_angle(m.intendedYaw - m.faceAngle.y), 0, 0x800, 0x800)
 
     local result = perform_ground_step(m)
     if result == GROUND_STEP_LEFT_GROUND then

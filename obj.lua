@@ -180,6 +180,7 @@ function bhv_ingredient_loop(o)
     if o.parentObj and o.parentObj ~= o and o.oHeldState == HELD_FREE then
         if obj_has_behavior_id(o.parentObj, id_bhvIngredient) ~= 0 then
             obj_copy_pos(o, o.parentObj)
+            cur_obj_become_intangible()
             return
         else
             o.parentObj, o.oParentSyncID = nil, 0
@@ -228,8 +229,6 @@ function bhv_ingredient_loop(o)
                     o.platform = floor.object
                     apply_platform_displacement(o, o.platform)
                 end
-            else
-                trash = true
             end
 
             if trash then

@@ -11,6 +11,7 @@ OC_LEVEL_WF = 2
 OC_LEVEL_SHIP = 3
 OC_LEVEL_LAVA = 4
 OC_LEVEL_SAND = 5
+OC_LEVEL_TTC = 6
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -94,6 +95,20 @@ OC_LEVEL_DATA = {
             {100, 250, 500, 900},
             {250, 450, 700, 1200},
             {300, 600, 900, 1500},
+        },
+    },
+    [OC_LEVEL_TTC] = {
+        name = "Burger Time",
+        desc = "Make more complicated burgers! Use the Wall Kick to reach the ingredients!",
+        level = LEVEL_TTC,
+        totalTime = 210,
+        failTime = {210, 210, 180, 160},
+        orders = {ORDER_PLAIN_BURGER, ORDER_CHEESE_BURGER, ORDER_LETTUCE_BURGER, ORDER_CHEESE_LETTUCE_BURGER, ORDER_LETTUCE_TOMATO_BURGER, ORDER_DELUXE_BURGER},
+        starScores = {
+            {30, 100, 250, 400},
+            {50, 150, 350, 600},
+            {100, 200, 400, 800},
+            {150, 300, 450, 1000},
         },
     },
 }
