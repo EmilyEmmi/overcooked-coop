@@ -170,7 +170,7 @@ function bhv_ingredient_loop(o)
     o.header.gfx.node.flags = o.header.gfx.node.flags & ~GRAPH_RENDER_INVISIBLE
 
     -- spawn steam/smoke for cooked things
-    if (o.oTimer % 10 == 0) and ((iData.cookable and o.oContentCount ~= 0 and o.oCutOrCookTimer == maxCookTime)
+    if (o.oTimer % 10 == 0) and (((iData.cookable or iData.bakeable) and o.oContentCount ~= 0 and o.oCutOrCookTimer == maxCookTime)
     or iData.isCooked or o.oContents == ITEM_BURNT) then
         local model = (o.oContents == ITEM_BURNT and E_MODEL_BURN_SMOKE) or E_MODEL_SMOKE
         spawn_child_object(o, id_bhvBlackSmokeMario, model, 0, 0, 0)
@@ -273,9 +273,9 @@ function bhv_ingredient_loop(o)
                 cur_obj_become_intangible()
                 ingredient_place_on_counter(o, counter)
 
-                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT then
-                    if o.oContentCount ~= 0 and o.oContents ~= ITEM_BURNT and iData.cookable then
-                        if o.oCutOrCookTimer < maxCookTime then
+                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT or counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
+                    if (o.oContentCount ~= 0 or iData.selfCookItem) and o.oContents ~= ITEM_BURNT and (iData.cookable or iData.bakeable) then
+                        if (not iData.isCooked) and o.oCutOrCookTimer < maxCookTime then
                             o.oCutOrCookTimer = o.oCutOrCookTimer + 1
                             o.oOvercookTimer = 0
 
@@ -284,9 +284,8 @@ function bhv_ingredient_loop(o)
                                 o.oNotifyTimer = 30
                                 cur_obj_play_sound_2(SOUND_MENU_REVERSE_PAUSE | 128)
 
-                                local cookedData = get_cooked_data(o)
-                                if cookedData and cookedData.selfResult then
-                                    o.oBehParams = cookedData.result
+                                if iData.selfCookItem then
+                                    o.oBehParams = iData.selfCookItem
                                 end
                             end
                         else -- overcook after 10 seconds
@@ -724,9 +723,11 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 end
                 return true, false
             end
+        elseif counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
+            allowPlace = iData.bakeable or false
         end
 
-        if not allowPlace then return true, true end
+        if not allowPlace then return (o2 ~= nil), true end
 
         counter.usingObj = o
         o.usingObj = counter
@@ -997,6 +998,8 @@ function bhv_counter_init(o)
         spawn_child_object(o, id_bhvCuttingBoard, E_MODEL_CHOPPING_BOARD, 0, 0, 0, nil)
     elseif o.oBehParams2ndByte == COUNTER_TYPE_SERVING or o.oBehParams2ndByte == COUNTER_TYPE_SINK then
         o.collisionData = smlua_collision_util_get("sink_collision")
+    elseif o.oBehParams2ndByte == COUNTER_TYPE_OVEN then
+        o.collisionData = smlua_collision_util_get("oven_collision")
     end
 
     local syncFields = {}
@@ -1054,7 +1057,7 @@ function bhv_counter_loop(o)
         local cookSoundChance = 1
         if o.usingObj and o.usingObj ~= o then
             local iData = ITEM_DATA[o.usingObj.oBehParams] or ITEM_DATA[0]
-            if iData.cookable and o.usingObj.oContentCount ~= 0 then
+            if iData.cookable and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
                 heatOn = true
                 cookSound = iData.cookSound or cookSound
                 cookSoundChance = iData.cookSoundChance or cookSoundChance
@@ -1081,6 +1084,26 @@ function bhv_counter_loop(o)
     elseif o.oBehParams2ndByte == COUNTER_TYPE_SINK then
         if o.oPlatesStackedExtra == 0 then o.oPlateAppearTimer = 0 end
         smlua_anim_util_set_animation(o, "sink_plate_"..math.min(o.oPlatesStackedExtra, 3))
+    elseif o.oBehParams2ndByte == COUNTER_TYPE_OVEN then
+        local heatOn = false
+        local cookSound = SOUND_ENV_WATERFALL1 -- ???
+        local cookSoundChance = 1
+        if o.usingObj and o.usingObj ~= o then
+            local iData = ITEM_DATA[o.usingObj.oBehParams] or ITEM_DATA[0]
+            if iData.bakeable and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
+                heatOn = true
+                cookSound = iData.cookSound or cookSound
+                cookSoundChance = iData.cookSoundChance or cookSoundChance
+            end
+        end
+        if heatOn then
+            --smlua_anim_util_set_animation(o, "heat_on")
+            if cookSoundChance == 1 or random_float() < cookSoundChance then
+                cur_obj_play_sound_2(cookSound)
+            end
+        else
+            --smlua_anim_util_set_animation(o, "heat_off")
+        end
     end
 end
 
@@ -1247,6 +1270,7 @@ function ship_movement_controller_loop(o)
     if o.oForwardVel == 0 and gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         local newAction = 1 - ((gGlobalSyncTable.timeLeft - 1) // 30) % 2
         if o.oAction ~= newAction then
+            cur_obj_play_sound_2(SOUND_ENV_BOAT_ROCKING1)
             cur_obj_change_action(newAction)
         end
     end

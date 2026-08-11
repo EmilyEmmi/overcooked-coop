@@ -41,7 +41,11 @@ ICON_POT = get_texture_info("icon_pot")
 ICON_PAN = get_texture_info("icon_pan")
 ICON_CUT = get_texture_info("icon_cut")
 ICON_HEAT = get_texture_info("icon_heat")
-ICON_BURNT = get_texture_info("icon_heat") -- TEMP
+ICON_BURNT = get_texture_info("icon_burnt")
+ICON_OVEN = get_texture_info("icon_oven")
+ICON_DOUGH = ICON_BUN -- TEMP
+ICON_SAUSAGE = ICON_MEAT -- TEMP
+ICON_CHICKEN = ICON_ONION -- TEMP
 
 ITEM_LETTUCE = 0
 ITEM_LETTUCE_CUT = 1
@@ -248,21 +252,27 @@ ITEM_DATA = {
     [ITEM_DOUGH] = {
         model = E_MODEL_EXCLAMATION_BOX, -- TEMP
         cut = ITEM_DOUGH_CUT,
-        icon = ICON_CHICKEN,
+        icon = ICON_DOUGH,
     },
     [ITEM_DOUGH_CUT] = {
         model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
         contentSlots = 4,
         accepts = PIZZA_COMBO,
-        cookable = true, -- TEMP: replace with bakeable
+        bakeable = true,
+        selfCookItem = ITEM_DOUGH_COOKED,
         icon = ICON_DOUGH,
+        subIcon = ICON_CUT,
     },
     [ITEM_DOUGH_COOKED] = {
         model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
         animState = 3, -- TEMP
         isCooked = true,
         plateable = true,
+        bakeable = true,
+        selfCookItem = ITEM_DOUGH_COOKED,
         icon = ICON_DOUGH,
+        subIcon = ICON_CUT,
+        cookIcon = ICON_OVEN,
     },
     [ITEM_SAUSAGE] = {
         model = E_MODEL_SAUSAGE,
@@ -271,8 +281,8 @@ ITEM_DATA = {
     },
     [ITEM_SAUSAGE_CUT] = {
         model = E_MODEL_SAUSAGE_CUT,
-        icon = ICON_CHICKEN,
-        subIcon = ICON_SAUSAGE,
+        icon = ICON_SAUSAGE,
+        subIcon = ICON_CUT,
     },
     [ITEM_CHICKEN] = {
         model = E_MODEL_CHICKEN,
@@ -309,12 +319,6 @@ COOKED_DATA = {
         {
             items = {ITEM_MEAT_CUT},
             result = ITEM_MEAT_COOKED,
-        },
-    },
-    [ITEM_DOUGH] = {
-        {
-            result = ITEM_DOUGH_COOKED,
-            selfResult = true,
         },
     },
 }
@@ -355,6 +359,12 @@ ORDER_DELUXE_BURGER = 7
 ORDER_TOMATO_SOUP = 8
 ORDER_ONION_SOUP = 9
 ORDER_MUSHROOM_SOUP = 10
+ORDER_CHEESE_PIZZA = 11
+ORDER_PEPPERONI_PIZZA = 12
+ORDER_CHICKEN_PIZZA = 13
+ORDER_MUSHROOM_PIZZA = 14
+ORDER_MEAT_PIZZA = 15
+ORDER_PEPPERONI_MUSHROOM_PIZZA = 16
 
 ORDER_DATA = {
     [ORDER_PLAIN_SALAD] = {
@@ -434,5 +444,47 @@ ORDER_DATA = {
             {type = ITEM_SOUP, contents = {ITEM_MUSHROOM_CUT, ITEM_MUSHROOM_CUT, ITEM_MUSHROOM_CUT}},
         },
         icon = get_texture_info("icon_mushroom_soup"),
+    },
+    [ORDER_CHEESE_PIZZA] = {
+        name = "Cheese Pizza",
+        items = {
+            {type = ITEM_DOUGH_COOKED, contents = {ITEM_TOMATO_CUT, ITEM_CHEESE_CUT}},
+        },
+        icon = get_texture_info("icon_pizza_cheese"),
+    },
+    [ORDER_PEPPERONI_PIZZA] = {
+        name = "Pepperoni Pizza",
+        items = {
+            {type = ITEM_DOUGH_COOKED, contents = {ITEM_TOMATO_CUT, ITEM_CHEESE_CUT, ITEM_SAUSAGE_CUT}},
+        },
+        icon = get_texture_info("icon_pizza_pepperoni"),
+    },
+    [ORDER_CHICKEN_PIZZA] = {
+        name = "Chicken Pizza",
+        items = {
+            {type = ITEM_DOUGH_COOKED, contents = {ITEM_TOMATO_CUT, ITEM_CHEESE_CUT, ITEM_CHICKEN_CUT}},
+        },
+        icon = get_texture_info("icon_pizza_chicken"),
+    },
+    [ORDER_MUSHROOM_PIZZA] = {
+        name = "Mushroom Pizza",
+        items = {
+            {type = ITEM_DOUGH_COOKED, contents = {ITEM_TOMATO_CUT, ITEM_CHEESE_CUT, ITEM_MUSHROOM_CUT}},
+        },
+        icon = get_texture_info("icon_pizza_mushroom"),
+    },
+    [ORDER_MEAT_PIZZA] = {
+        name = "Meat Lover's Pizza",
+        items = {
+            {type = ITEM_DOUGH_COOKED, contents = {ITEM_TOMATO_CUT, ITEM_CHEESE_CUT, ITEM_SAUSAGE_CUT, ITEM_CHICKEN_CUT}},
+        },
+        icon = get_texture_info("icon_pizza_pepperoni_chicken"),
+    },
+    [ORDER_PEPPERONI_MUSHROOM_PIZZA] = {
+        name = "Pepperoni Mushroom Pizza",
+        items = {
+            {type = ITEM_DOUGH_COOKED, contents = {ITEM_TOMATO_CUT, ITEM_CHEESE_CUT, ITEM_SAUSAGE_CUT, ITEM_MUSHROOM_CUT}},
+        },
+        icon = get_texture_info("icon_pizza_pepperoni_mushroom"),
     },
 }

@@ -54,12 +54,13 @@ function playing_hud()
 
         local order = ORDER_DATA[pending_data.id]
         local items = {}
-        local mainIsCooked = false
+        local mainCookIcon = nil
         for a, item in ipairs(order.items) do
             if not ITEM_DATA[item.type].skipItem then
                 table.insert(items, item.type)
-            elseif ITEM_DATA[item.type].isCooked then
-                mainIsCooked = true
+            end
+            if #order.items == 1 and ITEM_DATA[item.type].isCooked then
+                mainCookIcon = ITEM_DATA[item.type].cookIcon
             end
             if item.contents then
                 for b, subitem in ipairs(item.contents) do
@@ -144,9 +145,9 @@ function playing_hud()
             local itemX = rectX + rectWidth / 2
             local prevItemX = prevRectX + rectWidth / 2
             render_ingredient_icon_interpolated(item, prevItemX, y, itemScale, itemScale, itemX, y, itemScale, itemScale)
-            if ITEM_DATA[item].cookIcon and (mainIsCooked or ITEM_DATA[item].isCooked) then
+            if mainCookIcon or (ITEM_DATA[item].isCooked and ITEM_DATA[item].cookIcon) then
                 djui_hud_render_rect_interpolated(prevRectX, y + 18 * scale, rectWidth, 20 * scale, rectX, y + 18 * scale, rectWidth, 20 * scale)
-                local cookTex = ITEM_DATA[item].cookIcon
+                local cookTex = mainCookIcon or ITEM_DATA[item].cookIcon
                 djui_hud_render_texture_interpolated(cookTex, prevItemX - cookTex.width * itemScale / 2, y + 20 * scale, itemScale, itemScale, itemX - cookTex.width * scale / 2, y + 20 * scale, itemScale, itemScale)
             end
             rectX = rectX + rectWidth + 5 * scale
@@ -464,7 +465,7 @@ function behind_hud_render()
                     
                     if c.oContentCount ~= 0 then
                         local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
-                        allCooked = (iData.cookable and c.oCutOrCookTimer >= maxCookTime)
+                        allCooked = allCooked or (iData.cookable and c.oCutOrCookTimer >= maxCookTime)
 
                         local cookedData = get_cooked_data(c)
                         local renderContents = true
@@ -530,7 +531,7 @@ function behind_hud_render()
                     radar.barWidth = 0
                     if iData.cut then
                         radar.barWidth = o.oCutOrCookTimer / 30
-                    elseif iData.cookable then
+                    elseif iData.cookable or iData.bakeable then
                         local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
                         radar.barWidth = o.oCutOrCookTimer / maxCookTime
                     end
