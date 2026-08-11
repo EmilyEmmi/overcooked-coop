@@ -345,20 +345,21 @@ function bhv_ingredient_loop(o)
         cur_obj_disable_rendering()
     elseif (o.oHeldState == HELD_THROWN) or (o.oHeldState == HELD_DROPPED) then
         --cur_obj_enable_rendering()
+        local m2 = gMarioStates[o.heldByPlayerIndex]
         o.oForwardVel = (o.oHeldState == HELD_THROWN and 60) or 0
         o.oVelY = (o.oHeldState == HELD_THROWN and 10) or 0
         o.oTimer = 0
 
         o.oFaceAngleYaw = o.oMoveAngleYaw
         -- consistent throwing height (based on Mario's)
-        if o.oHeldState == HELD_THROWN then
-            local m2 = gMarioStates[o.heldByPlayerIndex]
-            if m2 then
-                o.oPosY = m2.pos.y + 110
-            end
+        if o.oHeldState == HELD_THROWN and m2 then
+            o.oPosY = m2.pos.y + 110
         end
 
         o.oHeldState = HELD_FREE
+        if m2 and m2.playerIndex == 0 then
+            network_send_object(o, true)
+        end
     end
 
     o.oInteractStatus = 0
@@ -526,7 +527,28 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
             end
         end
 
-        if not placeOnPlate then
+        if iData.washItem and iData.washItem == iData2.washItem then
+            if (not counter) and o == placedObj then
+                -- swap so that the dirty plates get placed in our hand
+                o, o2 = o2, o
+                iData, iData2 = iData2, iData
+            end
+
+            -- Stack dirty plates
+            o.oPlateCounterNum = #find_all_object_children(o2, id_bhvIngredient)
+            o.parentObj = o2
+            o.oParentSyncID = o2.oSyncID
+            if m and m.playerIndex == 0 then network_send_object(o, true) end
+
+            local children = find_all_object_children(o, id_bhvIngredient)
+            for i, c in ipairs(children) do
+                c.oPlateCounterNum = o.oPlateCounterNum + i
+                c.parentObj = o2
+                c.oParentSyncID = o2.oSyncID
+                if m and m.playerIndex == 0 then network_send_object(c, true) end
+            end
+            if not counter then return true, true end
+        elseif not placeOnPlate then
             -- This should only run with a container on a plate.
             -- Put stuff in the actual container instead.
             local wasPlate = iData2.isPlate
@@ -746,7 +768,12 @@ end
 function check_ingredient_valid_for_place(o, o2, onPlate)
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
     local iData2 = ITEM_DATA[o2.oBehParams] or ITEM_DATA[0]
-    if iData.isPlate or iData2.isPlate then
+    if iData.washItem or iData2.washItem then
+        -- allow stacking dirty plates
+        if not (iData.washItem and iData2.washItem) then return end
+
+        return (iData.washItem == iData2.washItem), false
+    elseif iData.isPlate or iData2.isPlate then
         if onPlate then return false, false end
 
         local children2 = {o2}
