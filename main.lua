@@ -404,7 +404,8 @@ function mario_update(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     if sMario.cutTimer ~= 0 then
         -- Handle cutting
-        if m.action & (ACT_FLAG_THROWING | ACT_FLAG_STATIONARY) ~= 0 and m.action ~= ACT_IDLE then
+        if m.action & (ACT_FLAG_THROWING | ACT_FLAG_STATIONARY) ~= 0
+        and m.action ~= ACT_IDLE and m.heldObj == nil then
             if m.action & ACT_FLAG_AIR ~= 0 then
                 set_mario_action(m, ACT_FREEFALL, 0)
             else
