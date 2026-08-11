@@ -70,7 +70,7 @@ fast.\
 "))
 
 smlua_text_utils_dialog_replace(DIALOG_050,1,6,30,200, (
-"There are 3 types of food\
+"There are 4 types of food\
 in this mod. Salad is the\
 easiest. Simply place\
 chopped lettuce on a plate,\
@@ -82,13 +82,17 @@ type to be cooked in a pot-\
 either tomatoes, onions, or\
 mushrooms.\
 \
-Finally, burgers are made\
-by placing chopped meat in\
-a pan, then placing on bread\
-and adding the requested\
-toppings.\
+Burgers are made by\
+placing chopped meat in\
+a pan, then placing it on\
+bread and adding the\
+requested toppings.\
 \
-"))
+Finally, pizza is made by\
+cutting dough, adding\
+tomato, cheese, and other\
+toppings, then baking the\
+entire thing in an oven."))
 
 smlua_text_utils_dialog_replace(DIALOG_161,1,6,30,200, (
 "Wow! You found me!\

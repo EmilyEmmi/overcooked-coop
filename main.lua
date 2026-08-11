@@ -737,7 +737,7 @@ function act_select_start(m)
         sMario.maxSpawnID = 0
     end
 
-    local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
+    local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x2F, sMario.spawnID) -- oBehParams2ndByte
     if spawnObj then
         m.pos.x, m.pos.y, m.pos.z = spawnObj.oPosX, spawnObj.oPosY, spawnObj.oPosZ
         m.faceAngle.y = spawnObj.oFaceAngleYaw
@@ -1015,7 +1015,7 @@ function on_death(m)
 
     mario_drop_held_object(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
-    local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x40, sMario.spawnID) -- oBehParams
+    local spawnObj = obj_get_first_with_behavior_id_and_field_s32(id_bhvOcSpawn, 0x2F, sMario.spawnID) -- oBehParams2ndByte
     if spawnObj then
         m.pos.x, m.pos.y, m.pos.z = spawnObj.oPosX, spawnObj.oPosY, spawnObj.oPosZ
         m.faceAngle.y = spawnObj.oFaceAngleYaw

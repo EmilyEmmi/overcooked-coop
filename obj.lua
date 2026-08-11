@@ -162,8 +162,33 @@ function bhv_ingredient_loop(o)
         o.oRespawnTimer = o.oRespawnTimer - 1
         o.oHeldState = HELD_FREE
         if o.oRespawnTimer == 0 then
-            obj_set_pos(o, o.oHomeX, o.oHomeY, o.oHomeZ)
-            spawn_mist_particles()
+            -- Set on counter with home closest to this object's home
+            local counter = obj_get_first_with_behavior_id(id_bhvCounter)
+            local selectedCounter, maxDist
+            while counter do
+                if (counter.usingObj == o or counter.usingObj == nil) and counter.oBehParams2ndByte ~= COUNTER_TYPE_TRASH
+                and counter.oBehParams2ndByte ~= COUNTER_TYPE_SERVING and attempt_item_place(o, nil, nil, counter, false) then
+                    local dist = vec3f_dist({x = o.oHomeX, y = o.oHomeY, z = o.oHomeZ}, {x = counter.oHomeX, y = counter.oHomeY, z = counter.oHomeZ})
+                    if maxDist == nil or dist < maxDist then
+                        maxDist = dist
+                        selectedCounter = counter
+                        if dist == 0 then break end
+                    end
+                end
+                counter = obj_get_next_with_same_behavior_id(counter)
+            end
+            
+            if selectedCounter then
+                counter = selectedCounter
+                obj_copy_pos(o, counter)
+                o.oFaceAngleYaw = counter.oFaceAngleYaw + 0x8000
+                o.usingObj = counter
+                o.oUsingSyncID = counter.oSyncID
+                counter.usingObj = o
+                spawn_mist_particles()
+            else
+                o.oRespawnTimer = 30 -- retry in 1s
+            end
         end
         return
     end
@@ -473,7 +498,7 @@ end
 -- Checks if "placedObj" can be placed on "placeOnObj" (or on closest counter), considering containers like plates
 -- Returns TRUE if the object should still be held
 ---@param placedObj Object
----@param m MarioState
+---@param m MarioState?
 ---@param placeOnObj Object?
 ---@param placeOnCounter Object?
 ---@param isHeld boolean?
@@ -1041,36 +1066,7 @@ end
 
 ---@param o Object
 function bhv_counter_loop(o)
-    -- Pair with object that has param 3 set to the same value as this counter's param 1
-    -- (param 3 is used because the rotating platforms in WF use param 1 for the speed)
-    if (o.oBehParams >> 24) ~= 0 then
-        if o.parentObj == o or o.parentObj == nil then
-            -- Find the first surface object (or type defined by counter's param 3)
-            local list = OBJ_LIST_SURFACE
-            if (o.oBehParams >> 8) & 0xFF ~= 0 then
-                list = (o.oBehParams >> 8) & 0xFF
-            end
-
-            local connectID = (o.oBehParams >> 24)
-            local parent = obj_get_first(list)
-            while parent do
-                if (parent.oBehParams >> 8) & 0xFF == connectID then
-                    o.parentObj = parent
-                    parent.oCollisionDistance = 10000 -- don't disable collision
-                    local relTranslation = {x = o.oPosX - parent.oPosX, y = o.oPosY - parent.oPosY, z = o.oPosZ - parent.oPosZ}
-                    local toRotate = {x = -parent.oFaceAnglePitch, y = -parent.oFaceAngleYaw, z = -parent.oFaceAngleRoll}
-                    vec3f_rotate_zxy(relTranslation, toRotate)
-                    obj_set_parent_relative_pos(o, relTranslation.x, relTranslation.y, relTranslation.z)
-                    o.oParentRelativeAnglePitch, o.oParentRelativeAngleYaw, o.oParentRelativeAngleRoll = o.oFaceAnglePitch - parent.oFaceAnglePitch, o.oFaceAngleYaw - parent.oFaceAngleYaw, o.oFaceAngleRoll - parent.oFaceAngleRoll
-                    break
-                end
-                parent = obj_get_next(parent)
-            end
-        else
-            obj_position_relative_to_parent(o)
-        end
-    end
-
+    obj_pair_with_parent(o)
     load_object_collision_model()
 
     -- validate object on counter
@@ -1215,35 +1211,7 @@ function bhv_player_barrier_init(o)
 end
 
 function bhv_player_barrier_loop(o)
-    -- Pair with object that has param 3 set to the same value as the barriers's param 1
-    -- (param 3 is used because the rotating platforms in WF use param 1 for the speed)
-    if (o.oBehParams >> 24) ~= 0 then
-        if o.parentObj == o or o.parentObj == nil then
-            -- Find the first surface object (or type defined by barrier's param 3)
-            local list = OBJ_LIST_SURFACE
-            if (o.oBehParams >> 8) & 0xFF ~= 0 then
-                list = (o.oBehParams >> 8) & 0xFF
-            end
-
-            local connectID = (o.oBehParams >> 24)
-            local parent = obj_get_first(list)
-            while parent do
-                if (parent.oBehParams >> 8) & 0xFF == connectID then
-                    o.parentObj = parent
-                    parent.oCollisionDistance = 10000 -- don't disable collision
-                    local relTranslation = {x = o.oPosX - parent.oPosX, y = o.oPosY - parent.oPosY, z = o.oPosZ - parent.oPosZ}
-                    local toRotate = {x = -parent.oFaceAnglePitch, y = -parent.oFaceAngleYaw, z = -parent.oFaceAngleRoll}
-                    vec3f_rotate_zxy(relTranslation, toRotate)
-                    obj_set_parent_relative_pos(o, relTranslation.x, relTranslation.y, relTranslation.z)
-                    o.oParentRelativeAnglePitch, o.oParentRelativeAngleYaw, o.oParentRelativeAngleRoll = o.oFaceAnglePitch - parent.oFaceAnglePitch, o.oFaceAngleYaw - parent.oFaceAngleYaw, o.oFaceAngleRoll - parent.oFaceAngleRoll
-                    break
-                end
-                parent = obj_get_next(parent)
-            end
-        else
-            obj_position_relative_to_parent(o)
-        end
-    end
+    obj_pair_with_parent(o)
 
     local width = o.oBehParams2ndByte
     if not is_active_player_in_area(2) then
@@ -1261,15 +1229,32 @@ end
 
 id_bhvPlayerBarrier = hook_behavior(nil, OBJ_LIST_SURFACE, false, bhv_player_barrier_init, bhv_player_barrier_loop, "bhvPlayerBarrier")
 
--- Does nothing on its own; used to mark player spawns
-id_bhvOcSpawn = hook_behavior(nil, OBJ_LIST_DEFAULT, false, nil, nil, "bhvOcSpawn")
+-- Uses to handle player spawns- other than attaching to platforms, it doesn't do anything else
+---@param o Object
+function oc_spawn_init(o)
+    -- I was originally using param 4 instead of param 2.
+    -- This function moves param 4 to param 2 so I don't need to worry about it.
+    if o.oBehParams & 0xFF ~= 0 and o.oBehParams2ndByte == 0 then
+        o.oBehParams2ndByte = o.oBehParams & 0xFF
+        o.oBehParams = o.oBehParams2ndByte << 16
+    end
+end
+
+---@param o Object
+function oc_spawn_loop(o)
+    obj_pair_with_parent(o)
+end
+
+id_bhvOcSpawn = hook_behavior(nil, OBJ_LIST_DEFAULT, false, oc_spawn_init, oc_spawn_loop, "bhvOcSpawn")
 
 -- controls the movement of the counters/barriers in the ship level
+---@param o Object
 function ship_movement_controller_init(o)
     o.oForwardVel = 0
     cur_obj_set_home_once()
 end
 
+---@param o Object
 function ship_movement_controller_loop(o)
     local correctPos = {x = o.oHomeX, y = o.oHomeY, z = o.oHomeZ}
     if o.oAction ~= 0 then
@@ -1288,21 +1273,109 @@ function ship_movement_controller_loop(o)
         o.oMoveAngleYaw = o.oFaceAngleYaw
         if o.oAction == 0 then o.oMoveAngleYaw = o.oMoveAngleYaw + 0x8000 end
         cur_obj_move_xz_using_fvel_and_yaw()
+        cur_obj_play_sound_2(SOUND_ENV_BOAT_ROCKING1)
     else
-        o.oForwardVel = 0
+        o.oForwardVel, o.oVelX, o.oVelY, o.oVelZ = 0, 0, 0, 0
         obj_set_pos(o, correctPos.x, correctPos.y, correctPos.z)
     end
 
     -- shift if not currently moving every 30s 
     if o.oForwardVel == 0 and gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
-        local newAction = 1 - ((gGlobalSyncTable.timeLeft - 1) // 30) % 2
+        local maxTime = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel].totalTime or 240
+        local newAction = ((maxTime - gGlobalSyncTable.timeLeft) // 30) % 2
         if o.oAction ~= newAction then
-            cur_obj_play_sound_2(SOUND_ENV_BOAT_ROCKING1)
             cur_obj_change_action(newAction)
         end
     end
 end
 id_bhvShipMovementController = hook_behavior(nil, OBJ_LIST_DEFAULT, false, ship_movement_controller_init, ship_movement_controller_loop, "bhvShipMovementController")
+
+-- Moving carpets in the sky level
+local CARPET_POSITIONS = {
+    {
+        {-768, 0, 612, 0},
+        {-500, 250, 468, -0x4000},
+        {0, 750, 1404, 0x4000},
+    },
+    {
+        {768, 0, 612, 0},
+        {500, 0, 468, 0x4000},
+        {0, 500, 468, 0x4000},
+    },
+    {
+        {-768, 0, -612, 0},
+        {-500, 250, -468, 0x4000},
+        {0, 250, -468, -0x4000},
+    },
+    {
+        {768, 0, -612, 0},
+        {500, 0, -468, -0x4000},
+        {0, 0, -1404, -0x4000},
+    },
+}
+
+---@param o Object
+function oc_carpet_init(o)
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
+    o.collisionData = smlua_collision_util_get("custom_carpet_collision")
+    cur_obj_scale(1.5)
+
+    cur_obj_set_home_once()
+    o.oParentRelativeAngleYaw = o.oFaceAngleYaw -- starting angle
+    o.oPlatformOnTrackOffsetY = 0
+    o.header.gfx.skipInViewCheck = true
+end
+
+---@param o Object
+function oc_carpet_loop(o)
+    local carpetID = (o.oBehParams >> 8) & 0xFF
+    local posList = CARPET_POSITIONS[carpetID] or CARPET_POSITIONS[1]
+    local posInSequence = 0
+    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+        local maxTime = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel].totalTime or 240
+        posInSequence = ((maxTime - gGlobalSyncTable.timeLeft) // 30) % (#posList + 1)
+    end
+
+    local curCarpetPos
+    if posInSequence ~= 0 and o.oTimer > 1 then
+        curCarpetPos = posList[posInSequence]
+    else
+        curCarpetPos = {o.oHomeX, o.oHomeY, o.oHomeZ, o.oParentRelativeAngleYaw}
+    end
+
+    -- move to correct position
+    o.oPosY = o.oPosY - o.oPlatformOnTrackOffsetY
+    local correctPos = {x = curCarpetPos[1], y = curCarpetPos[2], z = curCarpetPos[3]}
+    local correctAngle = curCarpetPos[4]
+    local dist = dist_between_object_and_point(o, correctPos.x, correctPos.y, correctPos.z)
+    if dist > 1 then
+        local latDist = dist_between_object_and_point(o, correctPos.x, o.oPosY, correctPos.z)
+        o.oMoveAngleYaw = obj_angle_to_point(o, correctPos.x, correctPos.z)
+        o.oForwardVel = math.min(latDist, 5)
+        o.oVelY = math.clamp(correctPos.y - o.oPosY, -5, 5)
+        cur_obj_move_xz_using_fvel_and_yaw()
+        o.oPosY = o.oPosY + o.oVelY
+    else
+        o.oForwardVel, o.oVelX, o.oVelY, o.oVelZ = 0, 0, 0, 0
+        obj_set_pos(o, correctPos.x, correctPos.y, correctPos.z)
+    end
+    o.oPosY = o.oPosY + o.oPlatformOnTrackOffsetY
+
+    o.oPlatformOnTrackOffsetY = sins((get_network_area_timer() + 30 * carpetID) * 0x200) * 20
+
+    local yawSpeed = abs_angle_diff(correctAngle, o.oFaceAngleYaw) / 40
+    if yawSpeed ~= 0 then
+        local initialAngle = o.oFaceAngleYaw
+        yawSpeed = math.clamp(yawSpeed, 50, 250)
+        obj_face_yaw_approach(correctAngle, yawSpeed)
+        o.oAngleVelYaw = limit_angle(o.oFaceAngleYaw - initialAngle)
+    else
+        o.oAngleVelYaw = 0
+    end
+
+    load_object_collision_model()
+end
+id_bhvOcCarpet = hook_behavior(nil, OBJ_LIST_SURFACE, false, oc_carpet_init, oc_carpet_loop, "bhvOcCarpet")
 
 -- version of BitFS Sinking Cage Platform without the pole
 ---@param o Object
@@ -1370,6 +1443,39 @@ function custom_puzzle_piece_loop(o)
     end
 end
 hook_behavior(id_bhvLllBowserPuzzlePiece, OBJ_LIST_SURFACE, true, custom_puzzle_piece_init, custom_puzzle_piece_loop)
+
+-- Pair with object that has param 3 set to the same value as this object's param 1
+-- (param 3 is used because the rotating platforms in WF use param 1 for the speed)
+---@param o Object
+function obj_pair_with_parent(o)
+    if (o.oBehParams >> 24) ~= 0 then
+        if o.parentObj == o or o.parentObj == nil then
+            -- Find the first surface object (or type defined by the object's param 3)
+            local list = OBJ_LIST_SURFACE
+            if (o.oBehParams >> 8) & 0xFF ~= 0 then
+                list = (o.oBehParams >> 8) & 0xFF
+            end
+
+            local connectID = (o.oBehParams >> 24)
+            local parent = obj_get_first(list)
+            while parent do
+                if (parent.oBehParams >> 8) & 0xFF == connectID then
+                    o.parentObj = parent
+                    parent.oCollisionDistance = 10000 -- don't disable collision
+                    local relTranslation = {x = o.oPosX - parent.oPosX, y = o.oPosY - parent.oPosY, z = o.oPosZ - parent.oPosZ}
+                    local toRotate = {x = -parent.oFaceAnglePitch, y = -parent.oFaceAngleYaw, z = -parent.oFaceAngleRoll}
+                    vec3f_rotate_zxy(relTranslation, toRotate)
+                    obj_set_parent_relative_pos(o, relTranslation.x, relTranslation.y, relTranslation.z)
+                    o.oParentRelativeAnglePitch, o.oParentRelativeAngleYaw, o.oParentRelativeAngleRoll = o.oFaceAnglePitch - parent.oFaceAnglePitch, o.oFaceAngleYaw - parent.oFaceAngleYaw, o.oFaceAngleRoll - parent.oFaceAngleRoll
+                    break
+                end
+                parent = obj_get_next(parent)
+            end
+        else
+            obj_position_relative_to_parent(o)
+        end
+    end
+end
 
 ---@param o Object
 function on_object_render(o)

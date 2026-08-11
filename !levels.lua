@@ -12,6 +12,7 @@ OC_LEVEL_SHIP = 3
 OC_LEVEL_LAVA = 4
 OC_LEVEL_SAND = 5
 OC_LEVEL_TTC = 6
+OC_LEVEL_RR = 7
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -109,6 +110,22 @@ OC_LEVEL_DATA = {
             {50, 150, 350, 600},
             {100, 200, 400, 800},
             {150, 300, 450, 1000},
+        },
+    },
+    [OC_LEVEL_RR] = {
+        name = "Rainbow Cruise",
+        desc = "Put burgers and salad together on this carpet ride! Take advantage of when the carpets are together!",
+        level = LEVEL_RR,
+        totalTime = 240,
+        failTime = {240, 210, 180, 160},
+        -- multiple copies of the salads so that they are more likely to apepar
+        orders = {ORDER_PLAIN_BURGER, ORDER_CHEESE_BURGER, ORDER_LETTUCE_BURGER, ORDER_CHEESE_LETTUCE_BURGER, ORDER_LETTUCE_TOMATO_BURGER, ORDER_DELUXE_BURGER,
+        ORDER_PLAIN_SALAD, ORDER_PLAIN_SALAD, ORDER_MIXED_SALAD, ORDER_MIXED_SALAD},
+        starScores = {
+            {50, 200, 350, 650},
+            {100, 300, 450, 750},
+            {200, 400, 600, 850},
+            {250, 500, 700, 950},
         },
     },
 }

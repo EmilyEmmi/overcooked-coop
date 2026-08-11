@@ -29,6 +29,7 @@ E_MODEL_OVEN = smlua_model_util_get_id("oven_geo")
 
 E_MODEL_KNIFE = smlua_model_util_get_id("knife_geo")
 E_MODEL_BARRIER = smlua_model_util_get_id("barrier_geo")
+E_MODEL_CUSTOM_CARPET = smlua_model_util_get_id("custom_carpet_geo")
 
 ICON_BUN = get_texture_info("icon_bun")
 ICON_MEAT = get_texture_info("icon_meat")
