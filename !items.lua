@@ -8,6 +8,8 @@ E_MODEL_CHEESE = smlua_model_util_get_id("cheese_geo")
 E_MODEL_LETTUCE = smlua_model_util_get_id("lettuce_geo")
 E_MODEL_PLATE_LETTUCE = smlua_model_util_get_id("plate_lettuce_geo")
 E_MODEL_PLATE_TOMATO = smlua_model_util_get_id("plate_tomato_geo")
+E_MODEL_CHICKEN = smlua_model_util_get_id("chicken_geo")
+E_MODEL_CHICKEN_CUT = smlua_model_util_get_id("chicken_cut_geo")
 
 E_MODEL_PLATE = smlua_model_util_get_id("plate_geo")
 E_MODEL_POT = smlua_model_util_get_id("pot_geo")
@@ -23,6 +25,7 @@ E_MODEL_HEAT = smlua_model_util_get_id("heat_geo")
 E_MODEL_SERVING = smlua_model_util_get_id("service_counter_geo")
 E_MODEL_PLATE_COUNTER = smlua_model_util_get_id("plate_counter_geo")
 E_MODEL_SINK = smlua_model_util_get_id("sink_geo")
+E_MODEL_OVEN = smlua_model_util_get_id("oven_geo")
 
 E_MODEL_KNIFE = smlua_model_util_get_id("knife_geo")
 E_MODEL_BARRIER = smlua_model_util_get_id("barrier_geo")
@@ -38,6 +41,7 @@ ICON_POT = get_texture_info("icon_pot")
 ICON_PAN = get_texture_info("icon_pan")
 ICON_CUT = get_texture_info("icon_cut")
 ICON_HEAT = get_texture_info("icon_heat")
+ICON_BURNT = get_texture_info("icon_heat") -- TEMP
 
 ITEM_LETTUCE = 0
 ITEM_LETTUCE_CUT = 1
@@ -59,9 +63,17 @@ ITEM_BURNT = 16
 ITEM_CHEESE = 17
 ITEM_CHEESE_CUT = 18
 ITEM_DIRTY_PLATE = 19
+ITEM_DOUGH = 20
+ITEM_DOUGH_CUT = 21
+ITEM_DOUGH_COOKED = 22
+ITEM_SAUSAGE = 23
+ITEM_SAUSAGE_CUT = 24
+ITEM_CHICKEN = 25
+ITEM_CHICKEN_CUT = 26
 
 SALAD_COMBO = {[ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1}
 BURGER_COMBO = {[ITEM_MEAT_COOKED] = 1, [ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1}
+PIZZA_COMBO = {[ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1, [ITEM_SAUSAGE_CUT] = 1, [ITEM_CHICKEN_CUT] = 1, [ITEM_MUSHROOM_CUT] = 1}
 
 BOX_LABEL_CASES = {
     [ITEM_MEAT] = 0,
@@ -212,7 +224,7 @@ ITEM_DATA = {
     },
     [ITEM_BURNT] = {
         model = E_MODEL_PATTY,
-        icon = ICON_HEAT, -- TEMP
+        icon = ICON_BURNT,
     },
     [ITEM_CHEESE] = {
         model = E_MODEL_CHEESE,
@@ -232,6 +244,45 @@ ITEM_DATA = {
         noThrow = true,
         noHitbox = true,
         washItem = ITEM_PLATE,
+    },
+    [ITEM_DOUGH] = {
+        model = E_MODEL_EXCLAMATION_BOX, -- TEMP
+        cut = ITEM_DOUGH_CUT,
+        icon = ICON_CHICKEN,
+    },
+    [ITEM_DOUGH_CUT] = {
+        model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
+        contentSlots = 4,
+        accepts = PIZZA_COMBO,
+        cookable = true, -- TEMP: replace with bakeable
+        icon = ICON_DOUGH,
+    },
+    [ITEM_DOUGH_COOKED] = {
+        model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
+        animState = 3, -- TEMP
+        isCooked = true,
+        plateable = true,
+        icon = ICON_DOUGH,
+    },
+    [ITEM_SAUSAGE] = {
+        model = E_MODEL_SAUSAGE,
+        cut = ITEM_SAUSAGE_CUT,
+        icon = ICON_SAUSAGE,
+    },
+    [ITEM_SAUSAGE_CUT] = {
+        model = E_MODEL_SAUSAGE_CUT,
+        icon = ICON_CHICKEN,
+        subIcon = ICON_SAUSAGE,
+    },
+    [ITEM_CHICKEN] = {
+        model = E_MODEL_CHICKEN,
+        cut = ITEM_CHICKEN_CUT,
+        icon = ICON_CHICKEN,
+    },
+    [ITEM_CHICKEN_CUT] = {
+        model = E_MODEL_CHICKEN_CUT,
+        icon = ICON_CHICKEN,
+        subIcon = ICON_CUT,
     },
 }
 
@@ -260,6 +311,12 @@ COOKED_DATA = {
             result = ITEM_MEAT_COOKED,
         },
     },
+    [ITEM_DOUGH] = {
+        {
+            result = ITEM_DOUGH_COOKED,
+            selfResult = true,
+        },
+    },
 }
 
 COUNTER_TYPE_DEFAULT = 0
@@ -270,9 +327,11 @@ COUNTER_TYPE_HEAT = 4
 COUNTER_TYPE_SERVING = 5
 COUNTER_TYPE_PLATES = 6
 COUNTER_TYPE_SINK = 7
+COUNTER_TYPE_OVEN = 8
 
 COUNTER_HEIGHT = {
     [COUNTER_TYPE_HEAT] = 36,
+    [COUNTER_TYPE_OVEN] = 27,
 }
 
 SPECIAL_COUNTER_MODELS = {
@@ -282,6 +341,7 @@ SPECIAL_COUNTER_MODELS = {
     [COUNTER_TYPE_SERVING] = E_MODEL_SERVING,
     [COUNTER_TYPE_PLATES] = E_MODEL_PLATE_COUNTER,
     [COUNTER_TYPE_SINK] = E_MODEL_SINK,
+    [COUNTER_TYPE_OVEN] = E_MODEL_OVEN,
 }
 
 ORDER_PLAIN_SALAD = 0

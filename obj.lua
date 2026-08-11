@@ -283,6 +283,11 @@ function bhv_ingredient_loop(o)
                                 --djui_chat_message_create("done!")
                                 o.oNotifyTimer = 30
                                 cur_obj_play_sound_2(SOUND_MENU_REVERSE_PAUSE | 128)
+
+                                local cookedData = get_cooked_data(o)
+                                if cookedData and cookedData.selfResult then
+                                    o.oBehParams = cookedData.result
+                                end
                             end
                         else -- overcook after 10 seconds
                             o.oOvercookTimer = o.oOvercookTimer + 1
@@ -894,7 +899,7 @@ function get_cooked_data(o)
         end
 
         for i,cookedData in ipairs(COOKED_DATA[o.oBehParams]) do
-            if tables_contain_same_elements(contentTable, cookedData.items) then
+            if cookedData.items == nil or tables_contain_same_elements(contentTable, cookedData.items) then
                 return cookedData
             end
         end
