@@ -78,9 +78,9 @@ OC_LEVEL_DATA = {
         orders = {ORDER_TOMATO_SOUP, ORDER_ONION_SOUP, ORDER_MUSHROOM_SOUP},
         starScores = {
             {20, 50, 200, 500},
-            {50, 200, 400, 800},
-            {150, 300, 500, 1000},
-            {200, 500, 700, 1200},
+            {50, 200, 400, 600},
+            {150, 300, 500, 700},
+            {200, 500, 600, 800},
         },
     },
     [OC_LEVEL_SAND] = {
@@ -92,9 +92,9 @@ OC_LEVEL_DATA = {
         orders = {ORDER_PLAIN_BURGER, ORDER_CHEESE_BURGER},
         starScores = {
             {50, 100, 300, 550},
-            {100, 250, 500, 900},
-            {250, 450, 700, 1200},
-            {300, 600, 900, 1500},
+            {100, 250, 500, 750},
+            {250, 450, 650, 800},
+            {300, 600, 850, 1000},
         },
     },
     [OC_LEVEL_TTC] = {
