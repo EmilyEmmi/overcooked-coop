@@ -88,7 +88,7 @@ const LevelScript level_ocTest_entry[] = {
 		OBJECT(E_MODEL_INGREDIENT_BOX, 729, -1, -53, 0, -90, 0, (3 << 16) | (4), bhvCounter),
 		OBJECT(E_MODEL_TRASH, 625, -1, -573, 0, 0, 0, (2 << 16), bhvCounter),
 		OBJECT(MODEL_NONE, 0, 560, 0, 0, 180, 0, 0x000A0000, bhvAirborneWarp),
-		OBJECT(E_MODEL_NONE, 450, -259, -252, 0, 0, 0, (0), bhvOcSpawn),
+		OBJECT(E_MODEL_NONE, 450, 1, -252, 0, 0, 0, (0), bhvOcSpawn),
 		OBJECT(E_MODEL_NONE, 450, 1, 252, 0, 0, 0, (1), bhvOcSpawn),
 		OBJECT(E_MODEL_NONE, -450, 1, 252, 0, 0, 0, (2), bhvOcSpawn),
 		OBJECT(E_MODEL_NONE, -450, 1, -252, 0, 0, 0, (3), bhvOcSpawn),
