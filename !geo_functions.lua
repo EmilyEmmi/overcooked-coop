@@ -94,11 +94,15 @@ function pot_liquid_switch(n)
     end
 end
 
---- @param n GraphNode | FnGraphNode
-function plate_switch(n)
+function alt_item_switch(n, altItem)
     local switch = cast_graph_node(n)
     local o = geo_get_current_object()
-    switch.selectedCase = (o.oBehParams == ITEM_DIRTY_PLATE and 1) or 0
+    switch.selectedCase = (o.oBehParams == altItem and 1) or 0
+end
+
+--- @param n GraphNode | FnGraphNode
+function plate_switch(n)
+    alt_item_switch(n, ITEM_DIRTY_PLATE)
 end
 
 --- @param n GraphNode | FnGraphNode
@@ -182,7 +186,15 @@ end
 
 --- @param n GraphNode | FnGraphNode
 function cheese_switch(n)
-    local switch = cast_graph_node(n)
-    local o = geo_get_current_object()
-    switch.selectedCase = (o.oBehParams == ITEM_CHEESE_CUT and 1) or 0
+    alt_item_switch(n, ITEM_CHEESE_CUT)
+end
+
+--- @param n GraphNode | FnGraphNode
+function chicken_switch(n)
+    alt_item_switch(n, ITEM_CHICKEN_CUT)
+end
+
+--- @param n GraphNode | FnGraphNode
+function sausage_switch(n)
+    alt_item_switch(n, ITEM_SAUSAGE_CUT)
 end

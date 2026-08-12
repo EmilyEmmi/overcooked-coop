@@ -1120,12 +1120,12 @@ function bhv_counter_loop(o)
             end
         end
         if heatOn then
-            --smlua_anim_util_set_animation(o, "heat_on")
+            smlua_anim_util_set_animation(o, "oven_close")
             if cookSoundChance == 1 or random_float() < cookSoundChance then
                 cur_obj_play_sound_2(cookSound)
             end
         else
-            --smlua_anim_util_set_animation(o, "heat_off")
+            smlua_anim_util_set_animation(o, "oven_open")
         end
     end
 end

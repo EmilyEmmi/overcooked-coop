@@ -8,8 +8,8 @@ E_MODEL_CHEESE = smlua_model_util_get_id("cheese_geo")
 E_MODEL_LETTUCE = smlua_model_util_get_id("lettuce_geo")
 E_MODEL_PLATE_LETTUCE = smlua_model_util_get_id("plate_lettuce_geo")
 E_MODEL_PLATE_TOMATO = smlua_model_util_get_id("plate_tomato_geo")
+E_MODEL_SAUSAGE = smlua_model_util_get_id("sausage_geo")
 E_MODEL_CHICKEN = smlua_model_util_get_id("chicken_geo")
-E_MODEL_CHICKEN_CUT = smlua_model_util_get_id("chicken_cut_geo")
 
 E_MODEL_PLATE = smlua_model_util_get_id("plate_geo")
 E_MODEL_POT = smlua_model_util_get_id("pot_geo")
@@ -283,7 +283,7 @@ ITEM_DATA = {
         icon = ICON_SAUSAGE,
     },
     [ITEM_SAUSAGE_CUT] = {
-        model = E_MODEL_SAUSAGE_CUT,
+        model = E_MODEL_SAUSAGE,
         icon = ICON_SAUSAGE,
         subIcon = ICON_CUT,
     },
@@ -293,7 +293,7 @@ ITEM_DATA = {
         icon = ICON_CHICKEN,
     },
     [ITEM_CHICKEN_CUT] = {
-        model = E_MODEL_CHICKEN_CUT,
+        model = E_MODEL_CHICKEN,
         icon = ICON_CHICKEN,
         subIcon = ICON_CUT,
     },
