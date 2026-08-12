@@ -1317,10 +1317,12 @@ local CARPET_POSITIONS = {
 ---@param o Object
 function oc_carpet_init(o)
     o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
-    o.collisionData = smlua_collision_util_get("custom_carpet_collision")
-    cur_obj_scale(1.5)
+    o.collisionData = smlua_collision_util_get("rr_seg7_collision_07029038")
+    obj_set_model_extended(o, E_MODEL_RR_FLYING_CARPET)
+    obj_scale_xyz(o, 1.54, 0.5, 1.54)
 
     cur_obj_set_home_once()
+    --o.oPosY = o.oPosY - 26 * o.header.gfx.scale.y
     o.oParentRelativeAngleYaw = o.oFaceAngleYaw -- starting angle
     o.oPlatformOnTrackOffsetY = 0
     o.header.gfx.skipInViewCheck = true
@@ -1344,8 +1346,8 @@ function oc_carpet_loop(o)
     end
 
     -- move to correct position
-    o.oPosY = o.oPosY - o.oPlatformOnTrackOffsetY
     local correctPos = {x = curCarpetPos[1], y = curCarpetPos[2], z = curCarpetPos[3]}
+    --correctPos.y = correctPos.y - 26 * o.header.gfx.scale.y
     local correctAngle = curCarpetPos[4]
     local dist = dist_between_object_and_point(o, correctPos.x, correctPos.y, correctPos.z)
     if dist > 1 then
@@ -1359,9 +1361,6 @@ function oc_carpet_loop(o)
         o.oForwardVel, o.oVelX, o.oVelY, o.oVelZ = 0, 0, 0, 0
         obj_set_pos(o, correctPos.x, correctPos.y, correctPos.z)
     end
-    o.oPosY = o.oPosY + o.oPlatformOnTrackOffsetY
-
-    o.oPlatformOnTrackOffsetY = sins((get_network_area_timer() + 30 * carpetID) * 0x200) * 20
 
     local yawSpeed = abs_angle_diff(correctAngle, o.oFaceAngleYaw) / 40
     if yawSpeed ~= 0 then
