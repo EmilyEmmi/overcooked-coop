@@ -45,3 +45,4 @@ extern Gfx oven_oven_door_mesh_layer_1[];
 extern Gfx oven_oven_door_mesh_layer_7[];
 extern Gfx oven_oven_model_mesh_layer_1[];
 extern Gfx oven_oven_model_mesh_layer_4[];
+extern Gfx oven_material_revert_render_settings[];
