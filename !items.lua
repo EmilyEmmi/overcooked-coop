@@ -87,6 +87,9 @@ BOX_LABEL_CASES = {
     [ITEM_BUN] = 4,
     [ITEM_TOMATO] = 5,
     [ITEM_MUSHROOM] = 6,
+    [ITEM_DOUGH] = 4, -- TEMP
+    [ITEM_SAUSAGE] = 0, -- TEMP
+    [ITEM_CHICKEN] = 2, -- TEMP
 }
 
 ITEM_DATA = {

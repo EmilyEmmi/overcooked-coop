@@ -13,6 +13,7 @@ OC_LEVEL_LAVA = 4
 OC_LEVEL_SAND = 5
 OC_LEVEL_TTC = 6
 OC_LEVEL_RR = 7
+OC_LEVEL_CCM = 8
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -110,6 +111,20 @@ OC_LEVEL_DATA = {
             {50, 150, 350, 600},
             {100, 200, 400, 800},
             {150, 300, 450, 1000},
+        },
+    },
+    [OC_LEVEL_CCM] = {
+        name = "Slip Slidin' Pizzas",
+        desc = "Become aquainted with the realm of Pizza. Slide down to access the lower area quickly, but don't slip off of the mountain!",
+        level = LEVEL_CCM,
+        totalTime = 210,
+        failTime = {210, 180, 150, 120},
+        orders = {ORDER_CHEESE_PIZZA, ORDER_PEPPERONI_PIZZA, ORDER_CHICKEN_PIZZA, ORDER_MUSHROOM_PIZZA},
+        starScores = {
+            {50, 150, 400, 600},
+            {100, 300, 500, 800},
+            {200, 450, 700, 900},
+            {300, 600, 900, 1100},
         },
     },
     [OC_LEVEL_RR] = {
