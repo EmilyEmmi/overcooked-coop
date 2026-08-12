@@ -26,6 +26,18 @@ Lights1 box_box_label_mushroom_lights = gdSPDefLights1(
 	0x7F, 0x7F, 0x7F,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
 
+Lights1 box_box_label_chicken_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Lights1 box_box_label_sausage_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
+Lights1 box_box_label_dough_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
 Lights1 box_box_lights = gdSPDefLights1(
 	0x7F, 0x7F, 0x7F,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
@@ -88,6 +100,30 @@ Texture box_box_label_mushroom_ci4[] = {
 
 Texture box_box_label_mushroom_pal_rgba16[] = {
 	#include "actors/box/box_label_mushroom.rgba16.pal"
+};
+
+Texture box_box_label_chicken_ci4[] = {
+	#include "actors/box/box_label_chicken.ci4.inc.c"
+};
+
+Texture box_box_label_chicken_pal_rgba16[] = {
+	#include "actors/box/box_label_chicken.rgba16.pal"
+};
+
+Texture box_box_label_sausage_ci4[] = {
+	#include "actors/box/box_label_sausage.ci4.inc.c"
+};
+
+Texture box_box_label_sausage_pal_rgba16[] = {
+	#include "actors/box/box_label_sausage.rgba16.pal"
+};
+
+Texture box_box_label_dough_ci4[] = {
+	#include "actors/box/box_label_dough.ci4.inc.c"
+};
+
+Texture box_box_label_dough_pal_rgba16[] = {
+	#include "actors/box/box_label_dough.rgba16.pal"
 };
 
 Texture box_box_rgba16[] = {
@@ -559,6 +595,93 @@ Gfx mat_revert_box_box_label_mushroom[] = {
 	gsSPEndDisplayList(),
 };
 
+Gfx mat_box_box_label_chicken[] = {
+	gsSPClearGeometryMode(G_CULL_BACK),
+	gsSPSetLights1(box_box_label_chicken_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureFilter(G_TF_AVERAGE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, box_box_label_chicken_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 6),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, box_box_label_chicken_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 255, 1024),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 2, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_box_box_label_chicken[] = {
+	gsSPSetGeometryMode(G_CULL_BACK),
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureFilter(G_TF_BILERP),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_box_box_label_sausage[] = {
+	gsSPClearGeometryMode(G_CULL_BACK),
+	gsSPSetLights1(box_box_label_sausage_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureFilter(G_TF_AVERAGE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, box_box_label_sausage_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 5),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, box_box_label_sausage_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 255, 1024),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 2, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_box_box_label_sausage[] = {
+	gsSPSetGeometryMode(G_CULL_BACK),
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureFilter(G_TF_BILERP),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_box_box_label_dough[] = {
+	gsSPClearGeometryMode(G_CULL_BACK),
+	gsSPSetLights1(box_box_label_dough_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureFilter(G_TF_AVERAGE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, box_box_label_dough_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 5),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, box_box_label_dough_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 255, 1024),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 2, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_box_box_label_dough[] = {
+	gsSPSetGeometryMode(G_CULL_BACK),
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureFilter(G_TF_BILERP),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
 Gfx mat_box_box[] = {
 	gsSPSetLights1(box_box_lights),
 	gsDPPipeSync(),
@@ -598,13 +721,6 @@ Gfx box_box_label_model_mesh_layer_4[] = {
 	gsSPDisplayList(mat_box_box_label_steak),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_steak),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
 	gsSPEndDisplayList(),
 };
 
@@ -612,13 +728,6 @@ Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_cheese_0[] = {
 	gsSPDisplayList(mat_box_box_label_cheese),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_cheese),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
 	gsSPEndDisplayList(),
 };
 
@@ -626,13 +735,6 @@ Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_onion_1[] = {
 	gsSPDisplayList(mat_box_box_label_onion),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_onion),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
 	gsSPEndDisplayList(),
 };
 
@@ -640,13 +742,6 @@ Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_lettuce_2[] = {
 	gsSPDisplayList(mat_box_box_label_lettuce),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_lettuce),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
 	gsSPEndDisplayList(),
 };
 
@@ -654,13 +749,6 @@ Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_buns_3[] = {
 	gsSPDisplayList(mat_box_box_label_buns),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_buns),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
 	gsSPEndDisplayList(),
 };
 
@@ -668,13 +756,6 @@ Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_tomato_4[] = {
 	gsSPDisplayList(mat_box_box_label_tomato),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_tomato),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
 	gsSPEndDisplayList(),
 };
 
@@ -682,13 +763,27 @@ Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_mushroom_5[] = {
 	gsSPDisplayList(mat_box_box_label_mushroom),
 	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
 	gsSPDisplayList(mat_revert_box_box_label_mushroom),
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsSPClearGeometryMode(G_TEXTURE_GEN),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 0),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsDPSetAlphaCompare(G_AC_NONE),
+	gsSPEndDisplayList(),
+};
+
+Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_chicken_6[] = {
+	gsSPDisplayList(mat_box_box_label_chicken),
+	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
+	gsSPDisplayList(mat_revert_box_box_label_chicken),
+	gsSPEndDisplayList(),
+};
+
+Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_sausage_7[] = {
+	gsSPDisplayList(mat_box_box_label_sausage),
+	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
+	gsSPDisplayList(mat_revert_box_box_label_sausage),
+	gsSPEndDisplayList(),
+};
+
+Gfx box_box_label_model_mesh_layer_4_mat_override_box_label_dough_8[] = {
+	gsSPDisplayList(mat_box_box_label_dough),
+	gsSPDisplayList(box_box_label_model_mesh_layer_4_tri_0),
+	gsSPDisplayList(mat_revert_box_box_label_dough),
 	gsSPEndDisplayList(),
 };
 
@@ -741,6 +836,27 @@ Gfx box_box_lid_mesh_layer_1_mat_override_box_label_mushroom_5[] = {
 	gsSPEndDisplayList(),
 };
 
+Gfx box_box_lid_mesh_layer_1_mat_override_box_label_chicken_6[] = {
+	gsSPDisplayList(mat_box_box),
+	gsSPDisplayList(box_box_lid_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_box_box),
+	gsSPEndDisplayList(),
+};
+
+Gfx box_box_lid_mesh_layer_1_mat_override_box_label_sausage_7[] = {
+	gsSPDisplayList(mat_box_box),
+	gsSPDisplayList(box_box_lid_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_box_box),
+	gsSPEndDisplayList(),
+};
+
+Gfx box_box_lid_mesh_layer_1_mat_override_box_label_dough_8[] = {
+	gsSPDisplayList(mat_box_box),
+	gsSPDisplayList(box_box_lid_mesh_layer_1_tri_0),
+	gsSPDisplayList(mat_revert_box_box),
+	gsSPEndDisplayList(),
+};
+
 Gfx box_box_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_box_box),
 	gsSPDisplayList(box_box_model_mesh_layer_1_tri_0),
@@ -748,6 +864,10 @@ Gfx box_box_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_box_box_hole),
 	gsSPDisplayList(box_box_model_mesh_layer_1_tri_1),
 	gsSPDisplayList(mat_revert_box_box_hole),
+	gsSPEndDisplayList(),
+};
+
+Gfx box_material_revert_render_settings[] = {
 	gsDPPipeSync(),
 	gsSPSetGeometryMode(G_LIGHTING),
 	gsSPClearGeometryMode(G_TEXTURE_GEN),
@@ -755,6 +875,16 @@ Gfx box_box_model_mesh_layer_1[] = {
 	gsSPTexture(65535, 65535, 0, 0, 0),
 	gsDPSetEnvColor(255, 255, 255, 255),
 	gsDPSetAlphaCompare(G_AC_NONE),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, 0),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP  | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 1023, 256),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 8, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, 0),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 256, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(6, 0, 0, 1023, 256),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 8, 256, 1, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(1, 0, 0, 124, 124),
 	gsSPEndDisplayList(),
 };
 

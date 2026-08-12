@@ -58,6 +58,36 @@ const GeoLayout box_box_label_switch_opt6[] = {
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
+const GeoLayout box_box_label_switch_opt7[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 116, -139, box_box_label_model_mesh_layer_4_mat_override_box_label_chicken_6),
+		GEO_OPEN_NODE(),
+			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, box_box_lid_mesh_layer_1_mat_override_box_label_chicken_6),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout box_box_label_switch_opt8[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 116, -139, box_box_label_model_mesh_layer_4_mat_override_box_label_sausage_7),
+		GEO_OPEN_NODE(),
+			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, box_box_lid_mesh_layer_1_mat_override_box_label_sausage_7),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout box_box_label_switch_opt9[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_ALPHA, 0, 116, -139, box_box_label_model_mesh_layer_4_mat_override_box_label_dough_8),
+		GEO_OPEN_NODE(),
+			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, box_box_lid_mesh_layer_1_mat_override_box_label_dough_8),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
 const GeoLayout box_geo[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
@@ -78,9 +108,14 @@ const GeoLayout box_geo[] = {
 				GEO_BRANCH(1, box_box_label_switch_opt4),
 				GEO_BRANCH(1, box_box_label_switch_opt5),
 				GEO_BRANCH(1, box_box_label_switch_opt6),
+				GEO_BRANCH(1, box_box_label_switch_opt7),
+				GEO_BRANCH(1, box_box_label_switch_opt8),
+				GEO_BRANCH(1, box_box_label_switch_opt9),
 			GEO_CLOSE_NODE(),
 			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, box_box_model_mesh_layer_1),
 		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, box_material_revert_render_settings),
+		GEO_DISPLAY_LIST(LAYER_ALPHA, box_material_revert_render_settings),
 	GEO_CLOSE_NODE(),
 	GEO_END(),
 };
