@@ -143,7 +143,7 @@ function playing_hud()
             end
             local itemX = x + (width - textWidth) / 2
             local prevItemX = prevX + (width - textWidth) / 2
-            djui_hud_print_text_interpolated(text, prevItemX, y + 5 * (scale - itemScale), textScale, itemScale, itemX, y + 5 * (scale - itemScale), textScale, itemScale)
+            djui_hud_print_text_interpolated(text, prevItemX, y + 15 * (scale - itemScale), textScale, itemScale, itemX, y + 15 * (scale - itemScale), textScale, itemScale)
         end
 
         -- items
@@ -151,10 +151,25 @@ function playing_hud()
         local rectX = x
         local prevRectX = prevX
         y = y + 42 * scale
+        itemScale = scale
         for a, items in ipairs(item_groups) do
+            if items.cookIcons then
+                local iconWidth = items.cookIcons[1].width
+                local totalWidth = #items * rectWidth
+                djui_hud_render_rect_interpolated(prevRectX, y + 18 * scale, totalWidth, 20 * scale, rectX, y + 18 * scale, totalWidth, 20 * scale)
+                
+                local iconStartX = (totalWidth - ((iconWidth + 2) * #items.cookIcons - 2) * itemScale) / 2
+                local iconX = rectX + iconStartX
+                local prevIconX = prevRectX + iconStartX
+                for b, icon in ipairs(items.cookIcons) do
+                    djui_hud_render_texture_interpolated(icon, prevIconX, y + 20 * itemScale, itemScale, itemScale, iconX, y + 20 * itemScale, itemScale, itemScale)
+                    iconX = iconX + (iconWidth + 4) * itemScale
+                    prevIconX = prevIconX + (iconWidth + 4) * itemScale
+                end
+            end
+
             for b, item in ipairs(items) do
                 djui_hud_render_rect_interpolated(prevRectX, y - 2 * scale, rectWidth, 20 * scale, rectX, y - 2 * scale, rectWidth, 20 * scale)
-                itemScale = scale
                 local itemX = rectX + rectWidth / 2
                 local prevItemX = prevRectX + rectWidth / 2
                 render_ingredient_icon_interpolated(item, prevItemX, y, itemScale, itemScale, itemX, y, itemScale, itemScale)
@@ -166,20 +181,6 @@ function playing_hud()
                 end
                 rectX = rectX + rectWidth
                 prevRectX = prevRectX + rectWidth
-            end
-            
-            if items.cookIcons then
-                local iconWidth = items.cookIcons[1].width
-                local totalWidth = #items * rectWidth
-                djui_hud_render_rect_interpolated(prevX, y + 18 * scale, totalWidth, 20 * scale, x, y + 18 * scale, totalWidth, 20 * scale)
-                local iconStartX = (totalWidth - ((iconWidth + 2) * #items.cookIcons - 2) * itemScale) / 2
-                local iconX = x + iconStartX
-                local prevIconX = prevX + iconStartX
-                for b, icon in ipairs(items.cookIcons) do
-                    djui_hud_render_texture_interpolated(icon, prevIconX, y + 20 * itemScale, itemScale, itemScale, iconX, y + 20 * itemScale, itemScale, itemScale)
-                    iconX = iconX + (iconWidth + 4) * itemScale
-                    prevIconX = prevIconX + (iconWidth + 4) * itemScale
-                end
             end
 
             rectX = rectX + 5 * scale
