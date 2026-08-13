@@ -682,6 +682,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
             for i,c in ipairs(children) do
                 c.parentObj = o2
                 c.oParentSyncID = o2.oSyncID
+                c.usingObj, c.oUsingSyncID = nil, 0
                 if m and m.playerIndex == 0 then
                     network_send_object(c, true)
                 end
