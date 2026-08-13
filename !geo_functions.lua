@@ -198,3 +198,73 @@ end
 function sausage_switch(n)
     alt_item_switch(n, ITEM_SAUSAGE_CUT)
 end
+
+--- @param n GraphNode | FnGraphNode
+function pizza_dough_switch(n)
+    local switch = cast_graph_node(n)
+    local o = geo_get_current_object()
+    if o.oContents == ITEM_BURNT then
+        switch.selectedCase = 2
+        return
+    end
+    switch.selectedCase = (o.oBehParams == ITEM_DOUGH_COOKED and 1) or 0
+end
+
+--- @param n GraphNode | FnGraphNode
+function handle_pizza_topping_switch(n, topping)
+    local switch = cast_graph_node(n)
+    local o = geo_get_current_object()
+    switch.selectedCase = 0
+    if o.oContents == ITEM_BURNT or o.oContents == 0 or o.oContentCount == 0 then
+        return
+    end
+
+    -- Check for the item
+    for i=0,o.oContentCount-1 do
+        local ingredient = (o.oContents >> (8 * i)) & 0xFF
+        if ingredient == topping then
+            switch.selectedCase = 1
+            break
+        end
+    end
+end
+
+--- @param n GraphNode | FnGraphNode
+function handle_pizza_topping_switch(n, topping)
+    local switch = cast_graph_node(n)
+    local o = geo_get_current_object()
+    switch.selectedCase = 0
+    if o.oContents == ITEM_BURNT or o.oContents == 0 or o.oContentCount == 0 then
+        return
+    end
+
+    -- Check for the item
+    for i=0,o.oContentCount-1 do
+        local ingredient = (o.oContents >> (8 * i)) & 0xFF
+        if ingredient == topping then
+            switch.selectedCase = 1
+            break
+        end
+    end
+end
+
+--- @param n GraphNode | FnGraphNode
+function pizza_tomato_sauce_switch(n)
+    handle_pizza_topping_switch(n, ITEM_TOMATO_CUT)
+end
+
+--- @param n GraphNode | FnGraphNode
+function pizza_cheese_switch(n)
+    handle_pizza_topping_switch(n, ITEM_CHEESE_CUT)
+end
+
+-- Unused- might be removed
+--- @param n GraphNode | FnGraphNode
+function pizza_tomato_switch(n)
+    --handle_pizza_topping_switch(n, ITEM_TOMATO_CUT)
+end
+
+--- @param n GraphNode | FnGraphNode
+function pizza_sausage_switch(n)
+    handle_pizza_topping_switch(n, ITEM_SAUSAGE_CUT)
+end

@@ -10,6 +10,8 @@ E_MODEL_PLATE_LETTUCE = smlua_model_util_get_id("plate_lettuce_geo")
 E_MODEL_PLATE_TOMATO = smlua_model_util_get_id("plate_tomato_geo")
 E_MODEL_SAUSAGE = smlua_model_util_get_id("sausage_geo")
 E_MODEL_CHICKEN = smlua_model_util_get_id("chicken_geo")
+E_MODEL_DOUGH = smlua_model_util_get_id("dough_geo")
+E_MODEL_PIZZA = smlua_model_util_get_id("pizza_geo")
 
 E_MODEL_PLATE = smlua_model_util_get_id("plate_geo")
 E_MODEL_POT = smlua_model_util_get_id("pot_geo")
@@ -43,9 +45,9 @@ ICON_CUT = get_texture_info("icon_cut")
 ICON_HEAT = get_texture_info("icon_heat")
 ICON_BURNT = get_texture_info("icon_burnt")
 ICON_OVEN = get_texture_info("icon_oven")
-ICON_DOUGH = ICON_BUN -- TEMP
-ICON_SAUSAGE = ICON_MEAT -- TEMP
-ICON_CHICKEN = ICON_ONION -- TEMP
+ICON_DOUGH = get_texture_info("icon_dough")
+ICON_SAUSAGE = get_texture_info("icon_sausage")
+ICON_CHICKEN = get_texture_info("icon_chicken")
 
 ITEM_LETTUCE = 0
 ITEM_LETTUCE_CUT = 1
@@ -87,9 +89,9 @@ BOX_LABEL_CASES = {
     [ITEM_BUN] = 4,
     [ITEM_TOMATO] = 5,
     [ITEM_MUSHROOM] = 6,
-    [ITEM_DOUGH] = 4, -- TEMP
-    [ITEM_SAUSAGE] = 0, -- TEMP
-    [ITEM_CHICKEN] = 2, -- TEMP
+    [ITEM_CHICKEN] = 7,
+    [ITEM_SAUSAGE] = 8,
+    [ITEM_DOUGH] = 9,
 }
 
 ITEM_DATA = {
@@ -253,12 +255,12 @@ ITEM_DATA = {
         washItem = ITEM_PLATE,
     },
     [ITEM_DOUGH] = {
-        model = E_MODEL_EXCLAMATION_BOX, -- TEMP
+        model = E_MODEL_DOUGH,
         cut = ITEM_DOUGH_CUT,
         icon = ICON_DOUGH,
     },
     [ITEM_DOUGH_CUT] = {
-        model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
+        model = E_MODEL_PIZZA,
         contentSlots = 4,
         accepts = PIZZA_COMBO,
         bakeable = true,
@@ -267,8 +269,7 @@ ITEM_DATA = {
         subIcon = ICON_CUT,
     },
     [ITEM_DOUGH_COOKED] = {
-        model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
-        animState = 3, -- TEMP
+        model = E_MODEL_PIZZA,
         isCooked = true,
         plateable = true,
         bakeable = true,
