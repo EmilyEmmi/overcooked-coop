@@ -34,7 +34,7 @@ extern u8 pizza_pizza_tomato_ci8[];
 extern u8 pizza_pizza_tomato_pal_rgba16[];
 extern u8 pizza_tomato_ci8[];
 extern u8 pizza_tomato_pal_rgba16[];
-extern Vtx pizza_pizza_cheese_switch_option_pizza_cheese_model_mesh_layer_1_vtx_0[422];
+extern Vtx pizza_pizza_cheese_switch_option_pizza_cheese_model_mesh_layer_1_vtx_0[486];
 extern Gfx pizza_pizza_cheese_switch_option_pizza_cheese_model_mesh_layer_1_tri_0[];
 extern Vtx pizza_pizza_dough_model_mesh_layer_1_vtx_0[38];
 extern Gfx pizza_pizza_dough_model_mesh_layer_1_tri_0[];
