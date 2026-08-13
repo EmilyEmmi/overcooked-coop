@@ -5,6 +5,33 @@ const GeoLayout pizza_pizza_cheese[] = {
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
+const GeoLayout pizza_pizza_cheese_melted[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_DISPLAY_LIST(LAYER_TRANSPARENT, pizza_pizza_cheese_switch_option_pizza_cheese_model_mesh_layer_5),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pizza_pizza_chicken[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pizza_pizza_chicken_switch_option_pizza_chicken_model_mesh_layer_1),
+		GEO_OPEN_NODE(),
+			GEO_DISPLAY_LIST(LAYER_TRANSPARENT, pizza_pizza_chicken_switch_option_pizza_chicken_model_mesh_layer_5),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pizza_pizza_chicken_baked[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pizza_pizza_chicken_baked_switch_option_pizza_chicken_baked_model_mesh_layer_1),
+		GEO_OPEN_NODE(),
+			GEO_DISPLAY_LIST(LAYER_TRANSPARENT, pizza_pizza_chicken_baked_switch_option_pizza_chicken_baked_model_mesh_layer_5),
+		GEO_CLOSE_NODE(),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
 const GeoLayout pizza_pizza_dough_baked[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
@@ -16,6 +43,13 @@ const GeoLayout pizza_pizza_dough_burnt[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, pizza_pizza_dough_burnt_switch_option_pizza_dough_burnt_model_mesh_layer_1),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pizza_pizza_mushroom[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pizza_pizza_mushroom_switch_option_pizza_mushroom_model_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
@@ -36,13 +70,6 @@ const GeoLayout pizza_pizza_tomato_sauce[] = {
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
-const GeoLayout pizza_pizza_tomato[] = {
-	GEO_NODE_START(),
-	GEO_OPEN_NODE(),
-		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, pizza_pizza_tomato_model_switch_option_pizza_tomato_model_mesh_layer_1),
-	GEO_CLOSE_NODE(),
-	GEO_RETURN(),
-};
 const GeoLayout pizza_geo[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
@@ -56,6 +83,15 @@ const GeoLayout pizza_geo[] = {
 					GEO_OPEN_NODE(),
 					GEO_CLOSE_NODE(),
 					GEO_BRANCH(1, pizza_pizza_cheese),
+					GEO_BRANCH(1, pizza_pizza_cheese_melted),
+				GEO_CLOSE_NODE(),
+				GEO_SWITCH_CASE(0, pizza_chicken_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, pizza_pizza_chicken),
+					GEO_BRANCH(1, pizza_pizza_chicken_baked),
 				GEO_CLOSE_NODE(),
 				GEO_SWITCH_CASE(0, pizza_dough_switch),
 				GEO_OPEN_NODE(),
@@ -65,6 +101,13 @@ const GeoLayout pizza_geo[] = {
 					GEO_CLOSE_NODE(),
 					GEO_BRANCH(1, pizza_pizza_dough_baked),
 					GEO_BRANCH(1, pizza_pizza_dough_burnt),
+				GEO_CLOSE_NODE(),
+				GEO_SWITCH_CASE(0, pizza_mushroom_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, pizza_pizza_mushroom),
 				GEO_CLOSE_NODE(),
 				GEO_SWITCH_CASE(0, pizza_sausage_switch),
 				GEO_OPEN_NODE(),
@@ -79,13 +122,6 @@ const GeoLayout pizza_geo[] = {
 					GEO_OPEN_NODE(),
 					GEO_CLOSE_NODE(),
 					GEO_BRANCH(1, pizza_pizza_tomato_sauce),
-				GEO_CLOSE_NODE(),
-				GEO_SWITCH_CASE(0, pizza_tomato_switch),
-				GEO_OPEN_NODE(),
-					GEO_NODE_START(),
-					GEO_OPEN_NODE(),
-					GEO_CLOSE_NODE(),
-					GEO_BRANCH(1, pizza_pizza_tomato),
 				GEO_CLOSE_NODE(),
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),

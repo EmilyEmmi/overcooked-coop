@@ -14,7 +14,7 @@ extern Vtx chicken_chicken_model_mesh_layer_5_vtx_0[71];
 extern Gfx chicken_chicken_model_mesh_layer_5_tri_0[];
 extern Vtx chicken_chicken_cut_switch_option_chicken_cut_model_mesh_layer_1_vtx_0[221];
 extern Gfx chicken_chicken_cut_switch_option_chicken_cut_model_mesh_layer_1_tri_0[];
-extern Vtx chicken_chicken_cut_switch_option_chicken_cut_model_mesh_layer_5_vtx_0[190];
+extern Vtx chicken_chicken_cut_switch_option_chicken_cut_model_mesh_layer_5_vtx_0[238];
 extern Gfx chicken_chicken_cut_switch_option_chicken_cut_model_mesh_layer_5_tri_0[];
 extern Gfx mat_chicken_chicken_bone[];
 extern Gfx mat_revert_chicken_chicken_bone[];
