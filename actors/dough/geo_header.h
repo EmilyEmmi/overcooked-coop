@@ -1,0 +1,10 @@
+extern const GeoLayout dough_geo[];
+extern Lights1 dough_dough_lights;
+extern u8 dough_dough_ci8[];
+extern u8 dough_dough_pal_rgba16[];
+extern Vtx dough_dough_model_mesh_layer_1_vtx_0[31];
+extern Gfx dough_dough_model_mesh_layer_1_tri_0[];
+extern Gfx mat_dough_dough[];
+extern Gfx mat_revert_dough_dough[];
+extern Gfx dough_dough_model_mesh_layer_1[];
+extern Gfx dough_material_revert_render_settings[];
