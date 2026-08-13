@@ -230,7 +230,7 @@ function handle_pizza_topping_switch(n, topping)
 end
 
 --- @param n GraphNode | FnGraphNode
-function handle_pizza_topping_switch(n, topping)
+function handle_pizza_topping_switch(n, topping, cookedForm)
     local switch = cast_graph_node(n)
     local o = geo_get_current_object()
     switch.selectedCase = 0
@@ -242,7 +242,7 @@ function handle_pizza_topping_switch(n, topping)
     for i=0,o.oContentCount-1 do
         local ingredient = (o.oContents >> (8 * i)) & 0xFF
         if ingredient == topping then
-            switch.selectedCase = 1
+            switch.selectedCase = (cookedForm and o.oBehParams == ITEM_DOUGH_COOKED and 2) or 1
             break
         end
     end
@@ -255,16 +255,20 @@ end
 
 --- @param n GraphNode | FnGraphNode
 function pizza_cheese_switch(n)
-    handle_pizza_topping_switch(n, ITEM_CHEESE_CUT)
-end
-
--- Unused- might be removed
---- @param n GraphNode | FnGraphNode
-function pizza_tomato_switch(n)
-    --handle_pizza_topping_switch(n, ITEM_TOMATO_CUT)
+    handle_pizza_topping_switch(n, ITEM_CHEESE_CUT, true)
 end
 
 --- @param n GraphNode | FnGraphNode
 function pizza_sausage_switch(n)
     handle_pizza_topping_switch(n, ITEM_SAUSAGE_CUT)
+end
+
+--- @param n GraphNode | FnGraphNode
+function pizza_chicken_switch(n)
+    handle_pizza_topping_switch(n, ITEM_CHICKEN_CUT, true)
+end
+
+--- @param n GraphNode | FnGraphNode
+function pizza_mushroom_switch(n)
+    handle_pizza_topping_switch(n, ITEM_MUSHROOM_CUT)
 end
