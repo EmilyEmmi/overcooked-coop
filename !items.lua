@@ -150,7 +150,6 @@ ITEM_DATA = {
         plateAnim =  "tomato_idle",
         icon = ICON_TOMATO,
         subIcon = ICON_CUT,
-        cookIcon = ICON_POT,
     },
     [ITEM_ONION] = {
         model = E_MODEL_ONION,
@@ -166,7 +165,6 @@ ITEM_DATA = {
         pickupAnim = "onion_pickup",
         icon = ICON_ONION,
         subIcon = ICON_CUT,
-        cookIcon = ICON_POT,
     },
     [ITEM_MUSHROOM] = {
         model = E_MODEL_MUSHROOM,
@@ -182,12 +180,12 @@ ITEM_DATA = {
         pickupAnim = "mushroom_pickup",
         icon = ICON_MUSHROOM,
         subIcon = ICON_CUT,
-        cookIcon = ICON_POT,
     },
     [ITEM_SOUP] = {
         model = E_MODEL_POT,
         scale = 0.5,
         isCooked = true,
+        cookIcon = ICON_POT,
         plateable = true,
         skipItem = true,
         invisOnPlate = true,

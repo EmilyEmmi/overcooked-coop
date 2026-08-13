@@ -16,7 +16,7 @@ function playing_hud()
 
     local y = 0
     local scale = 2
-    local widthPerItem = 30
+    local widthPerItem = 25
     for i, pending_data in ipairs(pending_orders) do
         if fromRight ~= reverseReading then
             i = #pending_orders - i + 1
@@ -53,24 +53,36 @@ function playing_hud()
         end
 
         local order = ORDER_DATA[pending_data.id]
-        local items = {}
-        local mainCookIcon = nil
+        local item_groups = {}
         for a, item in ipairs(order.items) do
+            local items = {}
             if not ITEM_DATA[item.type].skipItem then
                 table.insert(items, item.type)
             end
-            if #order.items == 1 and ITEM_DATA[item.type].isCooked then
-                mainCookIcon = ITEM_DATA[item.type].cookIcon
+            if ITEM_DATA[item.type].isCooked and ITEM_DATA[item.type].cookIcon then
+                if ITEM_DATA[item.type].cookIcon[1] then -- support table of icons
+                    items.cookIcons = ITEM_DATA[item.type].cookIcon
+                else
+                    items.cookIcons = {ITEM_DATA[item.type].cookIcon}
+                end
             end
             if item.contents then
                 for b, subitem in ipairs(item.contents) do
                     table.insert(items, subitem)
                 end
             end
+            if #items ~= 0 then
+                table.insert(item_groups, items)
+            end
         end
 
         y = 0
-        local width = math.max(#items, 2) * widthPerItem * scale
+        local width = -5 * scale
+        for a, items in ipairs(item_groups) do
+            width = width + (5 + #items * widthPerItem) * scale
+        end
+        width = math.max(width, 2 * widthPerItem * scale)
+
         if fromRight then
             x = x - width
             prevX = prevX - width
@@ -135,23 +147,43 @@ function playing_hud()
         end
 
         -- items
-        local rectWidth = (widthPerItem - 5) * scale
-        local rectX = x + 2.5 * scale
-        local prevRectX = prevX + 2.5 * scale
+        local rectWidth = widthPerItem * scale
+        local rectX = x
+        local prevRectX = prevX
         y = y + 42 * scale
-        for a, item in ipairs(items) do
-            djui_hud_render_rect_interpolated(prevRectX, y - 2 * scale, rectWidth, 20 * scale, rectX, y - 2 * scale, rectWidth, 20 * scale)
-            itemScale = scale
-            local itemX = rectX + rectWidth / 2
-            local prevItemX = prevRectX + rectWidth / 2
-            render_ingredient_icon_interpolated(item, prevItemX, y, itemScale, itemScale, itemX, y, itemScale, itemScale)
-            if mainCookIcon or (ITEM_DATA[item].isCooked and ITEM_DATA[item].cookIcon) then
-                djui_hud_render_rect_interpolated(prevRectX, y + 18 * scale, rectWidth, 20 * scale, rectX, y + 18 * scale, rectWidth, 20 * scale)
-                local cookTex = mainCookIcon or ITEM_DATA[item].cookIcon
-                djui_hud_render_texture_interpolated(cookTex, prevItemX - cookTex.width * itemScale / 2, y + 20 * scale, itemScale, itemScale, itemX - cookTex.width * scale / 2, y + 20 * scale, itemScale, itemScale)
+        for a, items in ipairs(item_groups) do
+            for b, item in ipairs(items) do
+                djui_hud_render_rect_interpolated(prevRectX, y - 2 * scale, rectWidth, 20 * scale, rectX, y - 2 * scale, rectWidth, 20 * scale)
+                itemScale = scale
+                local itemX = rectX + rectWidth / 2
+                local prevItemX = prevRectX + rectWidth / 2
+                render_ingredient_icon_interpolated(item, prevItemX, y, itemScale, itemScale, itemX, y, itemScale, itemScale)
+                if (not items.cookIcons) and (ITEM_DATA[item].isCooked and ITEM_DATA[item].cookIcon) then
+                    djui_hud_render_rect_interpolated(prevRectX, y + 18 * scale, rectWidth, 20 * scale, rectX, y + 18 * scale, rectWidth, 20 * scale)
+                    local cookTex = ITEM_DATA[item].cookIcon
+                    if cookTex[1] then cookTex = cookTex[1] end
+                    djui_hud_render_texture_interpolated(cookTex, prevItemX - cookTex.width * itemScale / 2, y + 20 * scale, itemScale, itemScale, itemX - cookTex.width * itemScale / 2, y + 20 * itemScale, itemScale, itemScale)
+                end
+                rectX = rectX + rectWidth
+                prevRectX = prevRectX + rectWidth
             end
-            rectX = rectX + rectWidth + 5 * scale
-            prevRectX = prevRectX + rectWidth + 5 * scale
+            
+            if items.cookIcons then
+                local iconWidth = items.cookIcons[1].width
+                local totalWidth = #items * rectWidth
+                djui_hud_render_rect_interpolated(prevX, y + 18 * scale, totalWidth, 20 * scale, x, y + 18 * scale, totalWidth, 20 * scale)
+                local iconStartX = (totalWidth - ((iconWidth + 2) * #items.cookIcons - 2) * itemScale) / 2
+                local iconX = x + iconStartX
+                local prevIconX = prevX + iconStartX
+                for b, icon in ipairs(items.cookIcons) do
+                    djui_hud_render_texture_interpolated(icon, prevIconX, y + 20 * itemScale, itemScale, itemScale, iconX, y + 20 * itemScale, itemScale, itemScale)
+                    iconX = iconX + (iconWidth + 4) * itemScale
+                    prevIconX = prevIconX + (iconWidth + 4) * itemScale
+                end
+            end
+
+            rectX = rectX + 5 * scale
+            prevRectX = prevRectX + 5 * scale
         end
 
         local change = width + 10 * scale
@@ -457,6 +489,7 @@ function behind_hud_render()
             for i, c in ipairs(children) do
                 if c.oContents == ITEM_BURNT then
                     table.insert(items, ITEM_BURNT)
+                    allCooked = false
                 else
                     local iDataC = ITEM_DATA[c.oBehParams]
                     if iDataC.icon and not (iDataC.noTrash or iDataC.skipItem) then
@@ -464,8 +497,8 @@ function behind_hud_render()
                     end
                     
                     if c.oContentCount ~= 0 then
-                        local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
-                        allCooked = allCooked or (iData.cookable and c.oCutOrCookTimer >= maxCookTime)
+                        local maxCookTime = iDataC.cookTime or DEFAULT_COOK_TIME
+                        allCooked = allCooked or iDataC.isCooked or (iDataC.cookable and c.oCutOrCookTimer >= maxCookTime)
 
                         local cookedData = get_cooked_data(c)
                         local renderContents = true
