@@ -66,6 +66,10 @@ Lights1 pizza_sausage_inside_lights = gdSPDefLights1(
 	0x99, 0x73, 0x6A,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
 
+Lights1 pizza_pizza_tomato_raw_lights = gdSPDefLights1(
+	0xA6, 0x50, 0x50,
+	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
+
 Lights1 pizza_pizza_tomato_lights = gdSPDefLights1(
 	0x6C, 0x2C, 0x2A,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
@@ -176,6 +180,14 @@ Texture pizza_sausage_inside_ci8[] = {
 
 Texture pizza_sausage_inside_pal_rgba16[] = {
 	#include "actors/pizza/sausage_inside.rgba16.pal"
+};
+
+Texture pizza_pizza_tomato_raw_ci8[] = {
+	#include "actors/pizza/pizza_tomato_raw.ci8.inc.c"
+};
+
+Texture pizza_pizza_tomato_raw_pal_rgba16[] = {
+	#include "actors/pizza/pizza_tomato_raw.rgba16.pal"
 };
 
 Texture pizza_pizza_tomato_ci8[] = {
@@ -3023,22 +3035,48 @@ Gfx pizza_pizza_sausage_switch_option_pizza_sausage_model_mesh_layer_5_tri_0[] =
 	gsSPEndDisplayList(),
 };
 
-Vtx pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_1_vtx_0[8] = {
-	{{{-95, 40, 97}, 0, {-191, 393}, {0x00, 0x7F, 0x00, 0xFF}}},
-	{{{-95, 40, -97}, 0, {717, -166}, {0x00, 0x7F, 0x00, 0xFF}}},
-	{{{-135, 40, 0}, 0, {147, -75}, {0x00, 0x7F, 0x00, 0xFF}}},
-	{{{98, 40, 97}, 0, {367, 1301}, {0x00, 0x7F, 0x00, 0xFF}}},
-	{{{2, 40, 137}, 0, {-100, 962}, {0x00, 0x7F, 0x00, 0xFF}}},
+Vtx pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_5_vtx_0[12] = {
+	{{{124, 41, 72}, 0, {1908, 1846}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-70, 41, 128}, 0, {161, 1846}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{42, 41, 145}, 0, {1035, 2207}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-111, 41, 39}, 0, {161, 1116}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{123, 41, -27}, 0, {1908, 983}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-18, 41, -113}, 0, {1034, 99}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-122, 41, -75}, 0, {161, 99}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-28, 41, -150}, 0, {1035, -263}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{75, 41, -116}, 0, {1908, 99}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{123, 41, -27}, 0, {1908, 983}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{150, 41, -36}, 0, {2270, 972}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-138, 41, 37}, 0, {-200, 972}, {0x00, 0x7F, 0x00, 0xFF}}},
+};
+
+Gfx pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_5_tri_0[] = {
+	gsSPVertex(pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_5_vtx_0 + 0, 12, 0),
+	gsSP2Triangles(0, 1, 2, 0, 1, 0, 3, 0),
+	gsSP2Triangles(0, 4, 3, 0, 4, 5, 3, 0),
+	gsSP2Triangles(5, 6, 3, 0, 7, 6, 5, 0),
+	gsSP2Triangles(8, 7, 5, 0, 5, 9, 8, 0),
+	gsSP2Triangles(8, 9, 10, 0, 9, 0, 10, 0),
+	gsSP2Triangles(3, 6, 11, 0, 1, 3, 11, 0),
+	gsSPEndDisplayList(),
+};
+
+Vtx pizza_pizza_tomato_sauce_baked_switch_option_pizza_tomato_sauce_baked_model_mesh_layer_1_vtx_0[8] = {
 	{{{2, 40, -137}, 0, {1185, 173}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-95, 40, -97}, 0, {717, -166}, {0x00, 0x7F, 0x00, 0xFF}}},
 	{{{98, 40, -97}, 0, {1276, 743}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{98, 40, 97}, 0, {367, 1301}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-95, 40, 97}, 0, {-191, 393}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-135, 40, 0}, 0, {147, -75}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{2, 40, 137}, 0, {-100, 962}, {0x00, 0x7F, 0x00, 0xFF}}},
 	{{{138, 40, 0}, 0, {937, 1210}, {0x00, 0x7F, 0x00, 0xFF}}},
 };
 
-Gfx pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_1_tri_0[] = {
-	gsSPVertex(pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_1_vtx_0 + 0, 8, 0),
-	gsSP2Triangles(0, 1, 2, 0, 3, 1, 0, 0),
-	gsSP2Triangles(3, 0, 4, 0, 1, 3, 5, 0),
-	gsSP2Triangles(5, 3, 6, 0, 6, 3, 7, 0),
+Gfx pizza_pizza_tomato_sauce_baked_switch_option_pizza_tomato_sauce_baked_model_mesh_layer_1_tri_0[] = {
+	gsSPVertex(pizza_pizza_tomato_sauce_baked_switch_option_pizza_tomato_sauce_baked_model_mesh_layer_1_vtx_0 + 0, 8, 0),
+	gsSP2Triangles(0, 1, 2, 0, 1, 3, 2, 0),
+	gsSP2Triangles(3, 1, 4, 0, 4, 1, 5, 0),
+	gsSP2Triangles(3, 4, 6, 0, 2, 3, 7, 0),
 	gsSPEndDisplayList(),
 };
 
@@ -3446,6 +3484,34 @@ Gfx mat_revert_pizza_sausage_inside[] = {
 	gsSPEndDisplayList(),
 };
 
+Gfx mat_pizza_pizza_tomato_raw[] = {
+	gsSPClearGeometryMode(G_CULL_BACK),
+	gsSPSetLights1(pizza_pizza_tomato_raw_lights),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, TEXEL0, 0, PRIMITIVE, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, PRIMITIVE, 0),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsDPSetTextureLUT(G_TT_RGBA16),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetPrimColor(0, 0, 255, 255, 255, 255),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, pizza_pizza_tomato_raw_pal_rgba16),
+	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadTLUTCmd(5, 50),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, pizza_pizza_tomato_raw_ci8),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 2047, 256),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 8, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 6, 0, G_TX_CLAMP | G_TX_NOMIRROR, 6, 0),
+	gsDPSetTileSize(0, 0, 0, 252, 252),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_pizza_pizza_tomato_raw[] = {
+	gsSPSetGeometryMode(G_CULL_BACK),
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsDPSetTextureLUT(G_TT_NONE),
+	gsSPEndDisplayList(),
+};
+
 Gfx mat_pizza_pizza_tomato[] = {
 	gsSPSetLights1(pizza_pizza_tomato_lights),
 	gsDPPipeSync(),
@@ -3573,9 +3639,16 @@ Gfx pizza_pizza_sausage_switch_option_pizza_sausage_model_mesh_layer_5[] = {
 	gsSPEndDisplayList(),
 };
 
-Gfx pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_1[] = {
+Gfx pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_5[] = {
+	gsSPDisplayList(mat_pizza_pizza_tomato_raw),
+	gsSPDisplayList(pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_5_tri_0),
+	gsSPDisplayList(mat_revert_pizza_pizza_tomato_raw),
+	gsSPEndDisplayList(),
+};
+
+Gfx pizza_pizza_tomato_sauce_baked_switch_option_pizza_tomato_sauce_baked_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_pizza_pizza_tomato),
-	gsSPDisplayList(pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_1_tri_0),
+	gsSPDisplayList(pizza_pizza_tomato_sauce_baked_switch_option_pizza_tomato_sauce_baked_model_mesh_layer_1_tri_0),
 	gsSPDisplayList(mat_revert_pizza_pizza_tomato),
 	gsSPEndDisplayList(),
 };
