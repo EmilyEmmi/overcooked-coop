@@ -152,10 +152,10 @@ OC_LEVEL_DATA = {
         failTime = {240, 210, 180, 160},
         orders = {ORDER_CHEESE_PIZZA, ORDER_PEPPERONI_PIZZA, ORDER_CHICKEN_PIZZA, ORDER_MUSHROOM_PIZZA, ORDER_MEAT_PIZZA, ORDER_PEPPERONI_MUSHROOM_PIZZA},
         starScores = {
-            {50, 150, 400, 600},
-            {100, 300, 500, 800},
-            {200, 450, 700, 900},
-            {300, 600, 900, 1100},
+            {50, 100, 300, 550},
+            {100, 250, 500, 750},
+            {250, 450, 650, 800},
+            {300, 600, 850, 1000},
         },
     },
 }
