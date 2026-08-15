@@ -2,7 +2,7 @@
 -- description: Collab with WBMarioo and denpakei32 for Blocky's gamemode competition.
 -- pausable: false
 -- category: gamemode
--- incompatible: gamemode
+-- incompatible: gamemode, romhack
 
 selectedItem = nil
 selectedCounter = nil

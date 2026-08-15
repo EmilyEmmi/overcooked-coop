@@ -14,6 +14,7 @@ OC_LEVEL_SAND = 5
 OC_LEVEL_TTC = 6
 OC_LEVEL_RR = 7
 OC_LEVEL_CCM = 8
+OC_LEVEL_BBH = 9
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -113,20 +114,6 @@ OC_LEVEL_DATA = {
             {150, 300, 450, 1000},
         },
     },
-    [OC_LEVEL_CCM] = {
-        name = "Slip Slidin' Pizzas",
-        desc = "Become aquainted with the realm of Pizza. Slide down to access the lower area quickly, but don't slip off of the mountain!",
-        level = LEVEL_CCM,
-        totalTime = 210,
-        failTime = {210, 180, 150, 120},
-        orders = {ORDER_CHEESE_PIZZA, ORDER_PEPPERONI_PIZZA, ORDER_CHICKEN_PIZZA, ORDER_MUSHROOM_PIZZA},
-        starScores = {
-            {50, 150, 400, 600},
-            {100, 300, 500, 800},
-            {200, 450, 700, 900},
-            {300, 600, 900, 1100},
-        },
-    },
     [OC_LEVEL_RR] = {
         name = "Rainbow Cruise",
         desc = "Put burgers and salad together on this carpet ride! Take advantage of when the carpets are together!",
@@ -141,6 +128,34 @@ OC_LEVEL_DATA = {
             {100, 300, 450, 750},
             {200, 400, 600, 850},
             {250, 500, 700, 950},
+        },
+    },
+    [OC_LEVEL_CCM] = {
+        name = "Slip Slidin' Pizzas",
+        desc = "Become aquainted with the realm of Pizza. Slide down to access the lower area quickly, but don't slip off of the mountain!",
+        level = LEVEL_CCM,
+        totalTime = 210,
+        failTime = {210, 180, 150, 120},
+        orders = {ORDER_CHEESE_PIZZA, ORDER_PEPPERONI_PIZZA, ORDER_CHICKEN_PIZZA, ORDER_MUSHROOM_PIZZA},
+        starScores = {
+            {50, 150, 400, 600},
+            {100, 300, 500, 800},
+            {200, 450, 700, 900},
+            {300, 600, 900, 1100},
+        },
+    },
+    [OC_LEVEL_BBH] = {
+        name = "Merry Go Pizza",
+        desc = "Make Pizzas with multiple toppings in this chaotic merry go round... if you dare!",
+        level = LEVEL_BBH,
+        totalTime = 240,
+        failTime = {240, 210, 180, 160},
+        orders = {ORDER_CHEESE_PIZZA, ORDER_PEPPERONI_PIZZA, ORDER_CHICKEN_PIZZA, ORDER_MUSHROOM_PIZZA, ORDER_MEAT_PIZZA, ORDER_PEPPERONI_MUSHROOM_PIZZA},
+        starScores = {
+            {50, 150, 400, 600},
+            {100, 300, 500, 800},
+            {200, 450, 700, 900},
+            {300, 600, 900, 1100},
         },
     },
 }
