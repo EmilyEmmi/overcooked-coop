@@ -250,7 +250,7 @@ end
 
 --- @param n GraphNode | FnGraphNode
 function pizza_tomato_sauce_switch(n)
-    handle_pizza_topping_switch(n, ITEM_TOMATO_CUT)
+    handle_pizza_topping_switch(n, ITEM_TOMATO_CUT, true)
 end
 
 --- @param n GraphNode | FnGraphNode
