@@ -66,7 +66,14 @@ const GeoLayout pizza_pizza_sausage[] = {
 const GeoLayout pizza_pizza_tomato_sauce[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
-		GEO_DISPLAY_LIST(LAYER_OPAQUE, pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_1),
+		GEO_DISPLAY_LIST(LAYER_TRANSPARENT, pizza_pizza_tomato_sauce_switch_option_pizza_tomato_sauce_model_mesh_layer_5),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout pizza_pizza_tomato_sauce_baked[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, pizza_pizza_tomato_sauce_baked_switch_option_pizza_tomato_sauce_baked_model_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
@@ -122,6 +129,7 @@ const GeoLayout pizza_geo[] = {
 					GEO_OPEN_NODE(),
 					GEO_CLOSE_NODE(),
 					GEO_BRANCH(1, pizza_pizza_tomato_sauce),
+					GEO_BRANCH(1, pizza_pizza_tomato_sauce_baked),
 				GEO_CLOSE_NODE(),
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),
