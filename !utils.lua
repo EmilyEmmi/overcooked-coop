@@ -157,6 +157,19 @@ function obj_resolve_object_collisions_custom(o, otherObject)
     return 0, 0;
 end
 
+---@param o Object
+---@param name string
+---@return boolean
+function smlua_anim_util_set_animation_if_new(o, name)
+    if smlua_anim_util_get_current_animation_name(o) ~= name then
+        smlua_anim_util_set_animation(o, name)
+        o.header.gfx.animInfo.animFrame = 0
+        o.header.gfx.animInfo.animAccel = 0
+        return true
+    end
+    return false
+end
+
 function get_order_fail_time()
     -- Uses the lower amount of players expected per kitchen
     local data = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]

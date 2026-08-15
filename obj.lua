@@ -420,16 +420,11 @@ function ingredient_render_setup(o)
             animFrame = math.clamp(currAnimFrame + 1, 0, maxAnimFrame)
             if animFrame < 0 then animFrame = 0 end -- Clamp won't work fsr
         end
-        smlua_anim_util_set_animation(o, anim)
+        smlua_anim_util_set_animation_if_new(o, anim)
         if animFrame == -2 then
-            o.header.gfx.animInfo.animAccel = 0
             o.header.gfx.animInfo.animFrame = o.header.gfx.animInfo.curAnim.loopEnd - 1
         elseif animFrame ~= -1 then
-            o.header.gfx.animInfo.animAccel = 0
             o.header.gfx.animInfo.animFrame = animFrame
-        else -- Animate normally
-            o.header.gfx.animInfo.animAccel = 0x10000
-            o.header.gfx.animInfo.animFrame = 0
         end
     end
 
@@ -961,6 +956,7 @@ function get_cooked_data(o)
 end
 
 function attempt_serve_order(items)
+    audio_sample_play(SAMPLE_SERVE, gLakituState.pos, 1)
     if #items == 0 then
         djui_chat_message_create("Plate is empty")
         return false
@@ -1017,7 +1013,12 @@ function attempt_serve_order(items)
             end
         end
     end
+
     djui_chat_message_create("This order wasn't available")
+    for a,pending_data in ipairs(pending_orders) do
+        pending_data.redTimer = 30
+    end
+
     return false
 end
 
@@ -1088,19 +1089,22 @@ function bhv_counter_loop(o)
             end
         end
         if heatOn then
-            smlua_anim_util_set_animation(o, "heat_on")
+            smlua_anim_util_set_animation_if_new(o, "heat_on")
+            if cur_obj_check_if_at_animation_end() ~= 0 then
+                o.header.gfx.animInfo.animFrame = 0
+            end
             if cookSoundChance == 1 or random_float() < cookSoundChance then
                 cur_obj_play_sound_2(cookSound)
             end
         else
-            smlua_anim_util_set_animation(o, "heat_off")
+            smlua_anim_util_set_animation_if_new(o, "heat_off")
         end
     elseif o.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT then
         if o.oOvercookTimer ~= 0 then
             o.oOvercookTimer = 0
-            smlua_anim_util_set_animation(o, "box_open")
+            smlua_anim_util_set_animation_if_new(o, "box_open")
         elseif cur_obj_check_if_at_animation_end() ~= 0 then
-            smlua_anim_util_set_animation(o, "box_closed")
+            smlua_anim_util_set_animation_if_new(o, "box_closed")
             if is_nearest_mario_state_to_object(gMarioStates[0], o) then
                 network_send_object(o, false)
             end
@@ -1120,13 +1124,19 @@ function bhv_counter_loop(o)
                 cookSoundChance = iData.cookSoundChance or cookSoundChance
             end
         end
+
+        local set = false
         if heatOn then
-            smlua_anim_util_set_animation(o, "oven_close")
+            set = smlua_anim_util_set_animation_if_new(o, "oven_close")
             if cookSoundChance == 1 or random_float() < cookSoundChance then
                 cur_obj_play_sound_2(cookSound)
             end
         else
-            smlua_anim_util_set_animation(o, "oven_open")
+            set = smlua_anim_util_set_animation_if_new(o, "oven_open")
+        end
+        if set and o.oTimer > 1 then
+            local sample = (heatOn and SAMPLE_OVEN_CLOSE) or SAMPLE_OVEN_OPEN
+            audio_sample_play(sample, {x = o.oPosX, y = o.oPosY, z = o.oPosZ}, 0.5)
         end
     end
 end
@@ -1209,6 +1219,7 @@ function bhv_player_barrier_init(o)
 
     o.collisionData = smlua_collision_util_get("barrier_collision")
     o.oCollisionDistance = 10000 -- don't disable collision
+    o.header.gfx.skipInViewCheck = true
 end
 
 function bhv_player_barrier_loop(o)

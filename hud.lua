@@ -48,8 +48,13 @@ function playing_hud()
         end
 
         local alpha = 255
+        local r = 0
         if pending_data.vanishTimer then
             alpha = (alpha * pending_data.vanishTimer // 30)
+        elseif pending_data.redTimer then
+            r = (255 * pending_data.redTimer // 30)
+            pending_data.redTimer = pending_data.redTimer - 1
+            if pending_data.redTimer == 0 then pending_data.redTimer = nil end
         end
 
         local order = ORDER_DATA[pending_data.id]
@@ -87,7 +92,7 @@ function playing_hud()
             x = x - width
             prevX = prevX - width
         end
-        djui_hud_set_color(255, 255, 255, alpha)
+        djui_hud_set_color(255, 255 - r, 255 - r, alpha)
         djui_hud_render_rect_interpolated(prevX, y, width, 40 * scale, x, y, width, 40 * scale)
 
         -- timer
@@ -125,7 +130,7 @@ function playing_hud()
         end
 
         -- item to serve
-        djui_hud_set_color(255, 255, 255, alpha)
+        djui_hud_set_color(255, 255 - r, 255 - r, alpha)
         local itemScale = scale * 2
         local tex = order.icon
         if tex then

@@ -57,7 +57,13 @@ for i=0,MAX_PLAYERS-1 do
     c.actionAnimTimer = 0
 end
 
-GRAB_SOUND = SOUND_GENERAL_ELEVATOR_MOVE_2
+SAMPLE_GRAB = audio_sample_load("obj_grab.ogg")
+SAMPLE_CUT = audio_sample_load("ingredient_cut.ogg")
+SAMPLE_GRAB_PLATE = audio_sample_load("plate_place.ogg")
+SAMPLE_FAIL = audio_sample_load("order_timeout.ogg")
+SAMPLE_SERVE = audio_sample_load("service_bell.ogg")
+SAMPLE_OVEN_OPEN = audio_sample_load("oven_door_open.ogg")
+SAMPLE_OVEN_CLOSE = audio_sample_load("oven_door_close.ogg")
 MAX_INGREDIENT_COUNT = 50
 
 gLevelValues.disableActs = 1
@@ -179,8 +185,9 @@ function update()
                         pending_data.time = pending_data.time - 1
                         if pending_data.time <= 0 then
                             pending_data.time = pending_data.maxTime
+                            pending_data.redTimer = 30
                             if kitchen == gPlayerSyncTable[0].kitchen then
-                                play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource)
+                                audio_sample_play(SAMPLE_FAIL, gLakituState.pos, 1)
                             end
                             if network_is_server() then
                                 gGlobalSyncTable["tipMulti"..kitchen] = 1
@@ -417,7 +424,7 @@ function mario_update(m)
         set_anim_to_frame(m, c.actionAnimTimer)
         c.actionAnimTimer = (c.actionAnimTimer + 1) % 6
         if c.actionAnimTimer == 1 then
-            play_sound(SOUND_ACTION_UNK55, m.marioObj.header.gfx.cameraToObject)
+            audio_sample_play(SAMPLE_CUT, gLakituState.pos, 1)
             
             local o, counter = selectedItem, selectedCounter
             if m.playerIndex ~= 0 then
@@ -607,7 +614,12 @@ function before_mario_update(m)
             local placed, stillHolding = attempt_item_place(o, m, selectedItem, selectedCounter, true)
             if placed or GRAB_BUTTON ~= THROW_BUTTON then
                 if placed or not stillHolding then
-                    play_sound(GRAB_SOUND, gGlobalSoundSource)
+                    local sample = SAMPLE_GRAB
+                    local iData, iData2 = ITEM_DATA[o.oBehParams], (selectedItem and ITEM_DATA[selectedItem.oBehParams])
+                    if iData2 and (iData.isPlate or iData2.isPlate) then
+                        sample = SAMPLE_GRAB_PLATE
+                    end
+                    audio_sample_play(sample, gLakituState.pos, 0.5)
                     if not stillHolding then
                         mario_drop_held_object(m)
                     end
@@ -661,7 +673,7 @@ function before_mario_update(m)
             end
 
             if o and valid then
-                play_sound(GRAB_SOUND, gGlobalSoundSource)
+                audio_sample_play(SAMPLE_GRAB, gLakituState.pos, 0.5)
                 m.usedObj = o
                 m.marioBodyState.grabPos = GRAB_POS_LIGHT_OBJ
                 o.oInteractType = INTERACT_GRABBABLE
