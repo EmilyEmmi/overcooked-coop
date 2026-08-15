@@ -59,7 +59,7 @@ end
 
 SAMPLE_GRAB = audio_sample_load("obj_grab.ogg")
 SAMPLE_CUT = audio_sample_load("ingredient_cut.ogg")
-SAMPLE_GRAB_PLATE = audio_sample_load("plate_place.ogg")
+SAMPLE_PLATE_SPAWN = audio_sample_load("plate_place.ogg")
 SAMPLE_FAIL = audio_sample_load("order_timeout.ogg")
 SAMPLE_SERVE = audio_sample_load("service_bell.ogg")
 SAMPLE_OVEN_OPEN = audio_sample_load("oven_door_open.ogg")
@@ -502,6 +502,7 @@ function mario_update(m)
         elseif get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
             local kitchen, spawnID = join_smallest_kitchen(0)
             if spawnID ~= -1 then
+                sMario.kitchen = kitchen
                 sMario.spectator = false
                 sMario.spawnID = spawnID
                 m.flags = m.flags &~ MARIO_VANISH_CAP
@@ -614,12 +615,7 @@ function before_mario_update(m)
             local placed, stillHolding = attempt_item_place(o, m, selectedItem, selectedCounter, true)
             if placed or GRAB_BUTTON ~= THROW_BUTTON then
                 if placed or not stillHolding then
-                    local sample = SAMPLE_GRAB
-                    local iData, iData2 = ITEM_DATA[o.oBehParams], (selectedItem and ITEM_DATA[selectedItem.oBehParams])
-                    if iData2 and (iData.isPlate or iData2.isPlate) then
-                        sample = SAMPLE_GRAB_PLATE
-                    end
-                    audio_sample_play(sample, gLakituState.pos, 0.5)
+                    audio_sample_play(SAMPLE_GRAB, gLakituState.pos, 0.5)
                     if not stillHolding then
                         mario_drop_held_object(m)
                     end
@@ -718,7 +714,9 @@ hook_event(HOOK_BEFORE_MARIO_UPDATE, before_mario_update)
 function allow_interact(m, o, type)
     if type == INTERACT_GRABBABLE and obj_has_behavior_id(o, id_bhvIngredient) ~= 0 then
         -- don't interact with ingredients; have THEM be pushed around instead
-        obj_resolve_object_collisions_custom(m.marioObj, o) -- runs from Mario object
+        if m.flags & MARIO_VANISH_CAP == 0 then
+            obj_resolve_object_collisions_custom(m.marioObj, o) -- runs from Mario object
+        end
         return false
     elseif type == INTERACT_WARP or type == INTERACT_WARP_DOOR then
         return false
@@ -758,6 +756,9 @@ function act_select_start(m)
         vec3s_copy(m.faceAngle, m.spawnInfo.startAngle)
     end
 
+    if sMario.spectator and m.playerIndex ~= 0 then
+        m.marioObj.header.gfx.node.flags = m.marioObj.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+    end
     vec3f_copy(m.marioObj.header.gfx.pos, m.pos);
     vec3s_set(m.marioObj.header.gfx.angle, 0, m.faceAngle.y, 0)
     if gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then
@@ -766,10 +767,21 @@ function act_select_start(m)
 
     if m.playerIndex ~= 0 or m.actionState ~= 0 or gGlobalSyncTable.timeLeft <= 3 then return 0 end
 
+    local spotTaken = false
+    if m.actionState == 0 and not sMario.spectator then
+        for i=1,MAX_PLAYERS-1 do
+            local np2, sMario2 = gNetworkPlayers[i], gPlayerSyncTable[i]
+            if np2.connected and sMario2.readyToStart and not sMario2.spectator
+            and sMario.kitchen == sMario2.kitchen and sMario.spawnID == sMario2.spawnID then
+                spotTaken = true
+                break
+            end
+        end
+    end
+
     sMario.readyToStart = false
-    if maxKitchens <= 1 and maxSpawnID <= 1 then
-        m.actionState = 1
-        sMario.readyToStart = true
+    if spotTaken then
+        confirmTime = -1
     elseif m.controller.buttonDown & A_BUTTON ~= 0 then
         confirmTime = confirmTime + 1
         if confirmTime >= 30 then
@@ -777,8 +789,8 @@ function act_select_start(m)
             m.actionState = 1
             sMario.readyToStart = true
         end
-    elseif confirmTime ~= 0 then
-        confirmTime = confirmTime - 1
+    else
+        confirmTime = math.max(confirmTime - 1, 0)
     end
 
     local change = 0
@@ -803,7 +815,7 @@ function act_select_start(m)
     else
         lastDirX = 0
     end
-    
+
     if change ~= 0 then
         if m.actionArg == 0 then
             sMario.kitchen = (sMario.kitchen + change - 1) % maxKitchens + 1
@@ -1064,6 +1076,16 @@ function on_time_left_change(tag, oldVal, newVal)
     end
 end
 hook_on_sync_table_change(gGlobalSyncTable, "timeLeft", "timeLeft", on_time_left_change)
+
+-- keep timed things in sync
+function on_score_change(tag, oldVal, newVal)
+    if oldVal == newVal or oldVal == nil or newVal == nil then return end
+    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then return end
+
+    local difference = newVal - oldVal
+    table.insert(scoreModifiers, {value = difference})
+end
+hook_on_sync_table_change(gGlobalSyncTable, "score", "score", on_score_change)
 
 function ingredient_command(msg)
     local m = gMarioStates[0]

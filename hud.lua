@@ -6,6 +6,7 @@ local HUD_LOCATIONS = {
     {430, true},
 }
 
+scoreModifiers = {}
 function playing_hud()
     local screenWidth = djui_hud_get_screen_width()
     local intendedX = HUD_LOCATIONS[orderHUDLocation+1][1] or 10
@@ -203,7 +204,7 @@ function playing_hud()
     djui_hud_reset_text_color()
     djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_BOTTOM)
 
-    -- score and tip combo
+    -- score
     scale = scale * 2
     local tipMulti = gGlobalSyncTable["tipMulti"..gPlayerSyncTable[0].kitchen] or 1
     local x = 20
@@ -217,16 +218,70 @@ function playing_hud()
     djui_hud_render_texture(gTextures.coin, x, y - 22 * scale, scale, scale)
     x = x + 16 * scale
     djui_hud_print_text(tostring(gGlobalSyncTable.score), x, y, scale)
+    -- modifers (+30, etc.)
+    for i, data in ipairs(scoreModifiers) do
+        local text = tostring(data.value)
+        if not data.inited then
+            data.y = 0
+            data.prevY = 0
+            data.vanishTimer = 30
+            data.inited = true
+        else
+            data.prevY = data.y
+            data.y = data.y + 1
+            data.vanishTimer = data.vanishTimer - 1
+            if data.vanishTimer == 0 then
+                table.remove(scoreModifiers, i)
+            end
+        end
+        djui_hud_set_font(FONT_RECOLOR_HUD)
+        if data.value > 0 then
+            text = "+"..text
+            djui_hud_set_text_color(0, 255, 0, data.vanishTimer * 200 // 30)
+        else
+            djui_hud_set_text_color(255, 0, 0, data.vanishTimer * 200 // 30)
+        end
+        djui_hud_print_text_interpolated(text, x, y - (data.prevY + 16) * scale, scale, x, y - (data.y + 16) * scale, scale)
+        djui_hud_set_font(FONT_CUSTOM_HUD)
+        djui_hud_reset_text_color()
+    end
+    -- tip combo
     scale = scale / 2
     x = 20
     y = y + 16 * scale
     djui_hud_print_text("Tip *"..tipMulti, x, y, scale)
-    
+
+    -- timer
     scale = scale * 2
     x = djui_hud_get_screen_width() - 32
     y = djui_hud_get_screen_height()
     djui_hud_set_text_alignment(TEXT_HALIGN_RIGHT, TEXT_VALIGN_BOTTOM)
     djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft), x, y, scale)
+
+    -- cooking indicators (if enabled)
+    if showCookIndicators then
+        x = djui_hud_get_screen_width() - 32
+        y = djui_hud_get_screen_height() - 20 * scale
+        scale = scale / 2
+        local o = obj_get_first_with_behavior_id(id_bhvIngredient)
+        while o do
+            -- notification for cooking progress
+            if o.oNotifyTimer ~= 0 then
+                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                local alpha = 255
+                if o.oNotifyTimer > 20 then
+                    alpha = ((30 - o.oNotifyTimer) / 10) * alpha
+                elseif o.oNotifyTimer < 10 then
+                    alpha = (o.oNotifyTimer / 10) * alpha
+                end
+                o.oNotifyTimer = o.oNotifyTimer - 1
+                djui_hud_set_color(255, 255, 255, alpha)
+                djui_hud_print_text(text, x, y, scale)
+                y = y - 32 * scale
+            end
+            o = obj_get_next_with_same_behavior_id(o)
+        end
+    end
 end
 
 local lastHudScore = 0
@@ -308,13 +363,91 @@ function setup_hud()
     local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
 
     local scale = 4
-    local x = screenWidth / 2
+    local x = 20
     local y = 20
-    djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+    djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
     local timeLeft = gGlobalSyncTable.timeLeft - 3
     if timeLeft <= 0 then timeLeft = timeLeft + 3 end
     djui_hud_print_text(time_format(timeLeft), x, y, scale)
 
+    -- level title
+    x = screenWidth / 2
+    djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+    local titleScale = scale
+    local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
+    local text = (lData.name or "???")
+    local width = djui_hud_measure_text(text) * titleScale
+    if width > screenWidth * 0.7 then
+        titleScale = (screenWidth * 0.7) / width * titleScale
+    end
+    djui_hud_print_text(text, x, y, titleScale, titleScale)
+
+    -- advice
+    if lData.advice then
+        y = 50 * scale
+        local adviceScale = scale / 2
+        local buttonNames = { "X", "Y", "L", "B" }
+        text = "Tip:"
+
+        local advice = lData.advice
+        advice = advice:gsub("%[GRAB%]", "["..buttonNames[grabButtonIndex+1].."]")
+        advice = advice:gsub("%[ACTION%]", "["..buttonNames[actionButtonIndex+1].."]")
+        advice = advice:gsub("%[THROW%]", "["..buttonNames[throwButtonIndex+1].."]")
+
+        for i, word in ipairs(split(advice, " ")) do
+            local newText = text
+            if #newText == 0 then
+                newText = word
+            else
+                newText = newText .. " " .. word
+            end
+            width = djui_hud_measure_text(newText) * adviceScale
+            if width < screenWidth * 0.7 then
+                text = newText
+            else
+                text = text .. "\n" .. word
+            end
+        end
+        djui_hud_set_font(FONT_RECOLOR_HUD)
+        djui_hud_set_text_color(0, 255, 200, 255)
+        djui_hud_print_text(text, x, y, adviceScale, adviceScale)
+        djui_hud_set_font(FONT_CUSTOM_HUD)
+        djui_hud_reset_text_color()
+    end
+
+    -- stars
+    local starScale = scale
+    local savePrefix = string.format("record_%d_%d_", gGlobalSyncTable.ocLevel, gGlobalSyncTable.peakPlayers)
+    local maxScorePlayers = mod_storage_load_integer(savePrefix.."score")
+    local stars = 4
+    local maxStars = get_star_record(gGlobalSyncTable.ocLevel)
+    maxStars = math.clamp(maxStars + 1, 3, 4)
+    local neededPoints = get_star_scores(gGlobalSyncTable.ocLevel)
+    while stars > 0 do
+        if maxScorePlayers >= neededPoints[stars] then break end
+        stars = stars - 1
+    end
+    x = screenWidth / 2 - (10 * (maxStars - 1)) * starScale
+    for i=1,maxStars do
+        y = 32 + 16 * scale
+        if i <= stars then
+            if i < 4 then
+                djui_hud_set_color(255, 255, 255, 255)
+            else
+                djui_hud_set_color(255, 20, 20, 255)
+            end
+        else
+            djui_hud_set_color(0, 0, 0, 100)
+        end
+        djui_hud_render_texture(gTextures.star, x - 8 * starScale, y, starScale, starScale)
+        y = y + 16 * starScale
+        djui_hud_set_color(255, 255, 255, 255)
+        djui_hud_print_text(tostring(neededPoints[i]), x, y, starScale / 4)
+        x = x + 20 * starScale
+    end
+
+    -- spawn placement
+    x = screenWidth / 2
     if gMarioStates[0].action == ACT_SELECT_START and gMarioStates[0].actionState == 0 and gGlobalSyncTable.timeLeft > 3 then
         x = x - 70 * scale
         y = screenHeight - 60 * scale
@@ -327,7 +460,7 @@ function setup_hud()
         x = x + 20 * scale
         djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
 
-        local text = "Kitchen <"..(gPlayerSyncTable[0].kitchen) .. ">"
+        text = "Kitchen <"..(gPlayerSyncTable[0].kitchen) .. ">"
         djui_hud_set_color(255, 255, 255, 255)
         if gGlobalSyncTable.maxKitchens <= 1 then
             text = "Kitchen: 1"
@@ -349,7 +482,9 @@ function setup_hud()
         x = screenWidth / 2
         y = y + 20 * scale
         text = "[A] Confirm"
-        if confirmTime ~= 0 then
+        if confirmTime < 0 then
+            text = "Spot Taken"
+        elseif confirmTime ~= 0 then
             local width = djui_hud_measure_text(text) * scale
             local barWidth = width * (confirmTime / 30)
             djui_hud_set_color(0, 255, 0, 255)
@@ -375,9 +510,11 @@ function on_hud_render()
         lastHudScore = 0
         playing_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_END then
+        scoreModifiers = {}
         end_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP then
         lastHudScore = 0
+        scoreModifiers = {}
         setup_hud()
     end
 end
@@ -596,7 +733,9 @@ function behind_hud_render()
                     elseif o.oNotifyTimer < 10 then
                         alpha = (o.oNotifyTimer / 10) * alpha
                     end
-                    o.oNotifyTimer = o.oNotifyTimer - 1
+                    if not showCookIndicators then
+                        o.oNotifyTimer = o.oNotifyTimer - 1
+                    end
                     djui_hud_set_color(255, 255, 255, alpha)
                     djui_hud_print_text_interpolated(text, prevX, prevY, prevScale, x, y, scale)
                 end
@@ -753,6 +892,7 @@ actionButtonIndex = 0
 throwButtonIndex = 0
 orderHUDLocation = 0
 reverseReading = false
+showCookIndicators = false
 
 inMenu = false
 local menuOption = 1
@@ -966,6 +1106,19 @@ local menu_data = {
             save = "reverseReading",
             localSave = true,
             desc = {"The oldest order will be on the left side of the queue. Serve *left to right* to maintain the tip combo.", "The oldest order will be on the right side of the queue. Serve *right to left* to maintain the tip combo."},
+        },
+        {
+            "Cook/Burn Subtitles",
+            function(x)
+                showCookIndicators = (x == 1)
+            end,
+            runOnChange = true,
+            currNum = (showCookIndicators and 1) or 0,
+            maxNum = 1,
+            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+            save = "showCookIndicators",
+            localSave = true,
+            desc = "Show a graphic above the timer whenever something is done cooking or is burning. Useful if you can't rely on audio queues.",
         },
         title = "Preferences",
     },

@@ -113,6 +113,7 @@ function bhv_ingredient_loop(o)
                 return counter.oBehParams2ndByte == COUNTER_TYPE_PLATES
             end)
             if counter then
+                audio_sample_play(SAMPLE_PLATE_SPAWN, {x = o.oPosX, y = o.oPosY, z = o.oPosZ}, 0.5)
                 local sink = (iData.washItem and counter) or (obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(sink)
                     return sink.oBehParams2ndByte == COUNTER_TYPE_SINK
                 end))
@@ -152,8 +153,7 @@ function bhv_ingredient_loop(o)
                     o.oParentSyncID = counter.usingObj.oSyncID
                 end
             else
-                obj_set_pos(o, o.oHomeX, o.oHomeY, o.oHomeZ)
-                spawn_mist_particles()
+                o.oRespawnTimer = 1
             end
         end
         return
@@ -956,7 +956,7 @@ function get_cooked_data(o)
 end
 
 function attempt_serve_order(items)
-    audio_sample_play(SAMPLE_SERVE, gLakituState.pos, 1)
+    audio_sample_play(SAMPLE_SERVE, gLakituState.pos, 0.5)
     if #items == 0 then
         djui_chat_message_create("Plate is empty")
         return false
