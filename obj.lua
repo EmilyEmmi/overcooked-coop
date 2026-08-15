@@ -1244,6 +1244,7 @@ end
 ---@param o Object
 function oc_spawn_loop(o)
     obj_pair_with_parent(o)
+    --spawn_non_sync_object(id_bhvSparkleSpawn, E_MODEL_NONE, o.oPosX, o.oPosY, o.oPosZ, nil)
 end
 
 id_bhvOcSpawn = hook_behavior(nil, OBJ_LIST_DEFAULT, false, oc_spawn_init, oc_spawn_loop, "bhvOcSpawn")
