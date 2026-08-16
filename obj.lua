@@ -956,11 +956,13 @@ function get_cooked_data(o)
 end
 
 function attempt_serve_order(items)
+    local testingServe = (gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT)
+
     audio_sample_play(SAMPLE_SERVE, gLakituState.pos, 0.5)
     if #items == 0 then
         djui_chat_message_create("Plate is empty")
         return false
-    elseif #pending_orders == 0 then
+    elseif #pending_orders == 0 and not testingServe then
         djui_chat_message_create("No orders available")
         return false
     end
@@ -982,6 +984,11 @@ function attempt_serve_order(items)
     end
     
     local pending_orders = pending_orders_all[gPlayerSyncTable[0].kitchen] or {}
+    if testingServe then
+        for i, orderID in ipairs(ALL_ORDERS) do
+            table.insert(pending_orders, {id = orderID})
+        end
+    end
     for a,pending_data in ipairs(pending_orders) do
         local orderID = pending_data.id or ORDER_PLAIN_SALAD
         local order = ORDER_DATA[orderID]
@@ -1007,16 +1014,23 @@ function attempt_serve_order(items)
             end
 
             if valid then
-                --djui_chat_message_create("Served "..order.name)
-                network_send_include_self(true, {id = PACKET_SERVED_ORDER, orderID = orderID, from = network_global_index_from_local(0)})
+                if testingServe then
+                    djui_chat_message_create("Served "..order.name)
+                else
+                    network_send_include_self(true, {id = PACKET_SERVED_ORDER, orderID = orderID, from = network_global_index_from_local(0)})
+                end
                 return true
             end
         end
     end
 
-    djui_chat_message_create("This order wasn't available")
-    for a,pending_data in ipairs(pending_orders) do
-        pending_data.redTimer = 30
+    if testingServe then
+        djui_chat_message_create("Not a valid dish!")
+    else
+        djui_chat_message_create("This order wasn't available")
+        for a,pending_data in ipairs(pending_orders) do
+            pending_data.redTimer = 30
+        end
     end
 
     return false
@@ -1072,7 +1086,7 @@ function bhv_counter_loop(o)
     load_object_collision_model()
 
     -- validate object on counter
-    if o.usingObj and o.usingObj ~= o and o.usingObj.usingObj ~= o then
+    if o.usingObj and o.usingObj ~= o and (o.usingObj.usingObj ~= o or o.oSyncID ~= 0 and o.usingObj.oUsingSyncID ~= o.oSyncID) then
         o.usingObj = nil
     end
 
@@ -1415,6 +1429,24 @@ function custom_rotating_platform_loop(o)
     end
 end
 hook_behavior(id_bhvRotatingPlatform, OBJ_LIST_SURFACE, false, nil, custom_rotating_platform_loop)
+
+-- same as above
+---@param o Object
+function custom_merry_go_round_loop(o)
+    if o.oTimer <= 1 then
+        o.oMoveAngleYaw = 0
+        o.oFaceAngleYaw = 0
+        o.oAngleVelYaw = 0
+    end
+
+    local angleYaw = o.oAngleVelYaw;
+    local expectedYaw = limit_angle(get_network_area_timer() * angleYaw)
+    if abs_angle_diff(o.oFaceAngleYaw, expectedYaw) >= angleYaw * 10 then -- off by 10 frames or more
+        o.oFaceAngleYaw = expectedYaw
+        --o.oAngleVelYaw = expectedYaw - o.oFaceAngleYaw -- Also moves items- commented out to be less disruptive
+    end
+end
+hook_behavior(id_bhvMerryGoRound, OBJ_LIST_SURFACE, false, nil, custom_merry_go_round_loop)
 
 -- make puzzle pieces move more slowly
 ---@param o Object

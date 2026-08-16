@@ -1,5 +1,5 @@
 -- name: Overcooked 64! (WIP)
--- description: Collab with WBMarioo and denpakei32 for Blocky's gamemode competition.
+-- description: Work with your fellow chefs to serve various dishes in wacky scenarios!\n\nA collaboration made for Blocky's "Cooperation" competition, based on the "Overcooked!" series by Ghost Town Games\n\nMain development: EmilyEmmi\nSprite work: EmilyEmmi, denpakei32, LoganLuigi21\Object Models: WBMarioo, denpakei32\nLevel Design/Porting: EmilyEmmi, WBMarioo, Blocky
 -- pausable: false
 -- category: gamemode
 -- incompatible: gamemode, romhack
@@ -8,7 +8,7 @@ selectedItem = nil
 selectedCounter = nil
 waitOpenDJUI = false
 gotNewRecord = false
-stayInSpectate = false
+stayInSpectate = true
 
 pending_orders_all = {}
 pending_orders = {}
@@ -52,7 +52,8 @@ for i=0,MAX_PLAYERS-1 do
     sMario.selObjSyncID = 0
     sMario.selCounterSyncID = 0
     sMario.readyToStart = false
-    sMario.spectator = false
+    sMario.spectator = true
+    sMario.waitingForSlot = false
     sMario.throwButtonIndex = throwButtonIndex
     c.actionAnimTimer = 0
 end
@@ -93,11 +94,6 @@ function update()
     else
         stop_background_music(SEQ_MENU_FILE_SELECT)
     end
-    
-    if currSeq ~= lastSeq then
-        BASE_TEMPO = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
-        lastSeq = currSeq
-    end
 
     if gGlobalSyncTable.gameState == GAME_STATE_PLAYING and gGlobalSyncTable.timeLeft <= 30 then
         BASE_MULTI = 1.5
@@ -106,7 +102,12 @@ function update()
         BASE_MULTI = 1
         sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 2)
     end
-    sequence_player_set_tempo(SEQ_PLAYER_LEVEL, BASE_TEMPO * BASE_MULTI)
+    if currSeq ~= lastSeq then
+        BASE_TEMPO = sequence_player_get_tempo(SEQ_PLAYER_LEVEL)
+        lastSeq = currSeq
+    else
+        sequence_player_set_tempo(SEQ_PLAYER_LEVEL, BASE_TEMPO * BASE_MULTI)
+    end
 
     -- update player count this round
     if network_is_server() and gGlobalSyncTable.gameState ~= GAME_STATE_END then
@@ -158,6 +159,10 @@ function update()
             warp_to_level(lData.level, 1, act)
         end
         restartTransition = false
+
+        if np.currLevelNum == lData.level and lData.updateFunc then
+            lData.updateFunc()
+        end
 
         if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
             sMario.readyToStart = false
@@ -370,8 +375,16 @@ function on_sync_valid()
     if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         drop_and_set_mario_action(gMarioStates[0], ACT_SELECT_START, 0)
     end
+    
+    complete_save_file()
 
-    if not (network_is_server() or didInitialJoin) then
+    gPlayerSyncTable[0].waitingForSlot = false
+    if network_is_server() then
+        didInitialJoin = true
+        stayInSpectate = false
+        gPlayerSyncTable[0].spectator = false
+        gMarioStates[0].flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
+    elseif not didInitialJoin then
         didInitialJoin = true
         clear_pending_orders_table()
         network_send_to(1, true, {
@@ -389,8 +402,10 @@ function on_sync_valid()
             enter_menu(5, 1, true)
         else
             gPlayerSyncTable[0].spectator = false
+            stayInSpectate = false
             gPlayerSyncTable[0].kitchen = 1
             gPlayerSyncTable[0].spawnID = 0
+            gMarioStates[0].flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
         end
     end
 end
@@ -401,14 +416,31 @@ function mario_update(m)
     m.health = 0x880 -- no health in this mod
     m.numLives = 100 -- or lives
     m.peakHeight = m.pos.y -- or fall damage
+    m.specialTripleJump = 0 -- no special triple jump either
     if m.marioBodyState.allowPartRotation == 15 and m.action ~= ACT_HOLD_WALKING then
         m.marioBodyState.allowPartRotation = 0
+    end
+
+    -- if someone is waiting for a slot, let them in if we're the host
+    local sMario = gPlayerSyncTable[m.playerIndex]
+    local np = gNetworkPlayers[m.playerIndex]
+    if network_is_server() and np.connected and sMario.spectator and sMario.waitingForSlot
+    and np.currAreaSyncValid then
+        if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
+            sMario.spectator = false
+        elseif get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
+            local kitchen, spawnID = join_smallest_kitchen(m.playerIndex)
+            if spawnID ~= -1 then
+                sMario.kitchen = kitchen
+                sMario.spawnID = spawnID
+                sMario.spectator = false
+            end
+        end
     end
 
     if m.playerIndex ~= 0 and is_player_active(m) == 0 then return end
 
     local c = gOvercookedExtraStates[m.playerIndex]
-    local sMario = gPlayerSyncTable[m.playerIndex]
     if sMario.cutTimer ~= 0 then
         -- Handle cutting
         if m.action & (ACT_FLAG_THROWING | ACT_FLAG_STATIONARY) ~= 0
@@ -494,27 +526,6 @@ function mario_update(m)
     and set_cam_angle(0) ~= CAM_ANGLE_MARIO then
         m.statusForCamera.pos.y = m.statusForCamera.pos.y + 250
     end]]
-
-    if m.playerIndex == 0 and sMario.spectator and gNetworkPlayers[0].currAreaSyncValid and (not stayInSpectate) then
-        if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
-            sMario.spectator = false
-            m.flags = m.flags &~ MARIO_VANISH_CAP
-        elseif get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
-            local kitchen, spawnID = join_smallest_kitchen(0)
-            if spawnID ~= -1 then
-                sMario.kitchen = kitchen
-                sMario.spectator = false
-                sMario.spawnID = spawnID
-                m.flags = m.flags &~ MARIO_VANISH_CAP
-                if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
-                    on_death(m)
-                else
-                    drop_and_set_mario_action(m, ACT_SELECT_START, 0)
-                end
-                djui_chat_message_create("You're playing now!")
-            end
-        end
-    end
 end
 hook_event(HOOK_MARIO_UPDATE, mario_update)
 
@@ -577,6 +588,7 @@ function before_mario_update(m)
     sMario.selObjSyncID = (selectedItem and selectedItem.oSyncID) or 0
     sMario.selCounterSyncID = (selectedCounter and selectedCounter.oSyncID) or 0
     sMario.throwButtonIndex = throwButtonIndex
+    sMario.waitingForSlot = (sMario.spectator and not stayInSpectate)
 
     -- Sparkles at selected (might be changed)
     if selectedCounter or selectedItem then
@@ -613,7 +625,7 @@ function before_mario_update(m)
         if m.heldObj then
             local o = m.heldObj
             local placed, stillHolding = attempt_item_place(o, m, selectedItem, selectedCounter, true)
-            if placed or GRAB_BUTTON ~= THROW_BUTTON then
+            if (placed or GRAB_BUTTON ~= THROW_BUTTON) and obj_has_behavior_id(m.heldObj, id_bhvBowser) == 0 then
                 if placed or not stillHolding then
                     audio_sample_play(SAMPLE_GRAB, gLakituState.pos, 0.5)
                     if not stillHolding then
@@ -693,7 +705,7 @@ function before_mario_update(m)
         end
     end
     
-    if m.controller.buttonPressed & THROW_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) then
+    if m.controller.buttonPressed & THROW_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) and obj_has_behavior_id(m.heldObj, id_bhvBowser) == 0 then
         local iData = ITEM_DATA[m.heldObj.oBehParams] or ITEM_DATA[0]
         if obj_has_behavior_id(m.heldObj, id_bhvIngredient) == 0 or not (iData.noThrow or m.heldObj.oContentCount ~= 0) then
             m.marioBodyState.allowPartRotation = 0
@@ -727,6 +739,7 @@ hook_event(HOOK_ALLOW_INTERACT, allow_interact)
 function on_player_disconnected(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     set_without_sync(sMario, "spectator", true)
+    set_without_sync(sMario, "waitingForSlot", false)
 end
 hook_event(HOOK_ON_PLAYER_DISCONNECTED, on_player_disconnected)
 
@@ -891,6 +904,7 @@ function act_custom_hold_walking(m)
     val02 = math.clamp(val02, -0x1555, 0x1555)
     val00 = math.clamp(val00, 0x0, 0x1555)
 
+    m.marioBodyState.grabPos = GRAB_POS_LIGHT_OBJ
     m.marioBodyState.allowPartRotation = 15
     m.marioBodyState.torsoAngle.z = approach_s32(m.marioBodyState.torsoAngle.z, val02, 0x400, 0x400)
     m.marioBodyState.torsoAngle.x = approach_s32(m.marioBodyState.torsoAngle.x, val00, 0x400, 0x400)
@@ -1077,7 +1091,7 @@ function on_time_left_change(tag, oldVal, newVal)
 end
 hook_on_sync_table_change(gGlobalSyncTable, "timeLeft", "timeLeft", on_time_left_change)
 
--- keep timed things in sync
+-- add score changes to HUD
 function on_score_change(tag, oldVal, newVal)
     if oldVal == newVal or oldVal == nil or newVal == nil then return end
     if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then return end
@@ -1086,6 +1100,37 @@ function on_score_change(tag, oldVal, newVal)
     table.insert(scoreModifiers, {value = difference})
 end
 hook_on_sync_table_change(gGlobalSyncTable, "score", "score", on_score_change)
+
+-- handle spectator being disabled
+function on_spectator_change(tag, oldVal, newVal)
+    if oldVal == newVal or oldVal == nil or newVal == nil then return end
+    if newVal then return end
+    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then return end
+
+    local m = gMarioStates[0]
+    m.flags = m.flags &~ MARIO_VANISH_CAP
+    if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
+        on_death(m)
+    else
+        drop_and_set_mario_action(m, ACT_SELECT_START, 0)
+    end
+    djui_chat_message_create("You're playing now!")
+end
+hook_on_sync_table_change(gPlayerSyncTable[0], "spectator", "spectator", on_spectator_change)
+
+function complete_save_file()
+    -- 100% save
+    if not save_file_get_using_backup_slot() then
+        save_file_set_using_backup_slot(true)
+        local file = get_current_save_file_num() - 1
+        for course = 0, COURSE_MAX - 1 do
+            save_file_set_star_flags(file, course, 0xFF)
+        end
+        save_file_set_flags(0xFFFFFFFF & ~SAVE_FLAG_MOAT_DRAINED)
+        gMarioStates[0].numStars = COURSE_MAX * 7 + 7
+    end
+end
+hook_event(HOOK_ON_MODS_LOADED, complete_save_file)
 
 function ingredient_command(msg)
     local m = gMarioStates[0]
@@ -1179,8 +1224,3 @@ if _G.cheatsApi then
     hook_chat_command("counter", "[TYPE,ITEM] - Create a counter", counter_command)
     hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
 end
-
-function popup()
-    djui_popup_create("Test", 2)
-end
-hook_chat_command("popup", "popup", popup)

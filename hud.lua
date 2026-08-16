@@ -733,7 +733,7 @@ function behind_hud_render()
                     elseif o.oNotifyTimer < 10 then
                         alpha = (o.oNotifyTimer / 10) * alpha
                     end
-                    if not showCookIndicators then
+                    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING or not showCookIndicators then
                         o.oNotifyTimer = o.oNotifyTimer - 1
                     end
                     djui_hud_set_color(255, 255, 255, alpha)
@@ -792,7 +792,21 @@ local MENU_COLORS = {
 TEX_TRIANGLE = get_texture_info("triangle")
 
 function build_level_menu(menu)
-    local min = 0 -- Change to 1 when the debug level is no longer wanted
+    local min = 0
+    -- Unlock test level if we've 3 starred every other level
+    if not (cheatsApi or mod_storage_load_bool("unlockTestLevel")) then
+        for i=1,#OC_LEVEL_DATA do
+            local stars = get_star_record(i)
+            if stars < 3 then
+                min = 1
+                break
+            end
+        end
+        if min == 0 then
+            djui_popup_create("You've 3 starred every stage!\nYou've unlocked the Test Level!", 2)
+            mod_storage_save_bool("unlockTestLevel", true)
+        end
+    end
     local unclearedLevel = false
 
     for i=min,#OC_LEVEL_DATA do
@@ -1136,14 +1150,8 @@ local menu_data = {
                     sMario.spawnID = 0
                     djui_chat_message_create("Too many cooks in the kitchen! Please wait until a spot opens up.")
                 else
-                    sMario.spectator = false
                     sMario.spawnID = spawnID
-                    m.flags = m.flags &~ MARIO_VANISH_CAP
-                    if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
-                        on_death(m)
-                    else
-                        drop_and_set_mario_action(m, ACT_SELECT_START, 0)
-                    end
+                    sMario.spectator = false
                 end
             end,
             desc = "Join the action right now, or until a spot opens up.",

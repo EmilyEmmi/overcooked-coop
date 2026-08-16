@@ -15,6 +15,7 @@ OC_LEVEL_TTC = 6
 OC_LEVEL_RR = 7
 OC_LEVEL_CCM = 8
 OC_LEVEL_BBH = 9
+OC_LEVEL_BOWSER_1 = 10
 OC_LEVEL_DATA = {
     [OC_LEVEL_TEST] = {
         name = "Test Level",
@@ -108,7 +109,7 @@ OC_LEVEL_DATA = {
     [OC_LEVEL_TTC] = {
         name = "Burger Time",
         desc = "Make more complicated burgers! Use the Wall Kick to reach the ingredients!",
-        advice = "Press [THROW] to throw ingredients. Ingredients will bounce off of walls when thrown.",
+        advice = "Press [THROW] to throw raw ingredients. Ingredients will bounce off of walls when thrown.",
         level = LEVEL_TTC,
         totalTime = 210,
         failTime = {210, 210, 180, 160},
@@ -123,7 +124,7 @@ OC_LEVEL_DATA = {
     [OC_LEVEL_RR] = {
         name = "Rainbow Cruise",
         desc = "Put burgers and salad together on this carpet ride! Take advantage of when the carpets are together!",
-        advice = "Make good use of throwing ingredients with [THROW]!",
+        advice = "Make good use of throwing raw ingredients with [THROW]!",
         level = LEVEL_RR,
         totalTime = 240,
         failTime = {240, 210, 180, 160},
@@ -166,5 +167,39 @@ OC_LEVEL_DATA = {
             {250, 450, 650, 800},
             {300, 600, 850, 1000},
         },
+    },
+    [OC_LEVEL_BOWSER_1] = {
+        name = "Koopa Kitchen",
+        desc = "The final challenge! You'll have to make every kind of food at once.",
+        level = LEVEL_BOWSER_1,
+        totalTime = 300,
+        failTime = {240, 210, 180, 160},
+        orders = {ORDER_PLAIN_BURGER, ORDER_CHEESE_BURGER, ORDER_LETTUCE_BURGER, ORDER_CHEESE_LETTUCE_BURGER, ORDER_LETTUCE_TOMATO_BURGER, ORDER_DELUXE_BURGER,
+        ORDER_PLAIN_SALAD, ORDER_PLAIN_SALAD, ORDER_MIXED_SALAD, ORDER_MIXED_SALAD, ORDER_TOMATO_SOUP, ORDER_TOMATO_SOUP, ORDER_ONION_SOUP, ORDER_ONION_SOUP,
+        ORDER_MUSHROOM_SOUP, ORDER_MUSHROOM_SOUP, ORDER_CHEESE_PIZZA, ORDER_PEPPERONI_PIZZA, ORDER_CHICKEN_PIZZA, ORDER_MUSHROOM_PIZZA, ORDER_MEAT_PIZZA, ORDER_PEPPERONI_MUSHROOM_PIZZA},
+        starScores = {
+            {50, 100, 300, 550},
+            {100, 250, 500, 750},
+            {250, 450, 650, 800},
+            {300, 600, 850, 1000},
+        },
+        updateFunc = function()
+            local m = gMarioStates[0]
+            if m.area.camera and m.area.camera.cutscene == CUTSCENE_ENTER_BOWSER_ARENA then
+                m.area.camera.cutscene = 0
+                play_cutscene(m.area.camera)
+            end
+
+            local bowser = obj_get_first_with_behavior_id(id_bhvBowser)
+            if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
+                bowser.oAction = 20
+                bowser.header.gfx.node.flags = bowser.header.gfx.node.flags & ~GRAPH_RENDER_ACTIVE
+            elseif bowser.oAction == 5 or bowser.oAction == 6 or bowser.oAction == 20 then
+                bowser.header.gfx.node.flags = bowser.header.gfx.node.flags | GRAPH_RENDER_ACTIVE
+                bowser.oAction = 2
+                bowser.oSubAction = 0
+                obj_set_pos(bowser, 4000, -500, 0)
+            end
+        end,
     },
 }
