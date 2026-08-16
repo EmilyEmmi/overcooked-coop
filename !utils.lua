@@ -336,6 +336,28 @@ function get_star_record(oc_level)
     return 0
 end
 
+function attempt_desync_fix(from)
+    if not network_is_server() then
+        clear_pending_orders_table()
+        network_send_to(1, true, {id = PACKET_DESYNC_FIX, from = (from or network_global_index_from_local(0))})
+        return
+    end
+
+    sync_value(gGlobalSyncTable, "gameState")
+    sync_value(gGlobalSyncTable, "score")
+    sync_value(gGlobalSyncTable, "timeLeft")
+    sync_value(gGlobalSyncTable, "maxKitchens")
+    sync_value(gGlobalSyncTable, "peakPlayers")
+    if from then
+        on_packet_request_orders({from = from})
+        local sMario = gPlayerSyncTable[network_local_index_from_global(from)]
+        sync_value(sMario, "spectator")
+        sync_value(sMario, "kitchen")
+        sync_value(sMario, "spawnID")
+        sync_value(sMario, "readyToStart")
+    end
+end
+
 -- Returns if table1 and table2 contain the same amount of each element (ignoring order)
 -- No this function isn't AI, I just felt like being descriptive today
 function tables_contain_same_elements(table1, table2)

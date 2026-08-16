@@ -82,6 +82,7 @@ function on_packet_request_orders(data, self)
     if #pending_orders == 0 or not data.from then return end
 
     local toLocalIndex = network_local_index_from_global(data.from)
+    if toLocalIndex == 0 then return end
     for kitchen, pending_orders in ipairs(pending_orders_all) do
         for i,pending_data in ipairs(pending_orders) do
             if pending_data.vanishTimer == nil then
@@ -97,13 +98,19 @@ function on_packet_request_orders(data, self)
     end
 end
 
+function on_packet_desync_fix(data, self)
+    attempt_desync_fix(data.from)
+end
+
 PACKET_ORDER = 0
 PACKET_SERVED_ORDER = 1
 PACKET_REQUEST_ORDERS = 2
+PACKET_DESYNC_FIX = 3
 local sPacketTable = {
     [PACKET_ORDER] = on_packet_order,
     [PACKET_SERVED_ORDER] = on_packet_served_order,
     [PACKET_REQUEST_ORDERS] = on_packet_request_orders,
+    [PACKET_DESYNC_FIX] = on_packet_desync_fix,
 }
 function on_packet_receive(data)
     if data.id and sPacketTable[data.id] then

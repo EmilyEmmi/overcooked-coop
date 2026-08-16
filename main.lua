@@ -119,6 +119,11 @@ function update()
         end
     end
 
+    -- prevent us from getting stuck in a level without sync valid
+    if (not gNetworkPlayers[0].currAreaSyncValid) and gMarioStates[0].area.localAreaTimer > 150 then
+        warp_to_level(gNetworkPlayers[0].currLevelNum, gNetworkPlayers[0].currAreaIndex, gNetworkPlayers[0].currActNum)
+    end
+
     -- limit the number of ingredients in the level
     -- we prioritize deleting raw, uncut ingredients
     local ingredientCount = obj_count_objects_with_behavior_id(id_bhvIngredient)
@@ -310,11 +315,13 @@ function update()
     elseif gGlobalSyncTable.gameState == GAME_STATE_PREPARE then
         clear_pending_orders_table()
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
+        local announceProblem = false
         subTimer = subTimer + 1
         if subTimer >= 30 and gGlobalSyncTable.timeLeft ~= 0 then
             subTimer = 0
             if network_is_server() then
                 gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
+                announceProblem = (gGlobalSyncTable.timeLeft == 0)
             else
                 set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)
             end
@@ -330,6 +337,7 @@ function update()
         elseif restartTransition or not is_transition_playing() then
             if network_is_server() then
                 local allOut = true
+                local waitingToGetOut = {}
                 for i=0,MAX_PLAYERS-1 do
                     local np = gNetworkPlayers[i]
                     if np.connected and (np.currLevelNum == lData.level or not np.currAreaSyncValid) then
@@ -338,7 +346,11 @@ function update()
                             warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
                             restartTransition = true
                         end
-                        break
+                        if not announceProblem then
+                            break
+                        else
+                            table.insert(waitingToGetOut, i)
+                        end
                     end
                 end
 
@@ -351,6 +363,13 @@ function update()
                     for i=1,MAX_KITCHENS do
                         gGlobalSyncTable["tipMulti"..i] = 1
                         gGlobalSyncTable["servedOrders"..i] = 0
+                    end
+                elseif announceProblem then
+                    attempt_desync_fix()
+                    djui_chat_message_create("Some people may be having connection issues:")
+                    for i, index in ipairs(waitingToGetOut) do
+                        local np = gNetworkPlayers[index]
+                        djui_chat_message_create(network_get_player_text_color_string(index)..np.name)
                     end
                 end
             else
@@ -1224,3 +1243,15 @@ if _G.cheatsApi then
     hook_chat_command("counter", "[TYPE,ITEM] - Create a counter", counter_command)
     hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
 end
+
+-- attempt desync fix if "desync" is said in chat
+function on_chat_message(m, msg)
+    if m.playerIndex ~= 0 then return end
+
+    msg = msg:lower()
+    if msg:find("desync") then
+        djui_chat_message_create("Attempting to fix desync...")
+        attempt_desync_fix(network_global_index_from_local(0))
+    end
+end
+hook_event(HOOK_ON_CHAT_MESSAGE, on_chat_message)
