@@ -14,3 +14,4 @@ extern Gfx mat_revert_main_counter_corner_wood[];
 extern Gfx mat_main_counter_corner_wood2[];
 extern Gfx mat_revert_main_counter_corner_wood2[];
 extern Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1[];
+extern Gfx main_counter_corner_material_revert_render_settings[];

@@ -116,7 +116,7 @@ Gfx mat_main_counter_corner_wood2[] = {
 	gsSPTexture(65535, 65535, 0, 0, 1),
 	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, main_counter_corner_wood2_pal_rgba16),
 	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadTLUTCmd(5, 9),
+	gsDPLoadTLUTCmd(5, 13),
 	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, main_counter_corner_wood2_ci8),
 	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
 	gsDPLoadBlock(7, 0, 0, 2047, 256),
@@ -139,6 +139,10 @@ Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_main_counter_corner_wood2),
 	gsSPDisplayList(main_counter_corner_main_counter_corner_model_mesh_layer_1_tri_1),
 	gsSPDisplayList(mat_revert_main_counter_corner_wood2),
+	gsSPEndDisplayList(),
+};
+
+Gfx main_counter_corner_material_revert_render_settings[] = {
 	gsDPPipeSync(),
 	gsSPSetGeometryMode(G_LIGHTING),
 	gsSPClearGeometryMode(G_TEXTURE_GEN),
@@ -146,6 +150,16 @@ Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1[] = {
 	gsSPTexture(65535, 65535, 0, 0, 0),
 	gsDPSetEnvColor(255, 255, 255, 255),
 	gsDPSetAlphaCompare(G_AC_NONE),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, 0),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP  | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 1023, 256),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 8, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(0, 0, 0, 124, 124),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 1, 0),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b_LOAD_BLOCK, 0, 256, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(6, 0, 0, 1023, 256),
+	gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 8, 256, 1, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0),
+	gsDPSetTileSize(1, 0, 0, 124, 124),
 	gsSPEndDisplayList(),
 };
 

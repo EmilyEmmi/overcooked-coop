@@ -19,3 +19,4 @@ extern Gfx mat_revert_main_counter_center_wood[];
 extern Gfx mat_main_counter_center_handle[];
 extern Gfx mat_revert_main_counter_center_handle[];
 extern Gfx main_counter_center_main_counter_center_model_mesh_layer_1[];
+extern Gfx main_counter_center_material_revert_render_settings[];

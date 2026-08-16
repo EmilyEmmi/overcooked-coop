@@ -19,3 +19,4 @@ extern Gfx mat_revert_main_counter_side_wood[];
 extern Gfx mat_main_counter_side_handle[];
 extern Gfx mat_revert_main_counter_side_handle[];
 extern Gfx main_counter_side_main_counter_side_model_mesh_layer_1[];
+extern Gfx main_counter_side_material_revert_render_settings[];
