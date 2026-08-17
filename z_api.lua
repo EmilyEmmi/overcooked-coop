@@ -14,6 +14,7 @@ overcookedAPI.overcooked_add_level = function(data)
         data.saveName = data.saveName:gsub("%p", "")
         data.saveName = data.saveName:gsub("%s", "_")
     end
+    data.customLevel = true
     table.insert(OC_LEVEL_DATA, data)
     return #OC_LEVEL_DATA
 end

@@ -37,7 +37,9 @@ function on_packet_served_order(data, self)
         local pending_data = pending_orders[servedOrderIndex]
         local orderID = pending_data.id
         pending_data.vanishTimer = 15
-        play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+        if not gPlayerSyncTable[0].inPractice then
+            play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource)
+        end
         if network_is_server() then
             gGlobalSyncTable["servedOrders"..fromKitchen] = gGlobalSyncTable["servedOrders"..fromKitchen] + 1
         end

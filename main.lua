@@ -1,14 +1,16 @@
 -- name: Overcooked 64! (WIP)
--- description: Work with your fellow chefs to serve various dishes in wacky scenarios!\n\nA collaboration made for Blocky's "Cooperation" competition, based on the "Overcooked!" series by Ghost Town Games\n\nMain development: EmilyEmmi\nSprite work: EmilyEmmi, denpakei32, LoganLuigi21\nObject Models: WBMarioo, denpakei32\nLevel Design/Porting: EmilyEmmi, WBMarioo, Blocky\nUV Scroll Library: djoslin0
+-- description: Work with your fellow chefs to serve various dishes in wacky scenarios!\n\nA collaboration made for Blocky's "Cooperation" competition, based on the "Overcooked!" series by Ghost Town Games\n\nMain development: EmilyEmmi\nSprite work: EmilyEmmi, denpakei32, LoganLuigi21\nObject Models: WBMarioo, denpakei32\nLevel Design/Porting: EmilyEmmi, WBMarioo, Blocky\nUV Scroll Library: djoslin0\nSpanish Translation:Cooliokid 956\nAdditional support: Cooliokid 956
 -- pausable: false
 -- category: gamemode
 -- incompatible: gamemode, romhack
 
+local subTimer = 0
 selectedItem = nil
 selectedCounter = nil
 waitOpenDJUI = false
 gotNewRecord = false
 stayInSpectate = true
+wasInGameList = {}
 
 pending_orders_all = {}
 pending_orders = {}
@@ -31,6 +33,7 @@ gGlobalSyncTable.timeLeft = 0
 gGlobalSyncTable.maxKitchens = 1
 gGlobalSyncTable.peakPlayers = 1
 gGlobalSyncTable.autoStart = (gServerSettings.headlessServer ~= 0)
+gGlobalSyncTable.allowMidGameJoin = false
 -- one kitchen for every 4 players
 MAX_KITCHENS = math.ceil(MAX_PLAYERS / 4)
 for i=1,MAX_KITCHENS do
@@ -38,8 +41,6 @@ for i=1,MAX_KITCHENS do
     gGlobalSyncTable["servedOrders"..i] = 0
     table.insert(pending_orders_all, {})
 end
-
-local subTimer = 0
 
 gOvercookedExtraStates = {}
 for i=0,MAX_PLAYERS-1 do
@@ -56,6 +57,7 @@ for i=0,MAX_PLAYERS-1 do
     sMario.spectator = true
     sMario.waitingForSlot = false
     sMario.throwButtonIndex = throwButtonIndex
+    sMario.inPractice = false
     c.actionAnimTimer = 0
 end
 
@@ -80,12 +82,12 @@ function update()
         waitOpenDJUI = false
     end
 
-    local sMario = gPlayerSyncTable[0]
-    pending_orders = pending_orders_all[sMario.kitchen] or {}
+    local sMario0 = gPlayerSyncTable[0]
+    pending_orders = pending_orders_all[sMario0.kitchen] or {}
 
     -- update music
     local currSeq = get_current_background_music()
-    if gGlobalSyncTable.gameState == GAME_STATE_SETUP then
+    if (not gPlayerSyncTable[0].inPractice) and gGlobalSyncTable.gameState == GAME_STATE_SETUP then
         if currSeq ~= SEQ_MENU_FILE_SELECT then
             currSeq = SEQ_MENU_FILE_SELECT
             play_music(SEQ_PLAYER_LEVEL, currSeq, 0)
@@ -96,7 +98,7 @@ function update()
         stop_background_music(SEQ_MENU_FILE_SELECT)
     end
 
-    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING and gGlobalSyncTable.timeLeft <= 30 then
+    if (not gPlayerSyncTable[0].inPractice) and gGlobalSyncTable.gameState == GAME_STATE_PLAYING and gGlobalSyncTable.timeLeft <= 30 then
         BASE_MULTI = 1.5
         sequence_player_set_transposition(SEQ_PLAYER_LEVEL, 3)
     else
@@ -163,6 +165,7 @@ function update()
             if gServerSettings.headlessServer ~= 0 then
                 stayInSpectate = true
                 gPlayerSyncTable[0].spectator = true
+                gPlayerSyncTable[0].inPractice = true
             end
 
             if gGlobalSyncTable.autoStart and gGlobalSyncTable.peakPlayers ~= 0 then
@@ -181,19 +184,23 @@ function update()
         end
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
-        local np = gNetworkPlayers[0]
-        local act = sMario.kitchen
-        if (np.currLevelNum ~= lData.level or np.currActNum ~= act) and np.currAreaSyncValid then
+        local np0 = gNetworkPlayers[0]
+        local act = sMario0.kitchen
+        if sMario0.inPractice then
+            if np0.currLevelNum ~= LEVEL_CASTLE_GROUNDS and np0.currAreaSyncValid then
+                warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+            end
+        elseif (np0.currLevelNum ~= lData.level or np0.currActNum ~= act) and np0.currAreaSyncValid then
             warp_to_level(lData.level, 1, act)
         end
         restartTransition = false
 
-        if np.currLevelNum == lData.level and lData.updateFunc then
+        if np0.currLevelNum == lData.level and lData.updateFunc then
             lData.updateFunc()
         end
 
         if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
-            sMario.readyToStart = false
+            sMario0.readyToStart = false
 
             subTimer = subTimer + 1
             if subTimer >= 30 then
@@ -219,7 +226,7 @@ function update()
                         if pending_data.time <= 0 then
                             pending_data.time = pending_data.maxTime
                             pending_data.redTimer = 30
-                            if kitchen == gPlayerSyncTable[0].kitchen then
+                            if (not sMario0.inPractice) and kitchen == gPlayerSyncTable[0].kitchen then
                                 audio_sample_play(SAMPLE_FAIL, gLakituState.pos, 1)
                             end
                             if network_is_server() then
@@ -251,7 +258,7 @@ function update()
             end
         else
             local m0 = gMarioStates[0]
-            if m0.action ~= ACT_SELECT_START then
+            if (not sMario0.inPractice) and m0.action ~= ACT_SELECT_START then
                 drop_and_set_mario_action(m0, ACT_SELECT_START, 0)
             end
 
@@ -351,13 +358,15 @@ function update()
             end
         end
 
-        if restartTransition then
+        if restartTransition and not sMario0.inPractice then
             play_transition(WARP_TRANSITION_FADE_INTO_STAR, 1, 255, 255, 255)
         end
 
         if subTimer == 1 and gGlobalSyncTable.timeLeft == 10 then
-            play_sound(SOUND_MENU_STAR_SOUND_OKEY_DOKEY, gGlobalSoundSource)
-            play_transition(WARP_TRANSITION_FADE_INTO_STAR, 15, 255, 255, 255)
+            if not sMario0.inPractice then
+                play_sound(SOUND_MENU_STAR_SOUND_OKEY_DOKEY, gGlobalSoundSource)
+                play_transition(WARP_TRANSITION_FADE_INTO_STAR, 15, 255, 255, 255)
+            end
         elseif restartTransition or not is_transition_playing() then
             if network_is_server() then
                 local allOut = true
@@ -390,7 +399,7 @@ function update()
                     end
                 elseif announceProblem then
                     attempt_desync_fix()
-                    djui_chat_message_create("Some people may be having connection issues:")
+                    djui_chat_message_create(trans("connection_issues"))
                     for i, index in ipairs(waitingToGetOut) do
                         local np = gNetworkPlayers[index]
                         djui_chat_message_create(network_get_player_text_color_string(index)..np.name)
@@ -434,7 +443,6 @@ function on_sync_valid()
             id = PACKET_REQUEST_ORDERS,
             from = network_global_index_from_local(0),
         })
-
         if gGlobalSyncTable.gameState == GAME_STATE_PLAYING or gGlobalSyncTable.gameState == GAME_STATE_SETUP then
             local kitchen, spawnID = join_smallest_kitchen(0)
             gPlayerSyncTable[0].kitchen = kitchen
@@ -471,7 +479,7 @@ function mario_update(m)
     and np.currAreaSyncValid then
         if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
             sMario.spectator = false
-        elseif get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
+        elseif gGlobalSyncTable.allowMidGameJoin and get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
             local kitchen, spawnID = join_smallest_kitchen(m.playerIndex)
             if spawnID ~= -1 then
                 sMario.kitchen = kitchen
@@ -479,6 +487,14 @@ function mario_update(m)
                 sMario.spectator = false
             end
         end
+    end
+
+    if sMario.inPractice then
+        network_player_set_description(np, trans("menu_practice"), 100, 100, 100, 255)
+    elseif sMario.spectator then
+        network_player_set_description(np, trans("menu_spectate"), 100, 100, 100, 255)
+    else
+        network_player_set_description(np, "", 255, 255, 255, 255)
     end
 
     if m.playerIndex ~= 0 and is_player_active(m) == 0 then return end
@@ -595,7 +611,7 @@ function before_mario_update(m)
     end
 
     -- get selected item and counter
-    if not sMario.spectator then
+    if sMario.inPractice or not sMario.spectator then
         local grabPos = {x = m.pos.x, y = m.pos.y, z = m.pos.z}
         grabPos.x = grabPos.x + sins(m.faceAngle.y) * 52
         grabPos.z = grabPos.z + coss(m.faceAngle.y) * 52
@@ -631,7 +647,7 @@ function before_mario_update(m)
     sMario.selObjSyncID = (selectedItem and selectedItem.oSyncID) or 0
     sMario.selCounterSyncID = (selectedCounter and selectedCounter.oSyncID) or 0
     sMario.throwButtonIndex = throwButtonIndex
-    sMario.waitingForSlot = (sMario.spectator and not stayInSpectate)
+    sMario.waitingForSlot = (sMario.spectator and not (sMario.inPractice or stayInSpectate))
 
     -- Sparkles at selected (might be changed)
     if selectedCounter or selectedItem then
@@ -786,8 +802,14 @@ function on_player_disconnected(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
     set_without_sync(sMario, "spectator", true)
     set_without_sync(sMario, "waitingForSlot", false)
+    set_without_sync(sMario, "inPractice", false)
 end
 hook_event(HOOK_ON_PLAYER_DISCONNECTED, on_player_disconnected)
+
+function allow_pvp_attack(attacker, victim, interaction)
+    return false -- NOOOOOO PVP
+end
+hook_event(HOOK_ALLOW_PVP_ATTACK, allow_pvp_attack)
 
 local lastDirX = 0
 local lastDirY = 0
@@ -1051,7 +1073,7 @@ function act_prepare_throw(m)
     set_anim_to_frame(m, 0)
     return 0;
 end
-ACT_PREPARE_THROW = allocate_mario_action(ACT_GROUP_OBJECT | ACT_FLAG_MOVING)
+ACT_PREPARE_THROW = allocate_mario_action(ACT_GROUP_STATIONARY | ACT_FLAG_MOVING)
 hook_mario_action(ACT_PREPARE_THROW, act_prepare_throw)
 
 --- @param m MarioState
@@ -1088,7 +1110,7 @@ function act_prepare_throw_air(m)
 
     return 0;
 end
-ACT_PREPARE_THROW_AIR = allocate_mario_action(ACT_GROUP_OBJECT | ACT_FLAG_AIR | ACT_FLAG_ALLOW_VERTICAL_WIND_ACTION | ACT_FLAG_CONTROL_JUMP_HEIGHT)
+ACT_PREPARE_THROW_AIR = allocate_mario_action(ACT_GROUP_AIRBORNE | ACT_FLAG_AIR | ACT_FLAG_ALLOW_VERTICAL_WIND_ACTION | ACT_FLAG_CONTROL_JUMP_HEIGHT)
 hook_mario_action(ACT_PREPARE_THROW_AIR, act_prepare_throw_air)
 
 function on_death(m)
@@ -1132,7 +1154,9 @@ function on_time_left_change(tag, oldVal, newVal)
     if network_is_server() then return end
     local difference = newVal - oldVal
     for i, pending_data in ipairs(pending_orders) do
-        pending_data.time = math.clamp(pending_data.time + difference * 30, 1, pending_data.maxTime)
+        if pending_data.time and pending_data.maxTime then
+            pending_data.time = math.clamp(pending_data.time + difference * 30, 1, pending_data.maxTime)
+        end
     end
 end
 hook_on_sync_table_change(gGlobalSyncTable, "timeLeft", "timeLeft", on_time_left_change)
@@ -1163,7 +1187,12 @@ function on_spectator_change(tag, oldVal, newVal)
     else
         drop_and_set_mario_action(m, ACT_SELECT_START, 0)
     end
-    djui_chat_message_create("You're playing now!")
+    djui_chat_message_create(trans("playing_now"))
+    gPlayerSyncTable[0].inPractice = false
+
+    if get_current_menu() == 5 then
+        inMenu = false
+    end
 end
 hook_on_sync_table_change(gPlayerSyncTable[0], "spectator", "spectator", on_spectator_change)
 
@@ -1280,7 +1309,7 @@ function on_chat_message(m, msg)
 
     msg = msg:lower()
     if msg:find("desync") then
-        djui_chat_message_create("Attempting to fix desync...")
+        djui_chat_message_create(trans("fix_desync"))
         attempt_desync_fix(network_global_index_from_local(0))
     end
 end

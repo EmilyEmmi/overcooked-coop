@@ -364,6 +364,25 @@ function get_record_for_level(oc_level, players, checkMaxStars)
     return score, stars, players
 end
 
+---@param level integer
+---@param field string
+---@return string? text
+function get_level_translated_field(level, field)
+    local lData = OC_LEVEL_DATA[level]
+    if not lData then return end
+
+    ---@type string
+    local text = lData[field]
+    if text and lang ~= "en" then
+        if lData.customLevel then
+            text = lData[field.."_"..lang] or text
+        else
+            text = trans("level_"..field.."_"..level)
+        end
+    end
+    return text
+end
+
 function attempt_desync_fix(from)
     if not network_is_server() then
         clear_pending_orders_table()
@@ -418,7 +437,7 @@ function tables_contain_same_elements(table1, table2)
 end
 
 function time_format(time)
-    return string.format("%d:%02d", time // 60, time % 60)
+    return trans("time_format", time // 60, time % 60)
 end
 
 -- roughly calculates the DJUI scale

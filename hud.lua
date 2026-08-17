@@ -267,7 +267,7 @@ function playing_hud()
         while o do
             -- notification for cooking progress
             if o.oNotifyTimer ~= 0 then
-                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or trans("cook_done")
                 local alpha = 255
                 if o.oNotifyTimer > 20 then
                     alpha = ((30 - o.oNotifyTimer) / 10) * alpha
@@ -375,7 +375,7 @@ function setup_hud()
     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
     local titleScale = scale
     local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
-    local text = (lData.name or "???")
+    local text = get_level_translated_field(gGlobalSyncTable.ocLevel, "name") or "???"
     local width = djui_hud_measure_text(text) * titleScale
     if width > screenWidth * 0.7 then
         titleScale = (screenWidth * 0.7) / width * titleScale
@@ -387,9 +387,9 @@ function setup_hud()
         y = 50 * scale
         local adviceScale = scale / 2
         local buttonNames = { "X", "Y", "L", "B" }
-        text = "Tip:"
+        text = trans("tip")
 
-        local advice = lData.advice
+        local advice = get_level_translated_field(gGlobalSyncTable.ocLevel, "advice") or "???"
         advice = advice:gsub("%[GRAB%]", "["..buttonNames[grabButtonIndex+1].."]")
         advice = advice:gsub("%[ACTION%]", "["..buttonNames[actionButtonIndex+1].."]")
         advice = advice:gsub("%[THROW%]", "["..buttonNames[throwButtonIndex+1].."]")
@@ -459,30 +459,34 @@ function setup_hud()
         x = x + 20 * scale
         djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
 
-        text = "Kitchen <"..(gPlayerSyncTable[0].kitchen) .. ">"
+        text = trans("kitchen")
         djui_hud_set_color(255, 255, 255, 255)
         if gGlobalSyncTable.maxKitchens <= 1 then
-            text = "Kitchen: 1"
+            text = text .. " 1"
             djui_hud_set_color(100, 100, 100, 255)
+        else
+            text = text .. " <"..(gPlayerSyncTable[0].kitchen) .. ">"
         end
         djui_hud_print_text(text, x, y, scale)
 
         y = y + 20 * scale
         local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / gGlobalSyncTable.maxKitchens)
-        text = "Spawn Point <"..(gPlayerSyncTable[0].spawnID+1) .. ">"
+        text = trans("spawn_point")
         djui_hud_set_color(255, 255, 255, 255)
         if maxSpawnID <= 1 then
-            text = "Spawn Point: 1"
+            text = text .. " 1"
             djui_hud_set_color(100, 100, 100, 255)
+        else
+            text = text .. " <"..(gPlayerSyncTable[0].spawnID+1) .. ">"
         end
         djui_hud_print_text(text, x, y, scale)
 
         djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
         x = screenWidth / 2
         y = y + 20 * scale
-        text = "[A] Confirm"
+        text = trans("confirm_key")
         if confirmTime < 0 then
-            text = "Spot Taken"
+            text = trans("taken")
         elseif confirmTime ~= 0 then
             local width = djui_hud_measure_text(text) * scale
             local barWidth = width * (confirmTime / 30)
@@ -493,7 +497,7 @@ function setup_hud()
         djui_hud_print_text(text, x, y, scale)
     else
         y = screenHeight - 20 * scale
-        djui_hud_print_text("Ready!", x, y, scale)
+        djui_hud_print_text(trans("ready"), x, y, scale)
     end
 end
 
@@ -502,11 +506,13 @@ function level_select_hud()
     x = djui_hud_get_screen_width() - 32
     y = djui_hud_get_screen_height()
     djui_hud_set_text_alignment(TEXT_HALIGN_RIGHT, TEXT_VALIGN_BOTTOM)
-    local text = "Waiting for host..."
-    if gGlobalSyncTable.autoStart then
+    local text = trans("waiting_for_host")
+    if gPlayerSyncTable[0].inPractice then
+        text = trans("menu_practice")
+    elseif gGlobalSyncTable.autoStart then
         text = time_format(gGlobalSyncTable.timeLeft)
     elseif network_is_server() or network_is_moderator() then
-        text = "Press [START]"
+        text = trans("press_start")
     end
     djui_hud_print_text(text, x, y, scale)
 
@@ -518,7 +524,7 @@ function level_select_hud()
         while o do
             -- notification for cooking progress
             if o.oNotifyTimer ~= 0 then
-                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or trans("cook_done")
                 local alpha = 255
                 if o.oNotifyTimer > 20 then
                     alpha = ((30 - o.oNotifyTimer) / 10) * alpha
@@ -543,6 +549,8 @@ function on_hud_render()
 
     if inMenu then
         render_menu()
+    elseif gPlayerSyncTable[0].inPractice or gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
+        level_select_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         lastHudScore = 0
         playing_hud()
@@ -553,8 +561,6 @@ function on_hud_render()
         lastHudScore = 0
         scoreModifiers = {}
         setup_hud()
-    elseif gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
-        level_select_hud()
     end
 end
 hook_event(HOOK_ON_HUD_RENDER, on_hud_render)
@@ -760,7 +766,7 @@ function behind_hud_render()
                 end
                 -- notification for cooking progress
                 if o.oNotifyTimer ~= 0 then
-                    local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                    local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or trans("cook_done")
                     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
                     x = radar.x
                     y = radar.y + 8 * scale
@@ -849,8 +855,8 @@ function build_level_menu(menu)
     local unclearedLevel = false
 
     for i=min,#OC_LEVEL_DATA do
-        local lData = OC_LEVEL_DATA[i]
-        local desc = lData.desc or "No description available."
+        local levelName = get_level_translated_field(i, "name")
+        local desc = get_level_translated_field(i, "desc") or trans("menu_no_desc")
         desc = desc .. "\n\n"
         local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(i)
 
@@ -875,13 +881,13 @@ function build_level_menu(menu)
             local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
             if players ~= 0 then
                 if bestPlayerScore ~= 0 then
-                    desc = desc .. string.format("\nBest %dP: %d (%s)", players, bestPlayerScore, starStrPlayer)
+                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." %d (%s)", players, bestPlayerScore, starStrPlayer)
                 else
-                    desc = desc .. string.format("\nBest %dP: 0", players)
+                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." 0", players)
                 end
             end
-            desc = desc .. string.format("\nBest Stars: %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
-            desc = desc .. string.format("\nBest Overall: %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
+            desc = desc .. string.format("\n"..trans("menu_record_best_stars").." %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
+            desc = desc .. string.format("\n"..trans("menu_record_best_overall").." %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
         else
             for stars=1,maxStars do
                 desc = desc .. string.rep("", stars) .. ": %d\n"
@@ -890,7 +896,7 @@ function build_level_menu(menu)
         end
                 
         table.insert(menu, {
-            lData.name,
+            levelName,
             function()
                 if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
                     start_level_command(tostring(i))
@@ -908,6 +914,7 @@ function build_level_menu(menu)
                 end
                 return table.unpack(result)
             end,
+            noLang = true,
         })
 
         -- require 1 star to unlock the next level
@@ -933,7 +940,7 @@ local reloadRecords = false
 function build_records_menu(menu)
     local min = 0
     table.insert(menu, {
-        "Players",
+        "menu_players",
         function(x)
             if recordsPlayers ~= x then
                 reloadRecords = true
@@ -946,9 +953,9 @@ function build_records_menu(menu)
         runOnChange = true,
         currNum = 0,
         minNum = 0,
-        nameRef = {"Overall"},
+        nameRef = {"menu_overall"},
         maxNum = MAX_PLAYERS,
-        desc = {"View the overall best records.", "View records for solo play.", "View records for %d players."},
+        desc = {"menu_desc_records_players_overall", "menu_desc_records_players_solo", "menu_desc_records_players"},
         updateNum = function(button)
             if reloadRecords then return end
             button.currNum = math.clamp(gGlobalSyncTable.peakPlayers, 0, MAX_PLAYERS)
@@ -962,8 +969,8 @@ function build_records_menu(menu)
         end,
     })
     for i=min,#OC_LEVEL_DATA do
-        local lData = OC_LEVEL_DATA[i]
-        local desc = lData.desc or "No description available."
+        local levelName = get_level_translated_field(i, "name")
+        local desc = get_level_translated_field(i, "desc") or trans("menu_no_desc")
         desc = desc .. "\n\n"
         local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(i)
 
@@ -987,13 +994,13 @@ function build_records_menu(menu)
                 local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
                 local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
                 if players ~= 0 then
-                    desc = desc .. string.format("\nBest %dP: %d (%s)", players, bestPlayerScore, starStrPlayer)
+                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." %d (%s)", players, bestPlayerScore, starStrPlayer)
                 end
-                desc = desc .. string.format("\nBest Stars: %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
-                desc = desc .. string.format("\nBest Overall: %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
+                desc = desc .. string.format("\n"..trans("menu_record_best_stars").." %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
+                desc = desc .. string.format("\n"..trans("menu_record_best_overall").." %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
 
                 table.insert(menu, {
-                    lData.name,
+                    levelName,
                     function() end,
                     desc = desc,
                     true,
@@ -1006,9 +1013,22 @@ function build_records_menu(menu)
                         end
                         return table.unpack(result)
                     end,
+                    noLang = true,
                 })
             end
         end
+    end
+end
+
+function build_language_menu(menu)
+    for i, thisLang in ipairs(lang_order_table) do
+        table.insert(menu, {
+            langdata[thisLang].name_menu,
+            function()
+                switch_lang(thisLang)
+            end,
+            noLang = true,
+        })
     end
 end
 
@@ -1033,18 +1053,18 @@ local confirmFunc
 local menu_data = {
     [1] = {
         {
-            "Continue",
+            "menu_continue",
             function(x)
                 play_sound(SOUND_MENU_PAUSE, gGlobalSoundSource)
                 inMenu = false
             end,
             false,
-            desc = "Unpause the game.",
+            desc = "menu_desc_continue",
         },
         {
-            "Retry",
+            "menu_retry",
             function(x)
-                confirmText = "Are you sure you want to restart? Any unsaved progress will be lost!"
+                confirmText = "menu_desc_confirm_restart"
                 confirmFunc = function(x)
                     inMenu = false
                     gGlobalSyncTable.gameState = GAME_STATE_PREPARE
@@ -1056,12 +1076,12 @@ local menu_data = {
             function()
                 return gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP
             end,
-            desc = "Restart the level.",
+            desc = "menu_desc_restart",
         },
         {
-            "Quit",
+            "menu_quit",
             function(x)
-                confirmText = "Are you sure you want to quit? Any unsaved progress will be lost!"
+                confirmText = "menu_desc_confirm_quit"
                 confirmFunc = function(x)
                     inMenu = false
                     gGlobalSyncTable.gameState = GAME_STATE_LEVEL_SELECT
@@ -1072,10 +1092,10 @@ local menu_data = {
             function()
                 return gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP
             end,
-            desc = "Exit the level.",
+            desc = "menu_desc_quit",
         },
         {
-            "Level Select",
+            "menu_level_select",
             function(x)
                 enter_menu(3)
             end,
@@ -1083,28 +1103,18 @@ local menu_data = {
             function()
                 return gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT
             end,
-            desc = "Pick a level to start.",
+            desc = "menu_desc_level_select",
         },
         {
-            "Auto Start",
+            "menu_host_options",
             function(x)
-                gGlobalSyncTable.autoStart = (x ~= 0)
+                enter_menu(8)
             end,
             true,
-            function()
-                return gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT
-            end,
-            runOnChange = true,
-            currNum = (gGlobalSyncTable.autoStart and 1) or 0,
-            maxNum = 1,
-            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
-            desc = {"Start the game on your own.", "The game will automatically move to the next level."},
-            updateNum = function(button)
-                button.currNum = (gGlobalSyncTable.autoStart and 1) or 0
-            end,
+            desc = "menu_host_options",
         },
         {
-            "Spectate",
+            "menu_spectate",
             function(x)
                 stayInSpectate = (x == 1)
                 if stayInSpectate then
@@ -1114,52 +1124,82 @@ local menu_data = {
             runOnChange = true,
             currNum = (stayInSpectate and 1) or 0,
             maxNum = 1,
-            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
-            desc = {"You'll automatically join the action when an opening is available.", "You'll stay in spectate mode."},
+            nameRef = { "menu_off", "menu_on" },
+            desc = {"menu_desc_spectate_off", "menu_desc_spectate_on"},
             updateNum = function(button)
                 button.currNum = (stayInSpectate and 1) or 0
             end,
         },
         {
-            "Preferences",
+            "menu_practice",
+            function()
+                confirmText = "menu_desc_confirm_practice"
+                confirmFunc = function()
+                    inMenu = false
+                    gPlayerSyncTable[0].inPractice = true
+                    gPlayerSyncTable[0].spectator = true
+                end
+                enter_menu(2)
+            end,
+            false,
+            function()
+                return gPlayerSyncTable[0].inPractice
+            end,
+            desc = "menu_desc_join_practice",
+        },
+        {
+            "menu_quit_practice",
+            function()
+                inMenu = false
+                gPlayerSyncTable[0].inPractice = false
+            end,
+            false,
+            function()
+                return not gPlayerSyncTable[0].inPractice
+            end,
+            desc = "menu_desc_quit_practice",
+        },
+        {
+            "menu_preferences",
             function(x)
                 enter_menu(4)
             end,
             false,
-            desc = "Change settings for yourself. These don't affect other players.",
+            desc = "menu_desc_preferences",
         },
         {
-            "Records",
+            "menu_records",
             function(x)
                 enter_menu(6)
             end,
             false,
-            desc = "View your high scores.",
+            desc = "menu_desc_records",
         },
         {
-            "DJUI Menu",
+            "menu_djui_menu",
             function(x)
                 waitOpenDJUI = true
             end,
             false,
-            desc = "Enter the DJUI menu. You can also press the R button to access this.",
+            desc = "menu_desc_djui_menu",
         },
     },
     [2] = {
         {
-            "Yes",
+            "menu_yes",
             function(x)
                 if confirmFunc == nil then return end
                 return confirmFunc(x)
             end,
             true,
             desc = "%s",
+            noLangDesc = true,
             descExtra = function()
-                return confirmText
+                return trans(confirmText)
             end,
         },
         {
-            "No",
+            "menu_no",
             function(x)
                 if #menu_history ~= 0 then
                     enter_menu(menu_history[#menu_history][1], menu_history[#menu_history][2], true)
@@ -1170,19 +1210,20 @@ local menu_data = {
             end,
             true,
             desc = "%s",
+            noLangDesc = true,
             descExtra = function()
-                return confirmText
+                return trans(confirmText)
             end,
         },
-        title = "Confirm?",
+        title = "menu_title_confirm",
     },
     [3] = {
         buildFunc = build_level_menu,
-        title = "Level Select",
+        title = "menu_level_select",
     },
     [4] = {
         {
-            "Grab Button",
+            "menu_grab_button",
             function(x)
                 grabButtonIndex = x
             end,
@@ -1190,12 +1231,13 @@ local menu_data = {
             currNum = grabButtonIndex,
             maxNum = 3,
             nameRef = { "X", "Y", "L", "B" },
+            noLangOption = true,
             save = "grabButtonIndex",
             localSave = true,
-            desc = "Use this button to place/pick up ingredients. Takes priority over the button's normal action.",
+            desc = "menu_desc_grab_button",
         },
         {
-            "Action Button",
+            "menu_action_button",
             function(x)
                 actionButtonIndex = x
             end,
@@ -1203,12 +1245,13 @@ local menu_data = {
             currNum = actionButtonIndex,
             maxNum = 3,
             nameRef = { "X", "Y", "L", "B" },
+            noLangOption = true,
             save = "actionButtonIndex",
             localSave = true,
-            desc = "Use this button to chop ingredients and wash dishes.\nNote that using B will cause these actions to take priority over grabbing.",
+            desc = "menu_desc_action_button",
         },
         {
-            "Throw Button",
+            "menu_throw_button",
             function(x)
                 throwButtonIndex = x
             end,
@@ -1216,110 +1259,179 @@ local menu_data = {
             currNum = throwButtonIndex,
             maxNum = 3,
             nameRef = { "X", "Y", "L", "B" },
+            noLangOption = true,
             save = "throwButtonIndex",
             localSave = true,
-            desc = "Use this button to throw ingredients.\nNote that grabbing/placing takes priority if using B.",
+            desc = "menu_desc_throw_button",
         },
         {
-            "Reduced Menu Motion",
+            "menu_reduced_motion",
             function(x)
                 menuMotionEnabled = (x ~= 0)
             end,
             runOnChange = true,
             currNum = (menuMotionEnabled and 1) or 0,
             maxNum = 1,
-            nameRef = { "\\#50ff50\\On", "\\#ff5050\\Off" },
+            nameRef = { "menu_on", "menu_off"},
             save = "menuMotionEnabled",
             localSave = true,
-            desc = "Turns off moving parts in the menu.",
+            desc = "menu_desc_reduced_motion",
         },
         {
-            "Order HUD Location",
+            "menu_order_hud_location",
             function(x)
                 orderHUDLocation = x
             end,
             runOnChange = true,
             currNum = orderHUDLocation,
             maxNum = 3,
-            nameRef = { "Left", "Right", "Shift From Left", "Shift From Right" },
+            nameRef = { "menu_left", "menu_right", "menu_left_offset", "menu_right_offset" },
             save = "orderHUDLocation",
             localSave = true,
-            desc = {"Orders appear on the left side of the screen.", "Orders appear on the right side of the screen.", "Orders appear on the left side of the screen, shifted right so the FPS counter doesn't cover them.", "Orders appear on the right side of the screen, shifted left so the popups don't cover them."},
+            desc = {"menu_desc_order_left", "menu_desc_order_right", "menu_desc_order_left_offset", "menu_desc_order_right_offset"},
         },
         {
-            "Order Priority",
+            "menu_order_priority",
             function(x)
                 reverseReading = (x == 1)
             end,
             runOnChange = true,
             currNum = (reverseReading and 1) or 0,
             maxNum = 1,
-            nameRef = { "Left to Right", "Right to Left" },
+            nameRef = { "menu_left_to_right", "menu_right_to_left" },
             save = "reverseReading",
             localSave = true,
-            desc = {"The oldest order will be on the left side of the queue. Serve *left to right* to maintain the tip combo.", "The oldest order will be on the right side of the queue. Serve *right to left* to maintain the tip combo."},
+            desc = {"menu_desc_left_to_right", "menu_desc_right_to_left"},
         },
         {
-            "Cook/Burn Subtitles",
+            "menu_cook_indicators",
             function(x)
                 showCookIndicators = (x == 1)
             end,
             runOnChange = true,
             currNum = (showCookIndicators and 1) or 0,
             maxNum = 1,
-            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+            nameRef = { "menu_off", "menu_on" },
             save = "showCookIndicators",
             localSave = true,
-            desc = "Show a graphic above the timer whenever something is done cooking or is burning. Useful if you can't rely on audio queues.",
+            desc = "menu_desc_cook_indicators",
         },
         {
-            "Disable Water Effect",
+            "menu_disable_water_effect",
             function(x)
                 disableWaterEffect = (x == 1)
             end,
             runOnChange = true,
             currNum = (disableWaterEffect and 1) or 0,
             maxNum = 1,
-            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+            nameRef = { "menu_off", "menu_on" },
             save = "disableWaterEffect",
             localSave = true,
-            desc = "Disables the moving water in one of the levels.",
+            desc = "menu_desc_disable_water_effect",
         },
-        title = "Preferences",
+        {
+            "menu_language",
+            function(x)
+                enter_menu(7)
+            end,
+            desc = "menu_desc_language",
+        },
+        title = "menu_preferences",
     },
     [5] = {
         {
-            "Put Me In!",
+            "menu_join_practice",
+            function()
+                inMenu = false
+                stayInSpectate = true
+                gPlayerSyncTable[0].inPractice = true
+            end,
+            desc = "menu_desc_join_practice",
+        },
+        {
+            "menu_join_now",
             function()
                 inMenu = false
                 stayInSpectate = false
-                local m, sMario = gMarioStates[0], gPlayerSyncTable[0]
+                local sMario = gPlayerSyncTable[0]
                 local kitchen, spawnID = join_smallest_kitchen(0)
                 sMario.kitchen = kitchen
                 if spawnID == -1 then
                     sMario.spectator = true
                     sMario.spawnID = 0
-                    djui_chat_message_create("Too many cooks in the kitchen! Please wait until a spot opens up.")
+                    djui_chat_message_create(trans("too_many_cooks"))
                 else
                     sMario.spawnID = spawnID
                     sMario.spectator = false
                 end
             end,
-            desc = "Join the action right now, or until a spot opens up.",
+            false,
+            function()
+                return not gGlobalSyncTable.allowMidGameJoin
+            end,
+            desc = "menu_desc_join_now",
         },
         {
-            "Don't wanna cook",
+            "menu_join_wait",
+            function()
+                inMenu = false
+                stayInSpectate = false
+            end,
+            false,
+            function()
+                return gGlobalSyncTable.allowMidGameJoin
+            end,
+            desc = "menu_desc_join_now",
+        },
+        {
+            "menu_join_spectate",
             function()
                 inMenu = false
                 stayInSpectate = true
-                gPlayerSyncTable[0].spectator = true
             end,
-            desc = "Become a spectator until you disable spectating in the pause menu.",
+            desc = "menu_desc_join_spectate",
         },
-        title = "Join?",
+        title = "menu_title_join",
         noBack = true,
     },
-    [6] = {buildFunc = build_records_menu, title = "Records"},
+    [6] = {buildFunc = build_records_menu, title = "menu_records"},
+    [7] = {buildFunc = build_language_menu, title = "menu_language"},
+    [8] = {
+        {
+            "menu_auto_start",
+            function(x)
+                gGlobalSyncTable.autoStart = (x ~= 0)
+            end,
+            true,
+            function()
+                return gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT
+            end,
+            runOnChange = true,
+            currNum = (gGlobalSyncTable.autoStart and 1) or 0,
+            maxNum = 1,
+            nameRef = { "menu_off", "menu_on" },
+            desc = {"menu_desc_auto_start_off", "menu_desc_auto_start_on"},
+            updateNum = function(button)
+                button.currNum = (gGlobalSyncTable.autoStart and 1) or 0
+            end,
+        },
+        {
+            "menu_allow_mid_game_join",
+            function(x)
+                gGlobalSyncTable.allowMidGameJoin = (x ~= 0)
+            end,
+            true,
+            runOnChange = true,
+            currNum = (gGlobalSyncTable.allowMidGameJoin and 1) or 0,
+            maxNum = 1,
+            nameRef = { "menu_off", "menu_on" },
+            desc = {"menu_desc_mid_game_join_off", "menu_desc_mid_game_join_on"},
+            updateNum = function(button)
+                button.currNum = (gGlobalSyncTable.allowMidGameJoin and 1) or 0
+            end,
+        },
+        title = "menu_host_options",
+    }
 }
 
 -- load menu settings; never nesters be crying rn
@@ -1388,11 +1500,12 @@ function render_menu()
     -- title
     local scale = 3
     local y = 64 * scale
-    local title = menu.title or "Menu"
+    local title = menu.title or "menu_title_default"
     if menu.title == nil and (gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT) then
-        local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
-        title = lData.name or title
+        title = get_level_translated_field(gGlobalSyncTable.ocLevel, "name") or "???"
         y = y + 40 * scale
+    elseif menu.title == nil or not menu.noLang then
+        title = trans(title)
     end
 
     -- determine menu size
@@ -1436,6 +1549,9 @@ function render_menu()
     for i, button in ipairs(menu) do
         if option_valid(button, true) then
             local text = button[1]
+            if not button.noLang then
+                text = trans(text)
+            end
             local origTextScale = scale
             local textScale = origTextScale
             local isSelectable = option_valid(button)
@@ -1447,6 +1563,8 @@ function render_menu()
                         local min = button.minNum or 0
                         desc = desc[currNum - min + 1] or desc[#desc] or ""
                     end
+                    if not (button.noLang or button.noLangDesc) then desc = trans(desc) end
+
                     if button.descExtra then
                         desc = string.format(desc, button.descExtra(button.currNum or 0))
                     else
@@ -1475,6 +1593,9 @@ function render_menu()
                     end
                 elseif button.nameRef and button.nameRef[button.currNum - min + 1] then
                     optionText = button.nameRef[button.currNum - min + 1]
+                    if not button.noLangOption then
+                        optionText = trans(optionText)
+                    end
                 elseif button.timeRef then
                     if button.currNum ~= 0 then
                         local seconds = button.currNum
@@ -1938,6 +2059,10 @@ end
 
 function get_menu_option(id, option)
     return menu_data[id][option].currNum
+end
+
+function get_current_menu()
+    return menuID
 end
 
 function option_valid(button, ignoreSelect)

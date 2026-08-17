@@ -724,7 +724,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
             if not iData.isPlate then
                 if m and m.playerIndex == 0 and isHeld then
-                    djui_chat_message_create("Needs plate!")
+                    djui_chat_message_create(trans("Needs plate!"))
                 end
                 allowPlace = false
             else
@@ -956,7 +956,7 @@ function get_cooked_data(o)
 end
 
 function attempt_serve_order(items)
-    local testingServe = (gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT)
+    local testingServe = (gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT or gPlayerSyncTable[0].inPractice)
 
     audio_sample_play(SAMPLE_SERVE, gLakituState.pos, 0.5)
     if #items == 0 then
@@ -985,6 +985,7 @@ function attempt_serve_order(items)
     
     local pending_orders = pending_orders_all[gPlayerSyncTable[0].kitchen] or {}
     if testingServe then
+        pending_orders = {}
         for i, orderID in ipairs(ALL_ORDERS) do
             table.insert(pending_orders, {id = orderID})
         end
@@ -1015,7 +1016,7 @@ function attempt_serve_order(items)
 
             if valid then
                 if testingServe then
-                    djui_chat_message_create("Served "..order.name)
+                    djui_chat_message_create(trans("served", order.name))
                 else
                     network_send_include_self(true, {id = PACKET_SERVED_ORDER, orderID = orderID, from = network_global_index_from_local(0)})
                 end
@@ -1025,9 +1026,9 @@ function attempt_serve_order(items)
     end
 
     if testingServe then
-        djui_chat_message_create("Not a valid dish!")
+        djui_chat_message_create(trans("dish_not_valid"))
     else
-        djui_chat_message_create("This order wasn't available")
+        djui_chat_message_create(trans("order_not_availble"))
         for a,pending_data in ipairs(pending_orders) do
             pending_data.redTimer = 30
         end
