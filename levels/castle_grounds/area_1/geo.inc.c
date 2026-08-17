@@ -9,6 +9,7 @@ const GeoLayout castle_grounds_area_1_geo[] = {
 		GEO_ASM(0x1601, geo_movtex_draw_water_regions),
 		GEO_DISPLAY_LIST(LAYER_ALPHA, castle_grounds_dl_LAYER_ALPHA_castle_grounds_seg7_dl_0700A860_mesh_001_mesh_layer_4),
 		GEO_DISPLAY_LIST(LAYER_ALPHA, castle_grounds_dl_LAYER_ALPHA_castle_grounds_seg7_dl_0700BA20_mesh_001_mesh_layer_4),
+		GEO_DISPLAY_LIST(LAYER_ALPHA, castle_grounds_dl_LAYER_ALPHA_castle_grounds_seg7_dl_0700BC68_mesh_mesh_layer_4),
 		GEO_DISPLAY_LIST(LAYER_ALPHA, castle_grounds_dl_final_revert_mesh_layer_4),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, castle_grounds_dl_LAYER_OPAQUE_castle_grounds_seg7_dl_07006D70_mesh_mesh_layer_1),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, castle_grounds_dl_LAYER_OPAQUE_castle_grounds_seg7_dl_070095F0_mesh_mesh_layer_1),

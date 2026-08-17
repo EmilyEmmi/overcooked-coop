@@ -22,15 +22,24 @@ by pressing X, and can\
 aim in a direction by\
 holding the button down.\
 Only raw ingredients can\
-be thrown!"))
+be thrown!\
+Try making a salad by\
+placing chopped lettuce\
+on a plate. You can add\
+chopped tomatoes to make\
+a mixed salad.\
+\
+When you're ready, go\
+to the soup station to\
+the east."))
 
 smlua_text_utils_dialog_replace(DIALOG_051,1,6,30,200, (
 "To cook items, chop them\
 and then place them in a\
-pot or pan.\
-Use the icons on each\
-order to see which you\
-should use.\
+pot or pan. While in-game,\
+use the icons on each order\
+to see which ingredients\
+you should use.\
 Once the bar is full, you\
 can use a plate or other\
 container to remove the\
@@ -42,7 +51,16 @@ something cooking for too\
 long, it'll get burnt and\
 be unusable.\
 You'll have to throw it\
-away and try again."))
+away and try again.\
+Make soup by cooking 3\
+items of the same type\
+in a pot- either\
+tomatoes, onions, or\
+mushrooms.\
+\
+In this world, soup\
+is served on a plate\
+for some reason..."))
 
 smlua_text_utils_dialog_replace(DIALOG_065,1,6,30,200, (
 "Orders will regularly\
@@ -69,30 +87,31 @@ serve an order, so act\
 fast.\
 "))
 
-smlua_text_utils_dialog_replace(DIALOG_050,1,6,30,200, (
-"There are 4 types of food\
-in this mod. Salad is the\
-easiest. Simply place\
-chopped lettuce on a plate,\
-then add chopped tomatoes\
-if needed.\
-Soup requires 3 chopped\
-ingredients of the same\
-type to be cooked in a pot-\
-either tomatoes, onions, or\
-mushrooms.\
-\
-Burgers are made by\
+smlua_text_utils_dialog_replace(DIALOG_046,1,5,30,200, (
+"Burgers are made by\
 placing chopped meat in\
 a pan, then placing it on\
-bread and adding the\
+a bun and adding the\
 requested toppings.\
+You can always place\
+toppings on a bun, even\
+before you place the\
+patty!\
 \
-Finally, pizza is made by\
+However, you can't\
+move toppings between\
+buns."))
+
+smlua_text_utils_dialog_replace(DIALOG_050,1,5,30,200, (
+"Pizza is made by\
 cutting dough, adding\
 tomato, cheese, and other\
 toppings, then baking the\
-entire thing in an oven."))
+entire thing in an oven.\
+You can't add toppings\
+once a pizza is fully\
+baked, so make sure you\
+don't make a mistake!"))
 
 smlua_text_utils_dialog_replace(DIALOG_161,1,6,30,200, (
 "Wow! You found me!\

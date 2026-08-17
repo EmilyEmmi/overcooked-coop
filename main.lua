@@ -714,6 +714,9 @@ function before_mario_update(m)
                         m.action = ACT_HOLD_JUMP
                     elseif m.action & ACT_FLAG_AIR ~= 0 then
                         m.action = ACT_HOLD_FREEFALL
+                        if m.action & ACT_FLAG_FLYING ~= 0 then
+                            set_camera_mode(m.area.camera, m.area.camera.defMode, 0)
+                        end
                     elseif m.action & ACT_FLAG_MOVING ~= 0 then
                         set_mario_action(m, ACT_HOLD_WALKING, 0)
                     else
