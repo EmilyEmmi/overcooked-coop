@@ -417,8 +417,7 @@ function setup_hud()
 
     -- stars
     local starScale = scale
-    local savePrefix = string.format("record_%d_%d_", gGlobalSyncTable.ocLevel, gGlobalSyncTable.peakPlayers)
-    local maxScorePlayers = mod_storage_load_integer(savePrefix.."score")
+    local maxScorePlayers = get_record_for_level(gGlobalSyncTable.ocLevel, gGlobalSyncTable.peakPlayers)
     local stars = 4
     local maxStars = get_star_record(gGlobalSyncTable.ocLevel)
     maxStars = math.clamp(maxStars + 1, 3, 4)
@@ -813,32 +812,18 @@ function build_level_menu(menu)
         local lData = OC_LEVEL_DATA[i]
         local desc = lData.desc or "No description available."
         desc = desc .. "\n\n"
-        local savePrefix = "record_"..i.."_"
-        local bestOverallPlayers = mod_storage_load_integer(savePrefix.."players")
-        local bestOverallScore, bestOverallStars = 0, 0
-        if bestOverallPlayers ~= 0 then
-            local savePrefixBest = savePrefix..bestOverallPlayers.."_"
-            bestOverallScore = mod_storage_load_integer(savePrefixBest.."score")
-            bestOverallStars = mod_storage_load_integer(savePrefixBest.."stars")
-        end
+        local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(i)
 
         local bestStars = 0
         local maxStars = 3
         if bestOverallScore ~= 0 then
             -- score for this many players
             local players = gGlobalSyncTable.peakPlayers
-            local savePrefixPlayers = "record_"..i.."_"..players.."_"
-            local bestPlayerScore = mod_storage_load_integer(savePrefixPlayers.."score")
-            local bestPlayerStars = mod_storage_load_integer(savePrefixPlayers.."stars")
+            local bestPlayerScore, bestPlayerStars = get_record_for_level(i, players)
 
             -- score for the most stars obtained
-            local bestStarsPlayers = mod_storage_load_integer(savePrefix.."max_stars_players")
-            local bestStarsScore = 0
-            if bestStarsPlayers ~= 0 then
-                local savePrefixBestStars = savePrefix..bestStarsPlayers.."_"
-                bestStarsScore = mod_storage_load_integer(savePrefixBestStars.."score")
-                bestStars = mod_storage_load_integer(savePrefixBestStars.."stars")
-            end
+            local bestStarsScore, bestStarsPlayers = 0, 0
+            bestStarsScore, bestStars, bestStarsPlayers = get_record_for_level(i, 0, true)
 
             maxStars = math.clamp(bestStars+1, 3, 4)
             for stars=1,maxStars do

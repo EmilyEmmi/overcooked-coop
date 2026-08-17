@@ -291,8 +291,11 @@ end
 
 function save_new_score()
     local oc_level = gGlobalSyncTable.ocLevel
+    local lData = OC_LEVEL_DATA[oc_level]
+    if not lData then return false end
+    local levelSaveName = lData.saveName or tostring(oc_level)
+    
     local neededPoints = get_star_scores(oc_level)
-
     local stars = 4
     while stars > 0 do
         if gGlobalSyncTable.score >= neededPoints[stars] then break end
@@ -300,7 +303,7 @@ function save_new_score()
     end
 
     -- per-player score
-    local savePrefix = string.format("record_%d_%d_", oc_level, gGlobalSyncTable.peakPlayers)
+    local savePrefix = string.format("record_%s_%d_", levelSaveName, gGlobalSyncTable.peakPlayers)
     local maxScorePlayers = mod_storage_load_integer(savePrefix.."score")
     if maxScorePlayers < gGlobalSyncTable.score then
         maxScorePlayers = gGlobalSyncTable.score
@@ -309,9 +312,9 @@ function save_new_score()
     end
 
     -- global score
-    savePrefix = string.format("record_%d_players", oc_level)
+    savePrefix = string.format("record_%s_players", levelSaveName)
     local bestOverallPlayers = mod_storage_load_integer(savePrefix)
-    local maxScore = mod_storage_load_integer(string.format("record_%d_%d_score", oc_level, bestOverallPlayers))
+    local maxScore = mod_storage_load_integer(string.format("record_%s_%d_score", levelSaveName, bestOverallPlayers))
     local saveMax = false
     if maxScore < maxScorePlayers then
         saveMax = true
@@ -319,21 +322,46 @@ function save_new_score()
     end
 
     -- most stars score
-    savePrefix = string.format("record_%d_max_stars_players", oc_level)
-    local maxScoreStars = get_star_record(oc_level)
-    if maxScoreStars < stars then
+    savePrefix = string.format("record_%s_max_stars_players", levelSaveName)
+    local bestStarsPlayers = mod_storage_load_integer(savePrefix)
+    local maxStars = mod_storage_load_integer(string.format("record_%s_%d_stars", levelSaveName, bestStarsPlayers))
+    if maxStars < stars then
         mod_storage_save_integer(savePrefix, gGlobalSyncTable.peakPlayers)
     end
     return saveMax
 end
 
 function get_star_record(oc_level)
-    local savePrefix = "record_"..oc_level.."_"
-    local bestStarsPlayers = mod_storage_load_integer(savePrefix.."max_stars_players")
-    if bestStarsPlayers ~= 0 then
-        return mod_storage_load_integer(savePrefix..bestStarsPlayers.."_stars")
+    local score, stars = get_record_for_level(oc_level, 0, true)
+    return stars
+end
+
+function get_record_for_level(oc_level, players, checkMaxStars)
+    local lData = OC_LEVEL_DATA[oc_level]
+    if not lData then return 0, 0, 0 end
+    local levelSaveName = lData.saveName or tostring(oc_level)
+
+    if players == nil or players == 0 then
+        local savePrefix = ""
+        if checkMaxStars then
+            savePrefix = string.format("record_%s_max_stars_players", levelSaveName)
+        else
+            savePrefix = string.format("record_%s_players", levelSaveName)
+        end
+        players = mod_storage_load_integer(savePrefix)
+        if players == 0 then
+            if checkMaxStars then
+                return get_record_for_level(oc_level, players) -- try without stars
+            else
+                return 0, 0, 0
+            end
+        end
     end
-    return 0
+
+    local savePrefix = string.format("record_%s_%d_", levelSaveName, players)
+    local score = mod_storage_load_integer(savePrefix.."score")
+    local stars = mod_storage_load_integer(savePrefix.."stars")
+    return score, stars, players
 end
 
 function attempt_desync_fix(from)
