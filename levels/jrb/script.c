@@ -88,6 +88,7 @@ const LevelScript level_jrb_entry[] = {
 		OBJECT(E_MODEL_NONE, 0, -116, -331, 0, 180, 0, (2), bhvIngredient),
 		OBJECT(E_MODEL_NONE, -520, -116, -539, 0, 90, 0, (3), bhvIngredient),
 		OBJECT(E_MODEL_NONE, -520, -116, -743, 0, 90, 0, (3), bhvIngredient),
+		OBJECT(E_MODEL_MOVING_WATER, 28, -812, -435, 0, 0, 0, 0x00000000, bhvRockingWater),
 		OBJECT(E_MODEL_NONE, -52, -168, -1059, 0, -180, 0, (7 << 16) | (1 << 8), bhvShipMovementController),
 		OBJECT(E_MODEL_NONE, -316, -168, -1507, 0, 90, 0, (0), bhvOcSpawn),
 		OBJECT(E_MODEL_NONE, -316, -168, -571, 0, 90, 0, (1), bhvOcSpawn),

@@ -1136,7 +1136,7 @@ local menu_data = {
             desc = "Show a graphic above the timer whenever something is done cooking or is burning. Useful if you can't rely on audio queues.",
         },
         {
-            "Disable Water Ripples",
+            "Disable Water Effect",
             function(x)
                 disableWaterEffect = (x == 1)
             end,
@@ -1146,7 +1146,7 @@ local menu_data = {
             nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
             save = "disableWaterEffect",
             localSave = true,
-            desc = "Disables the \"ripple\" effect on the water in one of the levels.",
+            desc = "Disables the moving water in one of the levels.",
         },
         title = "Preferences",
     },

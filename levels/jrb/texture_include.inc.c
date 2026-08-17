@@ -18,8 +18,3 @@ u8 jrb_dl_window_drj_rgba16[] = {
 	#include "levels/jrb/window_drj.rgba16.inc.c"
 };
 
-Gfx jrb_dl_water_saturated_new_rgba16_aligner[] = {gsSPEndDisplayList()};
-u8 jrb_dl_water_saturated_new_rgba16[] = {
-	#include "levels/jrb/water_saturated_new.rgba16.inc.c"
-};
-

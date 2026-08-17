@@ -1317,6 +1317,61 @@ function ship_movement_controller_loop(o)
 end
 id_bhvShipMovementController = hook_behavior(nil, OBJ_LIST_DEFAULT, false, ship_movement_controller_init, ship_movement_controller_loop, "bhvShipMovementController")
 
+-- water in the ship level
+function rocking_water_init(o)
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
+    o.header.gfx.skipInViewCheck = true
+end
+
+function rocking_water_loop(o)
+    if disableWaterEffect then
+        o.oFaceAnglePitch, o.oAngleVelPitch = 0, 0
+        return
+    end
+
+    if o.parentObj == nil or o.parentObj == o then
+        o.parentObj = obj_get_first_with_behavior_id(id_bhvShipMovementController)
+    end
+    if o.parentObj == nil or o.parentObj == o then return end
+
+    local doRock = (o.parentObj.oForwardVel ~= 0)
+    local newAction = o.parentObj.oAction
+    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+        local maxTime = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel].totalTime or 240
+        newAction = ((maxTime - gGlobalSyncTable.timeLeft - 3) // 30) % 2
+        doRock = doRock or (newAction ~= o.parentObj.oAction)
+    end
+    if doRock then
+        o.oAction = 2
+    elseif o.oAction == 2 then
+        o.oAction = 1 - o.parentObj.oAction
+    end
+
+    local distFromTarget = 0
+    local target = 0
+    local change = 1
+    if o.oAction ~= 2 then
+        target = (o.oAction == 0 and -1) or 1
+        target = target * 0x500
+        distFromTarget = abs_angle_diff(o.oFaceAnglePitch, target)
+        --djui_chat_message_create(tostring(distFromTarget))
+        if distFromTarget < 0x20 then
+            o.oAction = 1 - o.oAction
+        end
+    else
+        target = (newAction ~= 0 and -1) or 1
+        target = target * 0x900
+        change = 2
+        distFromTarget = abs_angle_diff(o.oFaceAnglePitch, target)
+    end
+
+    change = change * math.sign(target - o.oFaceAnglePitch)
+    o.oAngleVelPitch = math.clamp(o.oAngleVelPitch + change, -0x20, 0x20)
+
+    o.oFaceAnglePitch = o.oFaceAnglePitch + o.oAngleVelPitch
+end
+id_bhvRockingWater = hook_behavior(nil, OBJ_LIST_DEFAULT, false, rocking_water_init, rocking_water_loop, "bhvRockingWater")
+
 -- Moving carpets in the sky level
 local CARPET_POSITIONS = {
     {

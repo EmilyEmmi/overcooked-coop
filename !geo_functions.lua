@@ -310,4 +310,4 @@ local function uv_scroll_ripple(input_vtx, original_uv, current_uv)
 end
 
 UvScroll.hook_scrolling_function("service_counter_service_counter_model_mesh_layer_1_tri_1", uv_scroll_up)
-UvScroll.hook_scrolling_function("jrb_dl_Moving_Water_mesh_layer_5_tri_0", uv_scroll_ripple)
+UvScroll.hook_scrolling_function("moving_water_Moving_Water_mesh_layer_5_tri_0", uv_scroll_ripple)
