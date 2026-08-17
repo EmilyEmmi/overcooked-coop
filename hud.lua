@@ -833,10 +833,12 @@ function build_level_menu(menu)
             local starStrPlayer = (bestPlayerStars == 0 and "0") or string.rep("", bestPlayerStars)
             local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
             local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
-            if bestPlayerScore ~= 0 then
-                desc = desc .. string.format("\nBest %dP: %d (%s)", players, bestPlayerScore, starStrPlayer)
-            else
-                desc = desc .. string.format("\nBest %dP: 0", players)
+            if players ~= 0 then
+                if bestPlayerScore ~= 0 then
+                    desc = desc .. string.format("\nBest %dP: %d (%s)", players, bestPlayerScore, starStrPlayer)
+                else
+                    desc = desc .. string.format("\nBest %dP: 0", players)
+                end
             end
             desc = desc .. string.format("\nBest Stars: %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
             desc = desc .. string.format("\nBest Overall: %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
@@ -883,6 +885,90 @@ function build_level_menu(menu)
             desc = "Earn at least 1 star on the previous level to unlock this level.",
             true,
         })
+    end
+end
+
+local recordsPlayers = 0
+local reloadRecords = false
+function build_records_menu(menu)
+    local min = 0
+    table.insert(menu, {
+        "Players",
+        function(x)
+            if recordsPlayers ~= x then
+                reloadRecords = true
+                recordsPlayers = x
+                enter_menu(6, 1, true)
+                set_menu_option(6, 1, x)
+                reloadRecords = false
+            end
+        end,
+        runOnChange = true,
+        currNum = 0,
+        minNum = 0,
+        nameRef = {"Overall"},
+        maxNum = MAX_PLAYERS,
+        desc = {"View the overall best records.", "View records for solo play.", "View records for %d players."},
+        updateNum = function(button)
+            if reloadRecords then return end
+            button.currNum = math.clamp(gGlobalSyncTable.peakPlayers, 0, MAX_PLAYERS)
+            if recordsPlayers ~= button.currNum then
+                reloadRecords = true
+                recordsPlayers = button.currNum
+                enter_menu(6, 1, true)
+                set_menu_option(6, 1, button.currNum)
+                reloadRecords = false
+            end
+        end,
+    })
+    for i=min,#OC_LEVEL_DATA do
+        local lData = OC_LEVEL_DATA[i]
+        local desc = lData.desc or "No description available."
+        desc = desc .. "\n\n"
+        local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(i)
+
+        local bestStars = 0
+        local maxStars = 3
+        if bestOverallScore ~= 0 then
+            -- score for this many players
+            local players = recordsPlayers
+            local bestPlayerScore, bestPlayerStars = get_record_for_level(i, players)
+            if players == 0 or bestPlayerScore ~= 0 then
+                -- score for the most stars obtained
+                local bestStarsScore, bestStarsPlayers = 0, 0
+                bestStarsScore, bestStars, bestStarsPlayers = get_record_for_level(i, 0, true)
+
+                maxStars = math.clamp(bestStars+1, 3, 4)
+                for stars=1,maxStars do
+                    desc = desc .. string.rep("", stars) .. ": %d\n"
+                end
+
+                local starStrPlayer = (bestPlayerStars == 0 and "0") or string.rep("", bestPlayerStars)
+                local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
+                local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
+                if players ~= 0 then
+                    desc = desc .. string.format("\nBest %dP: %d (%s)", players, bestPlayerScore, starStrPlayer)
+                end
+                desc = desc .. string.format("\nBest Stars: %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
+                desc = desc .. string.format("\nBest Overall: %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
+
+                table.insert(menu, {
+                    lData.name,
+                    function() end,
+                    desc = desc,
+                    true,
+                    descExtra = function()
+                        local maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
+                        local neededPoints = get_star_scores(i, maxKitchens)
+                        local result = {}
+                        for stars=1,maxStars do
+                            table.insert(result, neededPoints[stars])
+                        end
+                        return table.unpack(result)
+                    end,
+                })
+            end
+        end
     end
 end
 
@@ -983,6 +1069,14 @@ local menu_data = {
             end,
             false,
             desc = "Change settings for yourself. These don't affect other players.",
+        },
+        {
+            "Records",
+            function(x)
+                enter_menu(6)
+            end,
+            false,
+            desc = "View your high scores.",
         },
         {
             "DJUI Menu",
@@ -1167,6 +1261,7 @@ local menu_data = {
         title = "Join?",
         noBack = true,
     },
+    [6] = {buildFunc = build_records_menu, title = "Records"},
 }
 
 -- load menu settings; never nesters be crying rn

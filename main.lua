@@ -9,6 +9,7 @@ selectedCounter = nil
 waitOpenDJUI = false
 gotNewRecord = false
 stayInSpectate = true
+autoStartTimer = 0
 
 pending_orders_all = {}
 pending_orders = {}
@@ -155,6 +156,22 @@ function update()
         local np = gNetworkPlayers[0]
         if np.currLevelNum ~= LEVEL_CASTLE_GROUNDS and np.currAreaSyncValid then
             warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+        end
+
+        -- EXTREMELY BASIC headless support
+        if network_is_server() and gServerSettings.headlessServer ~= 0 then
+            stayInSpectate = true
+            gPlayerSyncTable[0].spectator = true
+
+            if gGlobalSyncTable.peakPlayers ~= 0 then
+                autoStartTimer = autoStartTimer + 1
+                if autoStartTimer > 15 * 30 then
+                    autoStartTimer = 0
+                    start_level_command(tostring(gGlobalSyncTable.ocLevel % #OC_LEVEL_DATA + 1))
+                end
+            else
+                autoStartTimer = 0
+            end
         end
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
@@ -394,17 +411,17 @@ function on_sync_valid()
     if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         drop_and_set_mario_action(gMarioStates[0], ACT_SELECT_START, 0)
     end
-    
-    complete_save_file()
 
+    complete_save_file()
     gPlayerSyncTable[0].waitingForSlot = false
+
+    if didInitialJoin then return end
+    didInitialJoin = true
     if network_is_server() then
         didInitialJoin = true
-        stayInSpectate = false
         gPlayerSyncTable[0].spectator = false
         gMarioStates[0].flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
-    elseif not didInitialJoin then
-        didInitialJoin = true
+    else
         clear_pending_orders_table()
         network_send_to(1, true, {
             id = PACKET_REQUEST_ORDERS,
@@ -1094,7 +1111,7 @@ hook_event(HOOK_ON_DEATH, on_death)
 function on_state_change(tag, oldVal, newVal)
     if oldVal == newVal or oldVal == nil or newVal == nil then return end
 
-    if newVal == GAME_STATE_END and not gPlayerSyncTable[0].spectator then
+    if newVal == GAME_STATE_END and ((not gPlayerSyncTable[0].spectator) or (network_is_server() and gServerSettings.headlessServer ~= 0)) then
         gotNewRecord = save_new_score()
     end
 end
@@ -1127,10 +1144,13 @@ hook_on_sync_table_change(gGlobalSyncTable, "score", "score", on_score_change)
 function on_spectator_change(tag, oldVal, newVal)
     if oldVal == newVal or oldVal == nil or newVal == nil then return end
     if newVal then return end
-    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then return end
 
     local m = gMarioStates[0]
     m.flags = m.flags &~ MARIO_VANISH_CAP
+    stayInSpectate = false
+
+    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then return end
+
     if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
         on_death(m)
     else
