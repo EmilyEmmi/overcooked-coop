@@ -272,3 +272,42 @@ end
 function pizza_mushroom_switch(n)
     handle_pizza_topping_switch(n, ITEM_MUSHROOM_CUT)
 end
+
+-- UV scrolling using djoslin's UV scroll library
+local UvScroll = require("/lib/uv-scroll")
+
+-- Scroll the uvs up
+local function uv_scroll_up(input_vtx, original_uv, current_uv)
+    -- adjustable constants
+    local speed = 25
+
+    -- move the UVs up
+    current_uv[2] = current_uv[2] + speed
+end
+
+-- Scroll the uvs with a simple ripple effect
+local function uv_scroll_ripple(input_vtx, original_uv, current_uv)
+    if disableWaterEffect then
+        current_uv[1] = original_uv[1]
+        current_uv[1] = original_uv[1]
+        return
+    end
+
+    -- adjustable constants
+    local strength = 128
+    local speed = 0.05
+    local scale = 0.01
+
+    -- equation for ripple effect
+    local t = get_global_timer() * speed
+    local offset = {
+        math.sin(t + input_vtx.x * scale) * strength,
+        math.cos(t + input_vtx.y * scale) * strength
+    }
+
+    current_uv[1] = original_uv[1] + offset[1]
+    current_uv[2] = original_uv[2] + offset[2]
+end
+
+UvScroll.hook_scrolling_function("service_counter_service_counter_model_mesh_layer_1_tri_1", uv_scroll_up)
+UvScroll.hook_scrolling_function("jrb_dl_Moving_Water_mesh_layer_5_tri_0", uv_scroll_ripple)

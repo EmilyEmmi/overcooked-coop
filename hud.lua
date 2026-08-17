@@ -907,6 +907,7 @@ throwButtonIndex = 0
 orderHUDLocation = 0
 reverseReading = false
 showCookIndicators = false
+disableWaterEffect = false
 
 inMenu = false
 local menuOption = 1
@@ -1133,6 +1134,19 @@ local menu_data = {
             save = "showCookIndicators",
             localSave = true,
             desc = "Show a graphic above the timer whenever something is done cooking or is burning. Useful if you can't rely on audio queues.",
+        },
+        {
+            "Disable Water Ripples",
+            function(x)
+                disableWaterEffect = (x == 1)
+            end,
+            runOnChange = true,
+            currNum = (disableWaterEffect and 1) or 0,
+            maxNum = 1,
+            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+            save = "disableWaterEffect",
+            localSave = true,
+            desc = "Disables the \"ripple\" effect on the water in one of the levels.",
         },
         title = "Preferences",
     },
