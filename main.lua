@@ -9,7 +9,6 @@ selectedCounter = nil
 waitOpenDJUI = false
 gotNewRecord = false
 stayInSpectate = true
-autoStartTimer = 0
 
 pending_orders_all = {}
 pending_orders = {}
@@ -31,6 +30,7 @@ gGlobalSyncTable.score = 0
 gGlobalSyncTable.timeLeft = 0
 gGlobalSyncTable.maxKitchens = 1
 gGlobalSyncTable.peakPlayers = 1
+gGlobalSyncTable.autoStart = (gServerSettings.headlessServer ~= 0)
 -- one kitchen for every 4 players
 MAX_KITCHENS = math.ceil(MAX_PLAYERS / 4)
 for i=1,MAX_KITCHENS do
@@ -159,18 +159,24 @@ function update()
         end
 
         -- EXTREMELY BASIC headless support
-        if network_is_server() and gServerSettings.headlessServer ~= 0 then
-            stayInSpectate = true
-            gPlayerSyncTable[0].spectator = true
+        if network_is_server() then
+            if gServerSettings.headlessServer ~= 0 then
+                stayInSpectate = true
+                gPlayerSyncTable[0].spectator = true
+            end
 
-            if gGlobalSyncTable.peakPlayers ~= 0 then
-                autoStartTimer = autoStartTimer + 1
-                if autoStartTimer > 15 * 30 then
-                    autoStartTimer = 0
-                    start_level_command(tostring(gGlobalSyncTable.ocLevel % #OC_LEVEL_DATA + 1))
+            if gGlobalSyncTable.autoStart and gGlobalSyncTable.peakPlayers ~= 0 then
+                subTimer = subTimer + 1
+                if subTimer >= 30 then
+                    subTimer = 0
+                    gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
+                    if gGlobalSyncTable.timeLeft <= 0 then
+                        start_level_command(tostring(gGlobalSyncTable.ocLevel % #OC_LEVEL_DATA + 1))
+                    end
                 end
             else
-                autoStartTimer = 0
+                subTimer = 0
+                gGlobalSyncTable.timeLeft = 15
             end
         end
     elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
@@ -324,6 +330,7 @@ function update()
                 gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
                 if gGlobalSyncTable.timeLeft == 0 then
                     gGlobalSyncTable.gameState = GAME_STATE_LEVEL_SELECT
+                    gGlobalSyncTable.timeLeft = 15
                 end
             else
                 set_without_sync(gGlobalSyncTable, "timeLeft", gGlobalSyncTable.timeLeft - 1)

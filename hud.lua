@@ -497,6 +497,44 @@ function setup_hud()
     end
 end
 
+function level_select_hud()
+    scale = 2
+    x = djui_hud_get_screen_width() - 32
+    y = djui_hud_get_screen_height()
+    djui_hud_set_text_alignment(TEXT_HALIGN_RIGHT, TEXT_VALIGN_BOTTOM)
+    local text = "Waiting for host..."
+    if gGlobalSyncTable.autoStart then
+        text = time_format(gGlobalSyncTable.timeLeft)
+    elseif network_is_server() or network_is_moderator() then
+        text = "Press [START]"
+    end
+    djui_hud_print_text(text, x, y, scale)
+
+    -- cooking indicators (if enabled)
+    if showCookIndicators then
+        x = djui_hud_get_screen_width() - 32
+        y = djui_hud_get_screen_height() - 20 * scale
+        local o = obj_get_first_with_behavior_id(id_bhvIngredient)
+        while o do
+            -- notification for cooking progress
+            if o.oNotifyTimer ~= 0 then
+                local text = (o.oOvercookTimer >= 5 * 30 and "!!!") or "Done"
+                local alpha = 255
+                if o.oNotifyTimer > 20 then
+                    alpha = ((30 - o.oNotifyTimer) / 10) * alpha
+                elseif o.oNotifyTimer < 10 then
+                    alpha = (o.oNotifyTimer / 10) * alpha
+                end
+                o.oNotifyTimer = o.oNotifyTimer - 1
+                djui_hud_set_color(255, 255, 255, alpha)
+                djui_hud_print_text(text, x, y, scale)
+                y = y - 32 * scale
+            end
+            o = obj_get_next_with_same_behavior_id(o)
+        end
+    end
+end
+
 function on_hud_render()
     djui_hud_set_resolution(RESOLUTION_DJUI)
     djui_hud_set_font(FONT_CUSTOM_HUD)
@@ -515,6 +553,8 @@ function on_hud_render()
         lastHudScore = 0
         scoreModifiers = {}
         setup_hud()
+    elseif gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
+        level_select_hud()
     end
 end
 hook_event(HOOK_ON_HUD_RENDER, on_hud_render)
@@ -732,7 +772,7 @@ function behind_hud_render()
                     elseif o.oNotifyTimer < 10 then
                         alpha = (o.oNotifyTimer / 10) * alpha
                     end
-                    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING or not showCookIndicators then
+                    if (gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT) or not showCookIndicators then
                         o.oNotifyTimer = o.oNotifyTimer - 1
                     end
                     djui_hud_set_color(255, 255, 255, alpha)
@@ -1044,6 +1084,24 @@ local menu_data = {
                 return gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT
             end,
             desc = "Pick a level to start.",
+        },
+        {
+            "Auto Start",
+            function(x)
+                gGlobalSyncTable.autoStart = (x ~= 0)
+            end,
+            true,
+            function()
+                return gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT
+            end,
+            runOnChange = true,
+            currNum = (gGlobalSyncTable.autoStart and 1) or 0,
+            maxNum = 1,
+            nameRef = { "\\#ff5050\\Off", "\\#50ff50\\On" },
+            desc = {"Start the game on your own.", "The game will automatically move to the next level."},
+            updateNum = function(button)
+                button.currNum = (gGlobalSyncTable.autoStart and 1) or 0
+            end,
         },
         {
             "Spectate",
