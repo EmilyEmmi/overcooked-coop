@@ -5,6 +5,7 @@ const GeoLayout service_counter_geo[] = {
 		GEO_OPEN_NODE(),
 			GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, service_counter_service_counter_model_mesh_layer_1),
 		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, service_counter_material_revert_render_settings),
 	GEO_CLOSE_NODE(),
 	GEO_END(),
 };

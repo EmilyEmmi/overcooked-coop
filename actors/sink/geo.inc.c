@@ -10,6 +10,7 @@ const GeoLayout sink_geo[] = {
 				GEO_ANIMATED_PART(LAYER_OPAQUE, 0, -130, 0, sink_plate_3_mesh_layer_1),
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, sink_material_revert_render_settings),
 	GEO_CLOSE_NODE(),
 	GEO_END(),
 };
