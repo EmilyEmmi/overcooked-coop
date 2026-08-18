@@ -58,6 +58,8 @@ for i=0,MAX_PLAYERS-1 do
     sMario.waitingForSlot = false
     sMario.throwButtonIndex = throwButtonIndex
     sMario.inPractice = false
+    sMario.canRejoin = false
+    sMario.coopnetID = "-1"
     c.actionAnimTimer = 0
 end
 
@@ -174,7 +176,11 @@ function update()
                     subTimer = 0
                     gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
                     if gGlobalSyncTable.timeLeft <= 0 then
-                        start_level_command(tostring(gGlobalSyncTable.ocLevel % #OC_LEVEL_DATA + 1))
+                        local newLevel = gGlobalSyncTable.ocLevel
+                        if get_star_record(newLevel) >= 1 then
+                            newLevel = (newLevel % #OC_LEVEL_DATA + 1)
+                        end
+                        start_level_command(tostring(newLevel))
                     end
                 end
             else
@@ -263,6 +269,9 @@ function update()
             end
 
             clear_pending_orders_table()
+            if network_is_server() then
+                wasInGameList = {}
+            end
     
             subTimer = subTimer + 1
             if subTimer >= 30 then
@@ -429,33 +438,37 @@ function on_sync_valid()
     end
 
     complete_save_file()
-    gPlayerSyncTable[0].waitingForSlot = false
+    local sMario0 = gPlayerSyncTable[0]
 
     if didInitialJoin then return end
     didInitialJoin = true
     if network_is_server() then
         didInitialJoin = true
-        gPlayerSyncTable[0].spectator = false
-        gMarioStates[0].flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
+        sMario0.spectator = false
+        sMario0.flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
     else
         clear_pending_orders_table()
+        sMario0.waitingForSlot = false
+        sMario0.canRejoin = (gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING)
+        sMario0.coopnetID = get_coopnet_id(0)
+
         network_send_to(1, true, {
             id = PACKET_REQUEST_ORDERS,
             from = network_global_index_from_local(0),
         })
         if gGlobalSyncTable.gameState == GAME_STATE_PLAYING or gGlobalSyncTable.gameState == GAME_STATE_SETUP then
             local kitchen, spawnID = join_smallest_kitchen(0)
-            gPlayerSyncTable[0].kitchen = kitchen
-            gPlayerSyncTable[0].spawnID = 0
-            gPlayerSyncTable[0].spectator = true
+            sMario0.kitchen = kitchen
+            sMario0.spawnID = 0
+            sMario0.spectator = true
             stayInSpectate = true
             open_menu()
             enter_menu(5, 1, true)
         else
-            gPlayerSyncTable[0].spectator = false
+            sMario0.spectator = false
             stayInSpectate = false
-            gPlayerSyncTable[0].kitchen = 1
-            gPlayerSyncTable[0].spawnID = 0
+            sMario0.kitchen = 1
+            sMario0.spawnID = 0
             gMarioStates[0].flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
         end
     end
@@ -475,11 +488,13 @@ function mario_update(m)
     -- if someone is waiting for a slot, let them in if we're the host
     local sMario = gPlayerSyncTable[m.playerIndex]
     local np = gNetworkPlayers[m.playerIndex]
-    if network_is_server() and np.connected and sMario.spectator and sMario.waitingForSlot
-    and np.currAreaSyncValid then
+    if network_is_server() and np.connected and sMario.spectator
+    and sMario.waitingForSlot and np.currAreaSyncValid then
         if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
             sMario.spectator = false
-        elseif gGlobalSyncTable.allowMidGameJoin and get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
+            sMario.canRejoin = true
+        elseif (gGlobalSyncTable.allowMidGameJoin or sMario.canRejoin)
+        and get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
             local kitchen, spawnID = join_smallest_kitchen(m.playerIndex)
             if spawnID ~= -1 then
                 sMario.kitchen = kitchen
@@ -803,6 +818,25 @@ function on_player_disconnected(m)
     set_without_sync(sMario, "spectator", true)
     set_without_sync(sMario, "waitingForSlot", false)
     set_without_sync(sMario, "inPractice", false)
+    set_without_sync(sMario, "canRejoin", false)
+
+    if network_is_server() and sMario.coopnetID ~= "-1" then
+        -- see if someone else has that ID (in case they joined before their clone disconnected)
+        local foundClone = false
+        for i=1,MAX_PLAYERS-1 do
+            if i ~= m.playerIndex and gPlayerSyncTable[i].coopnetID == sMario.coopnetID then
+                gPlayerSyncTable[i].canRejoin = true
+                foundClone = true
+                break
+            end
+        end
+
+        if not foundClone then
+            --log_to_console("Added to rejoin list: "..sMario.coopnetID)
+            table.insert(wasInGameList, sMario.coopnetID)
+        end
+    end
+    set_without_sync(sMario, "coopnetID", "-1")
 end
 hook_event(HOOK_ON_PLAYER_DISCONNECTED, on_player_disconnected)
 
@@ -824,7 +858,7 @@ function act_select_start(m)
     if sMario.kitchen > maxKitchens then
         sMario.kitchen = 1
     end
-    if sMario.spawnID > maxSpawnID then
+    if sMario.spawnID >= maxSpawnID then
         sMario.maxSpawnID = 0
     end
 
@@ -1195,6 +1229,25 @@ function on_spectator_change(tag, oldVal, newVal)
     end
 end
 hook_on_sync_table_change(gPlayerSyncTable[0], "spectator", "spectator", on_spectator_change)
+
+function on_coopnet_id_change(tag, oldVal, newVal)
+    if oldVal == newVal or oldVal == nil or newVal == nil then return end
+    if newVal == "-1" then return end
+
+    for i, id in ipairs(wasInGameList) do
+        --log_to_console(id.." = "..newVal.." ?")
+        if id == newVal then
+            table.remove(wasInGameList, i)
+            gPlayerSyncTable[tonumber(tag)].canRejoin = true
+            break
+        end
+    end
+end
+if network_is_server() then
+    for i=1,MAX_PLAYERS-1 do
+        hook_on_sync_table_change(gPlayerSyncTable[i], "coopnetID", tostring(i), on_coopnet_id_change)
+    end
+end
 
 function complete_save_file()
     -- 100% save

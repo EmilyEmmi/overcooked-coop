@@ -332,7 +332,10 @@ function end_hud()
     lastHudStars = stars
 
     djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
-    x = screenWidth / 2 - (10 * (maxStars - 1)) * scale
+    x = screenWidth / 2 - (10 * (maxStars - 1) + 20) * scale -- center align after writing player count
+    y = screenHeight / 2 + 24 * scale
+    djui_hud_print_text(trans("short_player_count", gGlobalSyncTable.peakPlayers), x, y + 5 * scale, scale / 2)
+    x = x + 20 * scale
     for i=1,maxStars do
         y = screenHeight / 2 + 24 * scale
         if i <= stars then
@@ -426,7 +429,10 @@ function setup_hud()
         if maxScorePlayers >= neededPoints[stars] then break end
         stars = stars - 1
     end
-    x = screenWidth / 2 - (10 * (maxStars - 1)) * starScale
+    x = screenWidth / 2 - (10 * (maxStars - 1) + 20) * starScale -- center align after writing player count
+    y = 32 + 16 * scale
+    djui_hud_print_text(trans("short_player_count", gGlobalSyncTable.peakPlayers), x, y + 5 * starScale, starScale / 2)
+    x = x + 20 * starScale
     for i=1,maxStars do
         y = 32 + 16 * scale
         if i <= stars then
@@ -462,7 +468,7 @@ function setup_hud()
         text = trans("kitchen")
         djui_hud_set_color(255, 255, 255, 255)
         if gGlobalSyncTable.maxKitchens <= 1 then
-            text = text .. " 1"
+            text = text .. ": 1"
             djui_hud_set_color(100, 100, 100, 255)
         else
             text = text .. " <"..(gPlayerSyncTable[0].kitchen) .. ">"
@@ -474,7 +480,7 @@ function setup_hud()
         text = trans("spawn_point")
         djui_hud_set_color(255, 255, 255, 255)
         if maxSpawnID <= 1 then
-            text = text .. " 1"
+            text = text .. ": 1"
             djui_hud_set_color(100, 100, 100, 255)
         else
             text = text .. " <"..(gPlayerSyncTable[0].spawnID+1) .. ">"
@@ -1003,7 +1009,7 @@ function build_records_menu(menu)
                     levelName,
                     function() end,
                     desc = desc,
-                    true,
+                    false,
                     descExtra = function()
                         local maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
                         local neededPoints = get_star_scores(i, maxKitchens)
@@ -1191,7 +1197,7 @@ local menu_data = {
                 if confirmFunc == nil then return end
                 return confirmFunc(x)
             end,
-            true,
+            false,
             desc = "%s",
             noLangDesc = true,
             descExtra = function()
@@ -1208,7 +1214,7 @@ local menu_data = {
                     enter_menu(1, 1, true)
                 end
             end,
-            true,
+            false,
             desc = "%s",
             noLangDesc = true,
             descExtra = function()
@@ -1334,6 +1340,10 @@ local menu_data = {
             function(x)
                 enter_menu(7)
             end,
+            false,
+            function()
+                return (#lang_order_table <= 1)
+            end,
             desc = "menu_desc_language",
         },
         title = "menu_preferences",
@@ -1343,7 +1353,7 @@ local menu_data = {
             "menu_join_practice",
             function()
                 inMenu = false
-                stayInSpectate = true
+                stayInSpectate = false
                 gPlayerSyncTable[0].inPractice = true
             end,
             desc = "menu_desc_join_practice",
@@ -1363,11 +1373,12 @@ local menu_data = {
                 else
                     sMario.spawnID = spawnID
                     sMario.spectator = false
+                    sMario.canRejoin = true
                 end
             end,
             false,
             function()
-                return not gGlobalSyncTable.allowMidGameJoin
+                return not (gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
             end,
             desc = "menu_desc_join_now",
         },
@@ -1379,7 +1390,7 @@ local menu_data = {
             end,
             false,
             function()
-                return gGlobalSyncTable.allowMidGameJoin
+                return (gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
             end,
             desc = "menu_desc_join_now",
         },
@@ -1697,7 +1708,10 @@ function render_menu()
         end
 
         djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
-        x = screenWidth * 0.35 - (10 * (maxStars - 1)) * starScale
+        x = screenWidth * 0.35 - (10 * (maxStars - 1) + 20) * starScale -- center align after writing player count
+        y = 32 + 32 * scale
+        djui_hud_print_text(trans("short_player_count", gGlobalSyncTable.peakPlayers), x,  y + 5 * starScale, starScale / 2)
+        x = x + 20 * starScale
         for i=1,maxStars do
             y = 32 + 32 * scale
             if i <= stars then

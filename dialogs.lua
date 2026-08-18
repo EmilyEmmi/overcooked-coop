@@ -100,7 +100,13 @@ patty!\
 \
 However, you can't\
 move toppings between\
-buns."))
+buns.\
+\
+\
+Want to learn how to\
+make pizza? Check\
+the right side of\
+the castle."))
 
 smlua_text_utils_dialog_replace(DIALOG_050,1,5,30,200, (
 "Pizza is made by\

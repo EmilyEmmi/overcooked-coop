@@ -22,6 +22,7 @@ langdata["en"] = -- the letters here will be what you type for the command (ex: 
   waiting_for_host = "Waiting for host...",
   press_start = "Press [START]",
   time_format = "%d:%02d",
+  short_player_count = "%dP",
 
   tip = "Tip: ",
   kitchen = "Kitchen",

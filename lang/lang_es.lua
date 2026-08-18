@@ -1,3 +1,5 @@
+-- NOTE: Not included yet due to being incomplete. The check to exclude this is near the bottom of z_lan.lua
+
 langdata["es"] = -- the letters here will be what you type for the command (ex: to switch to this language, type "/lang en")
 {
   -- fullname for auto select (make sure this matches in-game under Misc -> Languages)
