@@ -1710,7 +1710,7 @@ function render_menu()
         djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
         x = screenWidth * 0.35 - (10 * (maxStars - 1) + 20) * starScale -- center align after writing player count
         y = 32 + 32 * scale
-        djui_hud_print_text(trans("short_player_count", gGlobalSyncTable.peakPlayers), x,  y + 5 * starScale, starScale / 2)
+        djui_hud_print_text(trans("short_player_count", gGlobalSyncTable.peakPlayers), x, y + 5 * starScale, starScale / 2)
         x = x + 20 * starScale
         for i=1,maxStars do
             y = 32 + 32 * scale

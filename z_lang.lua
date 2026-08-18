@@ -116,7 +116,7 @@ hook_event(HOOK_ON_MODS_LOADED, on_mods_loaded)
 -- load all language files
 local langs = get_mod_files(get_active_mod(), "lang")
 for i,langFile in ipairs(langs) do
-  if langFile:sub(-4) == ".lua" and langFile ~= "lang/lang_es.lua" then -- TEMP: remove check when translation is complete
+  if langFile:sub(-4) == ".lua" and langFile ~= "lang\\lang_es.lua" then -- TEMP: remove check when translation is complete
     require(langFile:sub(1, -5))
   end
 end
