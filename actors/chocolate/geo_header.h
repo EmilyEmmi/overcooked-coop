@@ -1,0 +1,12 @@
+extern const GeoLayout chocolate_chocolate_cut[];
+extern const GeoLayout chocolate_geo[];
+extern Lights1 chocolate_f3dlite_material_005_lights;
+extern Vtx chocolate_chocolate_model_mesh_layer_1_vtx_0[228];
+extern Gfx chocolate_chocolate_model_mesh_layer_1_tri_0[];
+extern Vtx chocolate_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1_vtx_0[352];
+extern Gfx chocolate_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1_tri_0[];
+extern Gfx mat_chocolate_f3dlite_material_005[];
+extern Gfx mat_revert_chocolate_f3dlite_material_005[];
+extern Gfx chocolate_chocolate_model_mesh_layer_1[];
+extern Gfx chocolate_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1[];
+extern Gfx chocolate_material_revert_render_settings[];

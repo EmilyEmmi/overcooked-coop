@@ -1,0 +1,28 @@
+const GeoLayout chocolate_chocolate_cut[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, chocolate_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1),
+	GEO_CLOSE_NODE(),
+	GEO_RETURN(),
+};
+const GeoLayout chocolate_geo[] = {
+	GEO_NODE_START(),
+	GEO_OPEN_NODE(),
+		GEO_SHADOW(1, 180, 69),
+		GEO_OPEN_NODE(),
+			GEO_SCALE(LAYER_FORCE, 16384),
+			GEO_OPEN_NODE(),
+				GEO_SWITCH_CASE(0, chocolate_switch),
+				GEO_OPEN_NODE(),
+					GEO_NODE_START(),
+					GEO_OPEN_NODE(),
+						GEO_DISPLAY_LIST(LAYER_OPAQUE, chocolate_chocolate_model_mesh_layer_1),
+					GEO_CLOSE_NODE(),
+					GEO_BRANCH(1, chocolate_chocolate_cut),
+				GEO_CLOSE_NODE(),
+			GEO_CLOSE_NODE(),
+		GEO_CLOSE_NODE(),
+		GEO_DISPLAY_LIST(LAYER_OPAQUE, chocolate_material_revert_render_settings),
+	GEO_CLOSE_NODE(),
+	GEO_END(),
+};
