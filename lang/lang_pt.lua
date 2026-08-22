@@ -62,7 +62,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	-- wall kick seems to be most known as impluso na parede (first seen(?) in the playtronic guide for sm64)...
 
 	level_name_7 = "Rainbow Cruise",
-	level_desc_7 = "Put burgers and salad together on this carpet ride! Take advantage of when the carpets are together!",
+	level_desc_7 = "Junte hambúrgueres e salada nesta viagem de tapete voador! Aproveite enquanto os tapetes estiverem juntos!",
 	level_advice_7 = "Lembre-se de arremessar ingredientes crus com [THROW]!", -- ?
 
 	level_name_8 = "Slip Slidin' Pizzas",
