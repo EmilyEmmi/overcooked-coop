@@ -682,15 +682,18 @@ Gfx pot_pot_liquid_model_mesh_layer_1_tri_0[] = {
 
 
 Gfx mat_pot_pot[] = {
+	gsSPSetGeometryMode(G_FRESNEL_ALPHA_EXT),
 	gsSPSetLights1(pot_pot_lights),
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, SHADE, 0, 0, 0, ENVIRONMENT),
+	gsDPSetCombineLERP(SHADE_ALPHA, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, SHADE_ALPHA, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsSPFresnel(0x0058, 0x0041),
 	gsDPSetAlphaDither(G_AD_NOISE),
 	gsSPTexture(65535, 65535, 0, 0, 1),
 	gsSPEndDisplayList(),
 };
 
 Gfx mat_revert_pot_pot[] = {
+	gsSPClearGeometryMode(G_FRESNEL_ALPHA_EXT),
 	gsDPPipeSync(),
 	gsDPSetAlphaDither(G_AD_DISABLE),
 	gsSPEndDisplayList(),

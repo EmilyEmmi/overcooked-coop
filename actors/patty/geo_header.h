@@ -9,7 +9,7 @@ extern u8 patty_patty_raw_pal_rgba16[];
 extern u8 patty_patty_rgba16[];
 extern u8 patty_pot_liquid_burnt_ci8[];
 extern u8 patty_pot_liquid_burnt_pal_rgba16[];
-extern Vtx patty_patty_model_mesh_layer_1_vtx_0[79];
+extern Vtx patty_patty_model_mesh_layer_1_vtx_0[78];
 extern Gfx patty_patty_model_mesh_layer_1_tri_0[];
 extern Gfx mat_patty_burger_patty_raw[];
 extern Gfx mat_revert_patty_burger_patty_raw[];

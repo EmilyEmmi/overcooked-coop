@@ -6,32 +6,38 @@ Lights1 main_counter_corner_wood2_lights = gdSPDefLights1(
 	0x7F, 0x7F, 0x7F,
 	0xFF, 0xFF, 0xFF, 0x28, 0x28, 0x28);
 
-Texture main_counter_corner_wood_ci8[] = {
-	#include "actors/main_counter_corner/wood.ci8.inc.c"
+Texture main_counter_corner_wood_new_ci4[] = {
+	#include "actors/main_counter_corner/wood_new.ci4.inc.c"
 };
 
-Texture main_counter_corner_wood_pal_rgba16[] = {
-	#include "actors/main_counter_corner/wood.rgba16.pal"
+Texture main_counter_corner_wood_new_pal_rgba16[] = {
+	#include "actors/main_counter_corner/wood_new.rgba16.pal"
 };
 
-Texture main_counter_corner_wood2_ci8[] = {
-	#include "actors/main_counter_corner/wood2.ci8.inc.c"
+Texture main_counter_corner_wood2_new_ci4[] = {
+	#include "actors/main_counter_corner/wood2_new.ci4.inc.c"
 };
 
-Texture main_counter_corner_wood2_pal_rgba16[] = {
-	#include "actors/main_counter_corner/wood2.rgba16.pal"
+Texture main_counter_corner_wood2_new_pal_rgba16[] = {
+	#include "actors/main_counter_corner/wood2_new.rgba16.pal"
 };
 
-Vtx main_counter_corner_main_counter_corner_model_mesh_layer_1_vtx_0[4] = {
+Vtx main_counter_corner_main_counter_corner_model_mesh_layer_1_vtx_0[8] = {
+	{{{12, 134, -114}, 0, {1616, 433}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{139, 134, 13}, 0, {1616, 1663}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{139, 134, -114}, 0, {2231, 551}, {0x00, 0x7F, 0x00, 0xFF}}},
 	{{{-114, 134, -114}, 0, {1001, 10}, {0x00, 0x7F, 0x00, 0xFF}}},
 	{{{139, 134, 139}, 0, {1001, 2471}, {0x00, 0x7F, 0x00, 0xFF}}},
-	{{{139, 134, -114}, 0, {2231, 631}, {0x00, 0x7F, 0x00, 0xFF}}},
-	{{{-114, 134, 139}, 0, {-229, 631}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{12, 134, 139}, 0, {386, 1663}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-114, 134, 13}, 0, {386, 433}, {0x00, 0x7F, 0x00, 0xFF}}},
+	{{{-114, 134, 139}, 0, {-229, 551}, {0x00, 0x7F, 0x00, 0xFF}}},
 };
 
 Gfx main_counter_corner_main_counter_corner_model_mesh_layer_1_tri_0[] = {
-	gsSPVertex(main_counter_corner_main_counter_corner_model_mesh_layer_1_vtx_0 + 0, 4, 0),
+	gsSPVertex(main_counter_corner_main_counter_corner_model_mesh_layer_1_vtx_0 + 0, 8, 0),
 	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(3, 4, 1, 0, 3, 5, 4, 0),
+	gsSP2Triangles(3, 6, 5, 0, 6, 7, 5, 0),
 	gsSPEndDisplayList(),
 };
 
@@ -89,13 +95,13 @@ Gfx mat_main_counter_corner_wood[] = {
 	gsDPSetAlphaDither(G_AD_NOISE),
 	gsDPSetTextureLUT(G_TT_RGBA16),
 	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, main_counter_corner_wood_pal_rgba16),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, main_counter_corner_wood_new_pal_rgba16),
 	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadTLUTCmd(5, 15),
-	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, main_counter_corner_wood_ci8),
-	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadBlock(7, 0, 0, 2047, 256),
-	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 8, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0),
+	gsDPLoadTLUTCmd(5, 8),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, main_counter_corner_wood_new_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 1023, 512),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 4, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0),
 	gsDPSetTileSize(0, 0, 0, 252, 252),
 	gsSPEndDisplayList(),
 };
@@ -114,13 +120,13 @@ Gfx mat_main_counter_corner_wood2[] = {
 	gsDPSetAlphaDither(G_AD_NOISE),
 	gsDPSetTextureLUT(G_TT_RGBA16),
 	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, main_counter_corner_wood2_pal_rgba16),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, main_counter_corner_wood2_new_pal_rgba16),
 	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadTLUTCmd(5, 13),
-	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, main_counter_corner_wood2_ci8),
-	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadBlock(7, 0, 0, 2047, 256),
-	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 8, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
+	gsDPLoadTLUTCmd(5, 7),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, main_counter_corner_wood2_new_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 1023, 512),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 4, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
 	gsDPSetTileSize(0, 0, 0, 252, 252),
 	gsSPEndDisplayList(),
 };

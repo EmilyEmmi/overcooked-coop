@@ -22,12 +22,12 @@ Lights1 sink_plate_lights = gdSPDefLights1(
 	0x65, 0x65, 0x65,
 	0xCD, 0xCD, 0xCD, 0x28, 0x28, 0x28);
 
-Texture sink_wood_ci8[] = {
-	#include "actors/sink/wood.ci8.inc.c"
+Texture sink_wood_new_ci4[] = {
+	#include "actors/sink/wood_new.ci4.inc.c"
 };
 
-Texture sink_wood_pal_rgba16[] = {
-	#include "actors/sink/wood.rgba16.pal"
+Texture sink_wood_new_pal_rgba16[] = {
+	#include "actors/sink/wood_new.rgba16.pal"
 };
 
 Texture sink_sink_lines_ia8[] = {
@@ -830,13 +830,13 @@ Gfx mat_sink_wood[] = {
 	gsDPSetAlphaDither(G_AD_NOISE),
 	gsDPSetTextureLUT(G_TT_RGBA16),
 	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, sink_wood_pal_rgba16),
+	gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, sink_wood_new_pal_rgba16),
 	gsDPSetTile(0, 0, 0, 256, 5, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadTLUTCmd(5, 15),
-	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 1, sink_wood_ci8),
-	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
-	gsDPLoadBlock(7, 0, 0, 2047, 256),
-	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 8, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0),
+	gsDPLoadTLUTCmd(5, 8),
+	gsDPSetTextureImage(G_IM_FMT_CI, G_IM_SIZ_16b, 1, sink_wood_new_ci4),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 1023, 512),
+	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 4, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0, G_TX_WRAP | G_TX_MIRROR, 6, 0),
 	gsDPSetTileSize(0, 0, 0, 252, 252),
 	gsSPEndDisplayList(),
 };

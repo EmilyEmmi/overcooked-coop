@@ -35,3 +35,4 @@ extern Gfx heat_heat_flame_movement_mesh_layer_5[];
 extern Gfx heat_heat_flame_tip_skinned_mesh_layer_5[];
 extern Gfx heat_heat_flame_tip_mesh_layer_5[];
 extern Gfx heat_heat_model_mesh_layer_1[];
+extern Gfx heat_material_revert_render_settings[];

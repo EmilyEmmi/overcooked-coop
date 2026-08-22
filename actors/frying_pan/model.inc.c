@@ -373,9 +373,11 @@ Gfx frying_pan_frying_pan_model_mesh_layer_1_tri_3[] = {
 
 
 Gfx mat_frying_pan_frying_pan_top[] = {
+	gsSPSetGeometryMode(G_FRESNEL_ALPHA_EXT),
 	gsSPSetLights1(frying_pan_frying_pan_top_lights),
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsDPSetCombineLERP(TEXEL0, SHADE_ALPHA, SHADE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, SHADE_ALPHA, SHADE, 0, 0, 0, 0, ENVIRONMENT),
+	gsSPFresnel(0xffef, 0x000e),
 	gsDPSetAlphaDither(G_AD_NOISE),
 	gsDPSetTextureLUT(G_TT_RGBA16),
 	gsSPTexture(65535, 65535, 0, 0, 1),
@@ -391,6 +393,7 @@ Gfx mat_frying_pan_frying_pan_top[] = {
 };
 
 Gfx mat_revert_frying_pan_frying_pan_top[] = {
+	gsSPClearGeometryMode(G_FRESNEL_ALPHA_EXT),
 	gsDPPipeSync(),
 	gsDPSetAlphaDither(G_AD_DISABLE),
 	gsDPSetTextureLUT(G_TT_NONE),
