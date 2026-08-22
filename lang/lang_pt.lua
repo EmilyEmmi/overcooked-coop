@@ -14,7 +14,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	needs_plate = "Você precisa de um prato!",
 	plate_empty = "O prato está vazio.",
 	no_orders_available = "Nenhum pedido disponível.",
-	order_not_availble = "Esse pedido não está disponível.",
+	order_not_availble = "Este pedido não está disponível.",
 	playing_now = "Você está jogando agora!",
 	too_many_cooks = "Há muitos cozinheiros na cozinha! Por favor espere até que uma vaga seja aberta.",
 	connection_issues = "Algumas pessoas podem estar tendo problemas de conexão:",
@@ -153,12 +153,12 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_left_to_right = "O pedido mais antigo ficará no lado esquerdo da fila. Sirva da esquerda para a direita para manter o combo de gorjetas.",
 	menu_desc_right_to_left = "O pedido mais antigo ficará no lado direito da fila. Sirva da direita para a esquerda para manter o combo de gorjetas.",
 	menu_desc_cook_indicators = "Exibir um gráfico acima do temporizador quando algo terminar de cozinhar ou está queimando. Útil se você não consegue ouvir avisos sonoros.",
-	menu_desc_language = "Selecione a linguagem para esse mod.\n\n(Recado: Nem todos as linguagens no sm64coopdx são suportados.)",
+	menu_desc_language = "Selecione a linguagem para este mod.\n\n(Recado: Nem todos as linguagens no sm64coopdx são suportados.)",
 	menu_desc_disable_water_effect = "Desativa a água em movimento em um dos níveis.",
 
 	menu_title_join = "Entrar?",
 	menu_desc_join_now = "Entrar na ação agora, ou esperar até que uma vaga seja aberta.",
-	menu_desc_join_wait = "Começar a jogar assim que esse nível acabar.",
+	menu_desc_join_wait = "Começar a jogar assim que este nível acabar.",
 	menu_desc_join_practice = "Entrar na área de tutorial para praticar.",
 	menu_desc_join_spectate = "Virar um espectador até desativar o modo espectador no menu.",
 
