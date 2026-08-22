@@ -3,8 +3,8 @@ Lights1 service_counter_service_counter_metal_lights = gdSPDefLights1(
 	0x6E, 0x6E, 0x6E, 0x28, 0x28, 0x28);
 
 Lights1 service_counter_service_counter_triangles_lights = gdSPDefLights1(
-	0x56, 0x56, 0x56,
-	0xB0, 0xB0, 0xB0, 0x28, 0x28, 0x28);
+	0x55, 0x55, 0x55,
+	0xAE, 0xAE, 0xAE, 0x28, 0x28, 0x28);
 
 Lights1 service_counter_service_counter_lamp_lights = gdSPDefLights1(
 	0x49, 0xB, 0xA,
@@ -12,6 +12,10 @@ Lights1 service_counter_service_counter_lamp_lights = gdSPDefLights1(
 
 Texture service_counter_service_counter_triangle_i8[] = {
 	#include "actors/service_counter/service_counter_triangle.i8.inc.c"
+};
+
+Texture service_counter_service_counter_light_ia8[] = {
+	#include "actors/service_counter/service_counter_light.ia8.inc.c"
 };
 
 Vtx service_counter_service_counter_model_mesh_layer_1_vtx_0[198] = {
@@ -604,6 +608,22 @@ Gfx service_counter_service_counter_model_mesh_layer_1_tri_3[] = {
 	gsSPEndDisplayList(),
 };
 
+Vtx service_counter_service_counter_model_mesh_layer_5_vtx_0[6] = {
+	{{{0, 132, -103}, 0, {415, 204}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{-253, 132, -103}, 0, {65, 204}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{-253, 132, 103}, 0, {65, 788}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{0, 132, 103}, 0, {415, 788}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{253, 132, 103}, 0, {65, 788}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{253, 132, -103}, 0, {65, 204}, {0xFF, 0xFF, 0xFF, 0xFF}}},
+};
+
+Gfx service_counter_service_counter_model_mesh_layer_5_tri_0[] = {
+	gsSPVertex(service_counter_service_counter_model_mesh_layer_5_vtx_0 + 0, 6, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSP2Triangles(0, 3, 4, 0, 0, 4, 5, 0),
+	gsSPEndDisplayList(),
+};
+
 
 Gfx mat_service_counter_service_counter_metal[] = {
 	gsSPSetGeometryMode(G_FRESNEL_ALPHA_EXT),
@@ -678,6 +698,27 @@ Gfx mat_revert_service_counter_service_counter_lamp2[] = {
 	gsSPEndDisplayList(),
 };
 
+Gfx mat_service_counter_service_counter_light[] = {
+	gsSPClearGeometryMode(G_SHADE | G_CULL_BACK | G_LIGHTING),
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0, 0, 0, 0, TEXEL0),
+	gsDPSetAlphaDither(G_AD_NOISE),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetTextureImage(G_IM_FMT_IA, G_IM_SIZ_8b_LOAD_BLOCK, 1, service_counter_service_counter_light_ia8),
+	gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_8b_LOAD_BLOCK, 0, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0),
+	gsDPLoadBlock(7, 0, 0, 255, 1024),
+	gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_8b, 2, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 5, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPSetTileSize(0, 0, 0, 60, 124),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_service_counter_service_counter_light[] = {
+	gsSPSetGeometryMode(G_SHADE | G_CULL_BACK | G_LIGHTING),
+	gsDPPipeSync(),
+	gsDPSetAlphaDither(G_AD_DISABLE),
+	gsSPEndDisplayList(),
+};
+
 Gfx service_counter_service_counter_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_service_counter_service_counter_metal),
 	gsSPDisplayList(service_counter_service_counter_model_mesh_layer_1_tri_0),
@@ -691,6 +732,13 @@ Gfx service_counter_service_counter_model_mesh_layer_1[] = {
 	gsSPDisplayList(mat_service_counter_service_counter_lamp2),
 	gsSPDisplayList(service_counter_service_counter_model_mesh_layer_1_tri_3),
 	gsSPDisplayList(mat_revert_service_counter_service_counter_lamp2),
+	gsSPEndDisplayList(),
+};
+
+Gfx service_counter_service_counter_model_mesh_layer_5[] = {
+	gsSPDisplayList(mat_service_counter_service_counter_light),
+	gsSPDisplayList(service_counter_service_counter_model_mesh_layer_5_tri_0),
+	gsSPDisplayList(mat_revert_service_counter_service_counter_light),
 	gsSPEndDisplayList(),
 };
 
