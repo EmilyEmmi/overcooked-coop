@@ -1117,7 +1117,7 @@ local menu_data = {
                 enter_menu(8)
             end,
             true,
-            desc = "menu_host_options",
+            desc = "menu_desc_host_options",
         },
         {
             "menu_spectate",

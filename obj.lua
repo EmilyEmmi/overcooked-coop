@@ -604,13 +604,14 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 end
             end
             
+            local wasEmpty = (o2.oContentCount == 0)
             o2.oContents = o2.oContents | (containerData << (8 * o2.oContentCount))
             o2.oContentCount = o2.oContentCount + containerCount
 
             -- average cooking time
             if iData.pourable then
-                if o.oContentCount == 0 then
-                    o2.oCutOrCookTimer = o2.oCutOrCookTimer * 2 -- keep same
+                if wasEmpty then
+                    o2.oCutOrCookTimer = o.oCutOrCookTimer * 2 -- inherit cooking time
                 else
                     o2.oCutOrCookTimer = o2.oCutOrCookTimer + o.oCutOrCookTimer
                 end
@@ -815,6 +816,7 @@ function check_ingredient_valid_for_place(o, o2, onPlate)
 
         -- put cooked result on plate if it exists
         if not (iData.isPlate or iData.plateable) then
+            if #children2 ~= 0 then return false, false end
             local cookedData = get_cooked_data(o)
             return (cookedData ~= nil), (cookedData ~= nil), cookedData
         end

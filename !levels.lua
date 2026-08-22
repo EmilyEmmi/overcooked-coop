@@ -191,6 +191,7 @@ OC_LEVEL_DATA = {
             end
 
             local bowser = obj_get_first_with_behavior_id(id_bhvBowser)
+            if not bowser then return end
             if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
                 bowser.oAction = 20
                 bowser.header.gfx.node.flags = bowser.header.gfx.node.flags & ~GRAPH_RENDER_ACTIVE

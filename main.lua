@@ -137,8 +137,9 @@ function update()
         local lastResortDelete = {}
         while o and ingredientCount > MAX_INGREDIENT_COUNT do
             local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
-            if not iData.noTrash then
-                if o.oContentCount == 0 and not iData.subIcon then
+            if o.oHeldState == HELD_FREE and not iData.noTrash then
+                if o.oContentCount == 0 and (not iData.subIcon)
+                and o.usingObj == nil or o.usingObj == o then
                     obj_mark_for_deletion(o)
                     ingredientCount = ingredientCount - 1
                 else

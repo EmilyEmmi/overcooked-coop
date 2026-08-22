@@ -1,4 +1,6 @@
-langdata["en"] = -- the letters here will be what you type for the command (ex: to switch to this language, type "/lang en")
+-- NOTE: Don't translate the text inside brackets ([GRAB], etc.) as these refer to buttons
+
+langdata["en"] =
 {
   -- fullname for auto select (make sure this matches in-game under Misc -> Languages)
   fullname = "English",
@@ -32,36 +34,49 @@ langdata["en"] = -- the letters here will be what you type for the command (ex: 
   confirm_key = "[A] Confirm",
   cook_done = "Done",
 
-  -- NOTE: Don't translate the text inside brackets ([GRAB], etc.)
+  -- Level Info
+  -- Note: Many of these level names use wordplay or alliteration, which are
+  -- difficult to localize. You may attempt to come up with appropriate wordplay,
+  -- or leave the level names untranslated.
   level_name_0 = "Test Level",
   level_desc_0 = "Debug level containing all mechanics. Extremely challenging!",
+
   level_name_1 = "Bob-Omb Saladfield",
   level_desc_1 = "A simple level with salad that teaches the basic mechanics. Start here!",
   level_advice_1 = "Press [GRAB] to grab ingredients, and hold [ACTION] on a cutting board to cut them.",
+
   level_name_2 = "Whomp's Spinning Salads",
   level_desc_2 = "Tread carefully across the spinning platforms to create salads, and make sure you wash those dishes!",
   level_advice_2 = "Bring dirty dishes to the sink and hold [ACTION] to wash them.",
+
   level_name_3 = "Soupy Sea",
   level_desc_3 = "Learn to make soup, but be careful- the counters will shift with the rocking boat...",
   level_advice_3 = "You can't pass through red barriers, but ingredients can.",
+
   level_name_4 = "Lethal Lava Puzzle",
   level_desc_4 = "Make more soup, but watch your step! If you stand on a moving puzzle piece, you'll be dropped into lava!",
   level_advice_4 = "Ingredients will be destroyed if they fall into lava.",
+
   level_name_5 = "Shifting Sand Burgers",
   level_desc_5 ="Learn to make burgers, but don't fall into the quicksand!",
   level_advice_5 = "To make burgers, cut a slab of meat and cook the patty, then place on a bun and add toppings.",
+
   level_name_6 = "Burger Time",
   level_desc_6 = "Make more complicated burgers! Use the Wall Kick to reach the ingredients!",
   level_advice_6 = "Press [THROW] to throw raw ingredients. Ingredients will bounce off of walls when thrown.",
+
   level_name_7 = "Rainbow Cruise",
   level_desc_7 = "Put burgers and salad together on this carpet ride! Take advantage of when the carpets are together!",
   level_advice_7 = "Make good use of throwing raw ingredients with [THROW]!",
+
   level_name_8 = "Slip Slidin' Pizzas",
   level_desc_8 = "Become aquainted with the realm of Pizza. Slide down to access the lower area quickly, but don't slip off of the mountain!",
   level_advice_8 = "Make pizza by combining cut dough, tomato, cheese, and other toppings, then baking the pizza in an oven.",
+
   level_name_9 = "Merry Go Pizza",
   level_desc_9 = "Make Pizzas with multiple toppings in this chaotic merry go round... if you dare!",
   level_advice_9 = "You can't add toppings to pizzas once they're fully baked.",
+
   level_name_10 = "Koopa Kitchen",
   level_desc_10 = "The final challenge! You'll have to make every kind of food at once.",
 

@@ -1,5 +1,5 @@
 _G.overcookedAPI = {}
-_G.overcookedAPIVersion = 1.0
+_G.overcookedAPIVersion = 1.1
 
 -- Adds a new level. Set saveName to keep save data tied to the level, even if you change the name.
 ---@param data table Table of information for the level; see !levels.lua for info.
