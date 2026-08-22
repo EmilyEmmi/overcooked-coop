@@ -10,7 +10,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	switched = "Trocado para o português!",
 
 	served = "%s servido.",
-	dish_not_valid = "Isso não é um prato válido!",
+	dish_not_valid = "Isto não é um prato válido!",
 	needs_plate = "Você precisa de um prato!",
 	plate_empty = "O prato está vazio.",
 	no_orders_available = "Nenhum pedido disponível.",
@@ -142,7 +142,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_confirm_quit = "Você tem certeza que deseja sair? Qualquer progresso que não está salvo vai ser perdido!",
 	menu_desc_confirm_practice = "Você tem certeza de que deseja entrar no nível de tutorial? Você será removido do nível atual!",
 
-	menu_desc_grab_button = "Use este botão para colocar/agarrar ingredientes. Isso tem prioridade sobre a ação normal do botão.",
+	menu_desc_grab_button = "Use este botão para colocar/agarrar ingredientes. Isto tem prioridade sobre a ação normal do botão.",
 	menu_desc_action_button = "Use este botão para picar ingredientes e lavar a louça.\nNote que usar B fará com que essas ações tenham prioridade sobre agarrar.",
 	menu_desc_throw_button = "Use este botão para arremessar ingredientes.\nNote que colocar/agarrar tem prioridade ao usar B.",
 	menu_desc_reduced_motion = "Desativa partes em movimento do menu.",
