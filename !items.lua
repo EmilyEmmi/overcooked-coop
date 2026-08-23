@@ -12,10 +12,14 @@ E_MODEL_SAUSAGE = smlua_model_util_get_id("sausage_geo")
 E_MODEL_CHICKEN = smlua_model_util_get_id("chicken_geo")
 E_MODEL_DOUGH = smlua_model_util_get_id("dough_geo")
 E_MODEL_PIZZA = smlua_model_util_get_id("pizza_geo")
+E_MODEL_EGG = smlua_model_util_get_id("egg_geo")
+E_MODEL_FLOUR = smlua_model_util_get_id("flour_geo")
+E_MODEL_CHOCOLATE = smlua_model_util_get_id("chocolate_geo")
 
 E_MODEL_PLATE = smlua_model_util_get_id("plate_geo")
 E_MODEL_POT = smlua_model_util_get_id("pot_geo")
 E_MODEL_PAN = smlua_model_util_get_id("frying_pan_geo")
+E_MODEL_BOWL = smlua_model_util_get_id("bowl_geo")
 
 E_MODEL_COUNTER_CENTER = smlua_model_util_get_id("main_counter_center_geo")
 E_MODEL_COUNTER_SIDE = smlua_model_util_get_id("main_counter_side_geo")
@@ -28,6 +32,7 @@ E_MODEL_SERVING = smlua_model_util_get_id("service_counter_geo")
 E_MODEL_PLATE_COUNTER = smlua_model_util_get_id("plate_counter_geo")
 E_MODEL_SINK = smlua_model_util_get_id("sink_geo")
 E_MODEL_OVEN = smlua_model_util_get_id("oven_geo")
+E_MODEL_MIXER = smlua_model_util_get_id("mixer_geo")
 
 E_MODEL_KNIFE = smlua_model_util_get_id("knife_geo")
 E_MODEL_BARRIER = smlua_model_util_get_id("barrier_geo")
@@ -77,10 +82,19 @@ ITEM_SAUSAGE = 23
 ITEM_SAUSAGE_CUT = 24
 ITEM_CHICKEN = 25
 ITEM_CHICKEN_CUT = 26
+ITEM_BOWL = 27
+ITEM_EGG = 28
+ITEM_FLOUR = 29
+ITEM_CHOCOLATE = 30
+ITEM_CHOCOLATE_CUT = 31
 
 SALAD_COMBO = {[ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1}
 BURGER_COMBO = {[ITEM_MEAT_COOKED] = 1, [ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1}
 PIZZA_COMBO = {[ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1, [ITEM_SAUSAGE_CUT] = 1, [ITEM_CHICKEN_CUT] = 1, [ITEM_MUSHROOM_CUT] = 1}
+
+COOK_TYPE_HEAT = 0
+COOK_TYPE_OVEN = 1
+COOK_TYPE_MIX = 2
 
 BOX_LABEL_CASES = {
     [ITEM_MEAT] = 0,
@@ -109,7 +123,7 @@ ITEM_DATA = {
         contentSlots = 3,
         accepts = {[ITEM_TOMATO_CUT] = 0, [ITEM_ONION_CUT] = 0, [ITEM_MUSHROOM_CUT] = 0},
         pourable = true,
-        cookable = true,
+        cookType = COOK_TYPE_HEAT,
         noTrash = true,
         noThrow = true,
         cookSound = SOUND_GENERAL_QUIET_BUBBLE2,
@@ -225,7 +239,7 @@ ITEM_DATA = {
         contentSlots = 1,
         accepts = {[ITEM_MEAT_CUT] = 0},
         pourable = true,
-        cookable = true,
+        cookType = COOK_TYPE_HEAT,
         noTrash = true,
         noThrow = true,
         icon = ICON_PAN,
@@ -262,7 +276,7 @@ ITEM_DATA = {
         model = E_MODEL_PIZZA,
         contentSlots = 4,
         accepts = PIZZA_COMBO,
-        bakeable = true,
+        cookType = COOK_TYPE_OVEN,
         selfCookItem = ITEM_DOUGH_COOKED,
         icon = ICON_DOUGH,
         subIcon = ICON_CUT,
@@ -271,7 +285,7 @@ ITEM_DATA = {
         model = E_MODEL_PIZZA,
         isCooked = true,
         plateable = true,
-        bakeable = true,
+        cookType = COOK_TYPE_OVEN,
         selfCookItem = ITEM_DOUGH_COOKED,
         icon = ICON_DOUGH,
         subIcon = ICON_CUT,
@@ -296,6 +310,40 @@ ITEM_DATA = {
         model = E_MODEL_CHICKEN,
         icon = ICON_CHICKEN,
         subIcon = ICON_CUT,
+    },
+    [ITEM_BOWL] = {
+        model = E_MODEL_BOWL,
+        contentSlots = 3,
+        accepts = {[ITEM_EGG] = 1, [ITEM_FLOUR] = 1, [ITEM_CHOCOLATE_CUT] = 1},
+        pourable = true,
+        cookType = COOK_TYPE_MIX,
+        noTrash = true,
+        noThrow = true,
+        cookSound = SOUND_GENERAL_QUIET_BUBBLE2,
+        cookSoundChance = 1/16,
+        renderFunc = function(o)
+            if o.usingObj and o.usingObj.oBehParams2ndByte == COUNTER_TYPE_MIXER then
+                o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
+            end
+        end,
+        --icon = ICON_BOWL,
+    },
+    [ITEM_EGG] = {
+        model = E_MODEL_EGG,
+        --icon = ICON_EGG,
+    },
+    [ITEM_FLOUR] = {
+        model = E_MODEL_FLOUR,
+        --icon = ICON_FLOUR,
+    },
+    [ITEM_CHOCOLATE] = {
+        model = E_MODEL_CHOCOLATE,
+        cut = ITEM_CHOCOLATE_CUT,
+        --icon = ICON_CHOCOLATE
+    },
+    [ITEM_CHOCOLATE_CUT] = {
+        model = E_MODEL_CHOCOLATE, -- no cut model atm
+        --icon = ICON_CHOCOLATE
     },
 }
 
@@ -335,6 +383,7 @@ COUNTER_TYPE_SERVING = 5
 COUNTER_TYPE_PLATES = 6
 COUNTER_TYPE_SINK = 7
 COUNTER_TYPE_OVEN = 8
+COUNTER_TYPE_MIXER = 9
 
 COUNTER_HEIGHT = {
     [COUNTER_TYPE_HEAT] = 36,

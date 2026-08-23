@@ -692,7 +692,7 @@ function behind_hud_render()
                     
                     if c.oContentCount ~= 0 then
                         local maxCookTime = iDataC.cookTime or DEFAULT_COOK_TIME
-                        allCooked = allCooked or iDataC.isCooked or (iDataC.cookable and c.oCutOrCookTimer >= maxCookTime)
+                        allCooked = allCooked or iDataC.isCooked or (iDataC.cookType == COOK_TYPE_HEAT and c.oCutOrCookTimer >= maxCookTime)
 
                         local cookedData = get_cooked_data(c)
                         local renderContents = true
@@ -758,7 +758,7 @@ function behind_hud_render()
                     radar.barWidth = 0
                     if iData.cut then
                         radar.barWidth = o.oCutOrCookTimer / 30
-                    elseif iData.cookable or iData.bakeable then
+                    elseif iData.cookType then
                         local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
                         radar.barWidth = o.oCutOrCookTimer / maxCookTime
                     end

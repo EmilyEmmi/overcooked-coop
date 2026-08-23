@@ -195,7 +195,7 @@ function bhv_ingredient_loop(o)
     o.header.gfx.node.flags = o.header.gfx.node.flags & ~GRAPH_RENDER_INVISIBLE
 
     -- spawn steam/smoke for cooked things
-    if (o.oTimer % 10 == 0) and (((iData.cookable or iData.bakeable) and o.oContentCount ~= 0 and o.oCutOrCookTimer == maxCookTime)
+    if (o.oTimer % 10 == 0) and ((iData.cookType and o.oContentCount ~= 0 and o.oCutOrCookTimer == maxCookTime)
     or iData.isCooked or o.oContents == ITEM_BURNT) then
         local model = (o.oContents == ITEM_BURNT and E_MODEL_BURN_SMOKE) or E_MODEL_SMOKE
         spawn_child_object(o, id_bhvBlackSmokeMario, model, 0, 0, 0)
@@ -298,8 +298,8 @@ function bhv_ingredient_loop(o)
                 cur_obj_become_intangible()
                 ingredient_place_on_counter(o, counter)
 
-                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT or counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
-                    if (o.oContentCount ~= 0 or iData.selfCookItem) and o.oContents ~= ITEM_BURNT and (iData.cookable or iData.bakeable) then
+                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT or counter.oBehParams2ndByte == COUNTER_TYPE_OVEN or counter.oBehParams2ndByte == COUNTER_TYPE_MIXER then
+                    if (o.oContentCount ~= 0 or iData.selfCookItem) and o.oContents ~= ITEM_BURNT and iData.cookType then
                         if (not iData.isCooked) and o.oCutOrCookTimer < maxCookTime then
                             o.oCutOrCookTimer = o.oCutOrCookTimer + 1
                             o.oOvercookTimer = 0
@@ -696,7 +696,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
         iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
         local allowPlace = true
         if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT then
-            allowPlace = iData.cookable or false
+            allowPlace = (iData.cookType == COOK_TYPE_HEAT) or false
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_TRASH then
             allowPlace = false
             if iData.noTrash then
@@ -768,7 +768,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 return true, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
-            allowPlace = iData.bakeable or false
+            allowPlace = iData.cookType == COOK_TYPE_OVEN or false
         end
 
         if not allowPlace then return (o2 ~= nil), true end
@@ -1067,6 +1067,8 @@ function bhv_counter_init(o)
 
     if o.oBehParams2ndByte == COUNTER_TYPE_CUT then
         spawn_child_object(o, id_bhvCuttingBoard, E_MODEL_CHOPPING_BOARD, 0, 0, 0, nil)
+    elseif o.oBehParams2ndByte == COUNTER_TYPE_MIXER then
+        spawn_child_object(o, id_bhvCuttingBoard, E_MODEL_MIXER, 0, 0, 0, nil)
     elseif o.oBehParams2ndByte == COUNTER_TYPE_SERVING or o.oBehParams2ndByte == COUNTER_TYPE_SINK then
         o.collisionData = smlua_collision_util_get("sink_collision")
     elseif o.oBehParams2ndByte == COUNTER_TYPE_OVEN then
@@ -1099,7 +1101,7 @@ function bhv_counter_loop(o)
         local cookSoundChance = 1
         if o.usingObj and o.usingObj ~= o then
             local iData = ITEM_DATA[o.usingObj.oBehParams] or ITEM_DATA[0]
-            if iData.cookable and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
+            if iData.cookType == COOK_TYPE_HEAT and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
                 heatOn = true
                 cookSound = iData.cookSound or cookSound
                 cookSoundChance = iData.cookSoundChance or cookSoundChance
@@ -1135,7 +1137,7 @@ function bhv_counter_loop(o)
         local cookSoundChance = 1
         if o.usingObj and o.usingObj ~= o then
             local iData = ITEM_DATA[o.usingObj.oBehParams] or ITEM_DATA[0]
-            if iData.bakeable and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
+            if iData.cookType == COOK_TYPE_OVEN and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
                 heatOn = true
                 cookSound = iData.cookSound or cookSound
                 cookSoundChance = iData.cookSoundChance or cookSoundChance

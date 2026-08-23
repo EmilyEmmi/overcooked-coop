@@ -273,6 +273,30 @@ function pizza_mushroom_switch(n)
     handle_pizza_topping_switch(n, ITEM_MUSHROOM_CUT)
 end
 
+--- @param n GraphNode | FnGraphNode
+function flour_switch(n)
+    local switch = cast_graph_node(n)
+    switch.selectedCase = 0 -- alt is cut chocolate???
+end
+
+--- @param n GraphNode | FnGraphNode
+function chocolate_switch(n)
+    alt_item_switch(n, ITEM_CHOCOLATE_CUT)
+end
+
+--- @param n GraphNode | FnGraphNode
+function mixer_bowl_switch(n)
+    local switch = cast_graph_node(n)
+    local o = geo_get_current_object()
+
+    local parent = o.parentObj
+    if parent.usingObj and parent.usingObj ~= o then
+        switch.selectedCase = 1
+    else
+        switch.selectedCase = 0
+    end
+end
+
 -- UV scrolling using djoslin's UV scroll library
 local UvScroll = require("/lib/uv-scroll")
 
