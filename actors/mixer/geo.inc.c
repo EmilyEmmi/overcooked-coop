@@ -1,5 +1,5 @@
 const GeoLayout mixer_mixer_bowl_switch_option[] = {
-	GEO_NODE_START(),
+	GEO_TRANSLATE_ROTATE(LAYER_OPAQUE, 0, 0, 0, 0, 90, 0),
 	GEO_OPEN_NODE(),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, mixer_mixer_bowl_switch_option_mixer_bowl_model_mesh_layer_1),
 	GEO_CLOSE_NODE(),
@@ -21,7 +21,10 @@ const GeoLayout mixer_geo[] = {
 				GEO_CLOSE_NODE(),
 				GEO_DISPLAY_LIST(LAYER_OPAQUE, mixer_mixer_model_mesh_layer_1),
 				GEO_DISPLAY_LIST(LAYER_TRANSPARENT, mixer_mixer_model_mesh_layer_5),
-				GEO_ANIMATED_PART(LAYER_OPAQUE, -127, 254, 0, mixer_mixer_spin_mesh_layer_1),
+				GEO_TRANSLATE_ROTATE(LAYER_OPAQUE, 0, 513, 127, 0, 90, 0),
+				GEO_OPEN_NODE(),
+					GEO_ANIMATED_PART(LAYER_OPAQUE, 0, 0, 0, mixer_mixer_spin_mesh_layer_1),
+				GEO_CLOSE_NODE(),
 			GEO_CLOSE_NODE(),
 		GEO_CLOSE_NODE(),
 		GEO_DISPLAY_LIST(LAYER_OPAQUE, mixer_material_revert_render_settings),

@@ -1,17 +1,10 @@
-extern const GeoLayout flour_chocolate_cut[];
 extern const GeoLayout flour_geo[];
 extern Lights1 flour_f3dlite_material_006_lights;
-extern Lights1 flour_f3dlite_material_005_lights;
 extern u8 flour_flour_bag_ci8[];
 extern u8 flour_flour_bag_pal_rgba16[];
 extern Vtx flour_flour_model_mesh_layer_1_vtx_0[48];
 extern Gfx flour_flour_model_mesh_layer_1_tri_0[];
-extern Vtx flour_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1_vtx_0[352];
-extern Gfx flour_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1_tri_0[];
 extern Gfx mat_flour_f3dlite_material_006[];
 extern Gfx mat_revert_flour_f3dlite_material_006[];
-extern Gfx mat_flour_f3dlite_material_005[];
-extern Gfx mat_revert_flour_f3dlite_material_005[];
 extern Gfx flour_flour_model_mesh_layer_1[];
-extern Gfx flour_chocolate_cut_switch_option_chocolate_cut_model_mesh_layer_1[];
 extern Gfx flour_material_revert_render_settings[];
