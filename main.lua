@@ -443,8 +443,16 @@ function on_sync_valid()
 
     if didInitialJoin then return end
     didInitialJoin = true
+
+    -- warning for old versions of CS
+    if charSelect then
+        local csVersion = charSelect.version_get_full()
+        if csVersion.major < 16 or (csVersion.major == 16 and csVersion.minor < 3) then
+            djui_chat_message_create(trans("old_char_select_warning"))
+        end
+    end
+    
     if network_is_server() then
-        didInitialJoin = true
         sMario0.spectator = false
         sMario0.flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
     else
@@ -463,8 +471,6 @@ function on_sync_valid()
             sMario0.spawnID = 0
             sMario0.spectator = true
             stayInSpectate = true
-            open_menu()
-            enter_menu(5, 1, true)
         else
             sMario0.spectator = false
             stayInSpectate = false
@@ -472,6 +478,9 @@ function on_sync_valid()
             sMario0.spawnID = 0
             gMarioStates[0].flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
         end
+
+        open_menu()
+        enter_menu(5, 1, true)
     end
 end
 hook_event(HOOK_ON_SYNC_VALID, on_sync_valid)

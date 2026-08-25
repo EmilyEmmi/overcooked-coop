@@ -1174,6 +1174,16 @@ local menu_data = {
             desc = "menu_desc_preferences",
         },
         {
+            "menu_char_select",
+            function(x)
+                inMenu = false
+                charSelect.set_menu_open(true)
+            end,
+            false,
+            function() return not charSelect end,
+            desc = "menu_desc_char_select",
+        },
+        {
             "menu_records",
             function(x)
                 enter_menu(6)
@@ -1363,6 +1373,9 @@ local menu_data = {
             function()
                 inMenu = false
                 stayInSpectate = false
+                if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then
+                    return
+                end
                 local sMario = gPlayerSyncTable[0]
                 local kitchen, spawnID = join_smallest_kitchen(0)
                 sMario.kitchen = kitchen
@@ -1378,7 +1391,7 @@ local menu_data = {
             end,
             false,
             function()
-                return not (gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
+                return not ((gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP) or gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
             end,
             desc = "menu_desc_join_now",
         },
@@ -1390,7 +1403,7 @@ local menu_data = {
             end,
             false,
             function()
-                return (gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
+                return ((gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP) or gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
             end,
             desc = "menu_desc_join_now",
         },
@@ -1518,6 +1531,12 @@ function render_menu()
     elseif menu.title == nil or not menu.noLang then
         title = trans(title)
     end
+
+    -- version (bottom left)
+    local version = "v" .. overcookedAPIVersion
+    djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_BOTTOM)
+    djui_hud_set_color_from_table(MENU_COLORS.desc)
+    djui_hud_print_text(version, 10, screenHeight - 10, scale / 4, scale / 4)
 
     -- determine menu size
     local scroll = false
@@ -1873,6 +1892,10 @@ function menu_controls(m)
         end
     elseif (sMenuInputsPressed & R_TRIG) ~= 0 then
         djui_open_pause_menu()
+    elseif (sMenuInputsPressed & Z_TRIG) ~= 0 and charSelect and not menu.noBack then
+        play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource)
+        inMenu = false
+        charSelect.set_menu_open(true)
     elseif (sMenuInputsPressed & START_BUTTON) ~= 0 and not menu.noBack then
         play_sound(SOUND_MENU_PAUSE, gGlobalSoundSource)
         inMenu = false

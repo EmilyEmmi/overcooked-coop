@@ -12,9 +12,9 @@ function trans(id, ...)
   if select("#", ...) > 0 then
     translation = string.format(translation, ...)
   end
-  if translation == id then
+  --[[if translation == id then
     log_to_console("No translation for \""..id.."\"")
-  end
+  end]]
   return translation
 end
 

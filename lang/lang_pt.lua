@@ -1,7 +1,7 @@
 langdata["pt"] = -- the letters here will be what you type for the command (ex: to switch to this language, type "/lang en")
 {
 	-- fullname for auto select (make sure this matches in-game under Misc -> Languages)
-	fullname = "Português",
+	fullname = "Portuguese",
 
 	-- name in the built-in menu
 	name_menu = "Português",
@@ -134,7 +134,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_spectate_on = "Você vai ficar no modo de espectador.",
 	menu_desc_preferences = "Mudar opções para você mesmo. Elas não afetam outros jogadores.",
 	menu_desc_records = "Visualizar suas pontuações máximas.",
-	menu_desc_djui_menu = "Entrar no menu DJUI. Você também pode pressionar R para o acessar.",
+	menu_desc_djui_menu = "Entrar no menu DJUI. Você também pode pressionar [R] para o acessar.",
 	menu_desc_quit_practice = "Sair da pratica.",
 
 	menu_title_confirm = "Confirmar?",

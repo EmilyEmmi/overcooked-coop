@@ -1,4 +1,4 @@
--- NOTE: Not included yet due to being incomplete. The check to exclude this is near the bottom of z_lan.lua
+-- NOTE: Not included yet due to being incomplete. The check to exclude this is near the bottom of z_lang.lua
 
 langdata["es"] = -- the letters here will be what you type for the command (ex: to switch to this language, type "/lang en")
 {
@@ -124,7 +124,7 @@ langdata["es"] = -- the letters here will be what you type for the command (ex: 
   menu_desc_spectate_on = "You'll stay in spectate mode.",
   menu_desc_preferences = "Change settings for yourself. These don't affect other players.",
   menu_desc_records = "View your high scores.",
-  menu_desc_djui_menu = "Accede al menú DJUI. You can also press the R button to access this.",
+  menu_desc_djui_menu = "Accede al menú DJUI. You can also press the [R] button to access this.",
   menu_desc_quit_practice = "Quit practicing.",
 
   menu_title_confirm = "Confirmar?",

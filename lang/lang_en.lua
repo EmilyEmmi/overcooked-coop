@@ -25,6 +25,7 @@ langdata["en"] =
   press_start = "Press [START]",
   time_format = "%d:%02d",
   short_player_count = "%dP",
+  old_char_select_warning = "\\#ff5050\\WARNING: Using old versions of Character Select is known to cause issues! Please upgrade to v1.16.3 or higher here:\n\\#\\https://github.com/Squishy6094/character-select-coop/releases",
 
   tip = "Tip: ",
   kitchen = "Kitchen",
@@ -104,6 +105,7 @@ langdata["en"] =
   menu_preferences = "Preferences",
   menu_records = "Records",
   menu_djui_menu = "DJUI Menu",
+  menu_char_select = "Character Select",
 
   menu_grab_button = "Grab Button",
   menu_action_button = "Action Button",
@@ -138,8 +140,9 @@ langdata["en"] =
   menu_desc_spectate_on = "You'll stay in spectate mode.",
   menu_desc_preferences = "Change settings for yourself. These don't affect other players.",
   menu_desc_records = "View your high scores.",
-  menu_desc_djui_menu = "Enter the DJUI menu. You can also press the R button to access this.",
+  menu_desc_djui_menu = "Enter the DJUI menu. You can also press the [R] button to access this.",
   menu_desc_quit_practice = "Quit practicing.",
+  menu_desc_char_select = "Opens the Character Select Menu. You can also press [Z] in this menu.",
 
   menu_title_confirm = "Confirm?",
   menu_desc_confirm_restart = "Are you sure you want to restart? Any unsaved progress will be lost!",

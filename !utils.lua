@@ -390,6 +390,7 @@ function attempt_desync_fix(from)
         return
     end
 
+    sync_value(gGlobalSyncTable, "ocLevel")
     sync_value(gGlobalSyncTable, "gameState")
     sync_value(gGlobalSyncTable, "score")
     sync_value(gGlobalSyncTable, "timeLeft")
