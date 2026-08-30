@@ -7,6 +7,7 @@
 local subTimer = 0
 selectedItem = nil
 selectedCounter = nil
+hasValidGrabAction = false
 waitOpenDJUI = false
 gotNewRecord = false
 stayInSpectate = true
@@ -57,6 +58,7 @@ for i=0,MAX_PLAYERS-1 do
     sMario.spectator = true
     sMario.waitingForSlot = false
     sMario.throwButtonIndex = throwButtonIndex
+    sMario.oldPlatePlace = false
     sMario.inPractice = false
     sMario.canRejoin = false
     sMario.coopnetID = "-1"
@@ -636,6 +638,7 @@ function before_mario_update(m)
     end
 
     -- get selected item and counter
+    hasValidGrabAction = false
     if sMario.inPractice or not sMario.spectator then
         local grabPos = {x = m.pos.x, y = m.pos.y, z = m.pos.z}
         grabPos.x = grabPos.x + sins(m.faceAngle.y) * 52
@@ -643,26 +646,28 @@ function before_mario_update(m)
         --spawn_non_sync_object(id_bhvSparkleSpawn, E_MODEL_NONE, grabPos.x, grabPos.y, grabPos.z, nil)
         
         -- select ingredient from ground
-        local dist = 0
-        selectedItem, dist = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvIngredient, function(o)
+        selectedItem = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvIngredient, function(o)
             local counter = o.usingObj
             return o.oHeldState == HELD_FREE and o.oPlateAppearTimer == 0 and o.oRespawnTimer == 0
             and (o.parentObj == nil or o.parentObj == o) and (counter == nil)
-        end)
-        if dist > 115 then
-            selectedItem = nil
-        end
+            and (m.heldObj == nil or check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
+        end, 115)
+        hasValidGrabAction = (selectedItem ~= nil)
 
         -- select counter (when not holding an item, ground ingredients take priority, otherwise counters do)
         selectedCounter = nil
         if selectedItem == nil or m.heldObj then
-            selectedCounter, dist = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
-                return true -- No condition yet
-            end)
-            if selectedCounter == nil or dist > 100 then
-                selectedCounter = nil
-            else
+            selectedCounter = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
+                local o = counter.usingObj
+                if m.heldObj == nil then return true end
+                if o == nil or o == counter then
+                    return check_counter_valid_interact(counter, m.heldObj)
+                end
+                return (check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
+            end, 100)
+            if selectedCounter then
                 selectedItem = selectedCounter.usingObj
+                hasValidGrabAction = (hasValidGrabAction or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
             end
         end
     else
@@ -672,10 +677,11 @@ function before_mario_update(m)
     sMario.selObjSyncID = (selectedItem and selectedItem.oSyncID) or 0
     sMario.selCounterSyncID = (selectedCounter and selectedCounter.oSyncID) or 0
     sMario.throwButtonIndex = throwButtonIndex
+    sMario.oldPlatePlace = oldPlatePlace
     sMario.waitingForSlot = (sMario.spectator and not (sMario.inPractice or stayInSpectate))
 
     -- Sparkles at selected (might be changed)
-    if selectedCounter or selectedItem then
+    if (selectedCounter or selectedItem) and hasValidGrabAction then
         local o = selectedCounter or selectedItem
         local pos = {x = o.oPosX, y = o.oPosY, z = o.oPosZ}
         local size = 45

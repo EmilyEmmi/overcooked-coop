@@ -3,10 +3,14 @@
 - Added Portuguese translation, available under Preferences -> Language (denpakei32)
 - Made the Character Select menu accessible using the Z button in the menu, or through a menu option (previously, it could only be accessed using the /char-select command)
 ### Adjustments
+- Interacting with an ingredient on a counter while holding a plate no longer places the plate on the counter
+    - This change can be toggled in Preferences
+- Improved action priority- for example, if you're holding a bun and a bunch of ingredients are on the ground, the ingredients you're actually able to place on the burger have priority
 - Changed various models and animations (denpakei32, WBMarioo)
 - Changed icon for mushroom (denpakei32)
 - Ingredients on top of counters are deprioritzed for deletion when too many ingredients are present (this means they can only be deleted in rare circumstances)
-- You now always get asked if you'd like to join
+- Ingredients now respawn if they fall into water
+- You now always get asked if you'd like to join/practice, even in the lobby
 - Added a version number in the bottom left corner of the menu
 - Added a warning when using a Character Select version lower than v1.16.3
 ### Fixes

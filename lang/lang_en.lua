@@ -110,6 +110,7 @@ langdata["en"] =
   menu_grab_button = "Grab Button",
   menu_action_button = "Action Button",
   menu_throw_button = "Throw Button",
+  menu_old_plate_place = "Orig. Plate Behavior",
   menu_reduced_motion = "Reduced Menu Motion",
   menu_order_hud_location = "Order Hud Location",
   menu_order_priority = "Order Priority",
@@ -162,6 +163,8 @@ langdata["en"] =
   menu_desc_cook_indicators = "Show a graphic above the timer whenever something is done cooking or is burning. Useful if you can't rely on audio queues.",
   menu_desc_language = "Select the language used for this mod.\n\n(Note: Not all languages supported by sm64coopdx are supported.)",
   menu_desc_disable_water_effect = "Disables the moving water in one of the levels.",
+  menu_desc_old_plate_place_off = "When grabbing an ingredient from a counter with a plate, you will keep holding the plate.",
+  menu_desc_old_plate_place_on = "When grabbing an ingredient from a counter with a plate, the plate will be placed on the counter.",
 
   menu_title_join = "Join?",
   menu_desc_join_now = "Join the action right now, or until a spot opens up.",

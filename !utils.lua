@@ -1,6 +1,6 @@
-function obj_get_nearest_behavior_id_with_condition(o, id, condFunction)
+function obj_get_nearest_behavior_id_with_condition(o, id, condFunction, maxDist)
     local nearest = nil
-    local maxDist = 100000
+    maxDist = maxDist or 100000
     local o2 = obj_get_first_with_behavior_id(id)
     while o2 do
         local dist = dist_between_objects(o, o2)
@@ -13,9 +13,9 @@ function obj_get_nearest_behavior_id_with_condition(o, id, condFunction)
     return nearest, maxDist
 end
 
-function nearest_behavior_id_from_pos_with_condition(pos, id, condFunction)
+function nearest_behavior_id_from_pos_with_condition(pos, id, condFunction, maxDist)
     local nearest = nil
-    local maxDist = 100000
+    maxDist = maxDist or 100000
     local o = obj_get_first_with_behavior_id(id)
     while o do
         local dist = dist_between_object_and_point(o, pos.x, pos.y, pos.z)

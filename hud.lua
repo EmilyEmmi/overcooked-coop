@@ -1045,6 +1045,7 @@ orderHUDLocation = 0
 reverseReading = false
 showCookIndicators = false
 disableWaterEffect = false
+oldPlatePlace = false
 
 inMenu = false
 local menuOption = 1
@@ -1279,6 +1280,19 @@ local menu_data = {
             save = "throwButtonIndex",
             localSave = true,
             desc = "menu_desc_throw_button",
+        },
+        {
+            "menu_old_plate_place",
+            function(x)
+                oldPlatePlace = (x ~= 0)
+            end,
+            runOnChange = true,
+            currNum = (oldPlatePlace and 1) or 0,
+            maxNum = 1,
+            nameRef = { "menu_off", "menu_on"},
+            save = "oldPlatePlace",
+            localSave = true,
+            desc = {"menu_desc_old_plate_place_off", "menu_desc_old_plate_place_on"},
         },
         {
             "menu_reduced_motion",

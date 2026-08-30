@@ -242,7 +242,7 @@ function bhv_ingredient_loop(o)
                 cur_obj_become_tangible()
             end
             obj_resolve_object_collisions()
-            object_step_without_floor_orient()
+            local stepResult = object_step_without_floor_orient()
 
             local trash = false
             local height, floor = find_floor(o.oPosX, o.oPosY, o.oPosZ)
@@ -254,6 +254,9 @@ function bhv_ingredient_loop(o)
                     o.platform = floor.object
                     apply_platform_displacement(o, o.platform)
                 end
+            end
+            if stepResult & OBJ_COL_FLAG_UNDERWATER ~= 0 then
+                trash = true
             end
 
             if trash then
@@ -686,6 +689,9 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
 
             if iData.isPlate or o == placedObj then
                 return true, (iData.isPlate)
+            elseif iData2.isPlate and o2 == placedObj and m and isHeld
+            and (not gPlayerSyncTable[m.playerIndex].oldPlatePlace) then
+                return true, true -- Keep holding plate
             end
         end
         if o == placedObj and not forceCounterPlace then return true, false end
@@ -694,11 +700,17 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
     if counter then
         o = placedObj
         iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
-        local allowPlace = true
-        if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT then
-            allowPlace = (iData.cookType == COOK_TYPE_HEAT) or false
-        elseif counter.oBehParams2ndByte == COUNTER_TYPE_TRASH then
-            allowPlace = false
+        local allowPlace = check_counter_valid_interact(counter, o)
+        if not allowPlace then
+            if counter.oBehParams2ndByte == COUNTER_TYPE_SERVING
+            and m and m.playerIndex == 0 and isHeld then
+                djui_chat_message_create(trans("Needs plate!"))
+                return true, true
+            end
+            return (o2 ~= nil), true
+        end
+    
+        if counter.oBehParams2ndByte == COUNTER_TYPE_TRASH then
             if iData.noTrash then
                 if o.oHeldState ~= HELD_FREE then
                     if iData.isPlate then
@@ -723,55 +735,39 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 return true, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
-            if not iData.isPlate then
-                if m and m.playerIndex == 0 and isHeld then
-                    djui_chat_message_create(trans("Needs plate!"))
-                end
-                allowPlace = false
-            else
-                o.oPlateAppearTimer = 5 * 30
-                o.usingObj, o.oUsingSyncID = nil, 0
-                if m and m.playerIndex == 0 then
-                    local items = {}
-                    local children = find_all_object_children(o, id_bhvIngredient)
-                    for i,c in ipairs(children) do
-                        table.insert(items, {type = c.oBehParams, contents = c.oContents, contentCount = c.oContentCount})
-                        obj_mark_for_deletion(c)
-                    end
-    
-                    attempt_serve_order(items)
-                    network_send_object(o, true)
-                end
-                return true, false
-            end
-        elseif counter.oBehParams2ndByte == COUNTER_TYPE_PLATES then
-            allowPlace = false
-        elseif counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
-            allowPlace = false
-            if iData.washItem then
-                local plates = 1
+            o.oPlateAppearTimer = 5 * 30
+            o.usingObj, o.oUsingSyncID = nil, 0
+            if m and m.playerIndex == 0 then
+                local items = {}
                 local children = find_all_object_children(o, id_bhvIngredient)
                 for i,c in ipairs(children) do
-                    c.parentObj = c
-                    c.oParentSyncID = 0
-                    c.oPlateAppearTimer = 5 * 30
-                    plates = plates + 1
-                    if m and m.playerIndex == 0 then network_send_object(c, true) end
+                    table.insert(items, {type = c.oBehParams, contents = c.oContents, contentCount = c.oContentCount})
+                    obj_mark_for_deletion(c)
                 end
 
-                o.oPlateAppearTimer = 5 * 30
-                counter.oPlatesStackedExtra = counter.oPlatesStackedExtra + plates
-                if m and m.playerIndex == 0 then
-                    network_send_object(o, true)
-                    network_send_object(counter, true)
-                end
-                return true, false
+                attempt_serve_order(items)
+                network_send_object(o, true)
             end
-        elseif counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
-            allowPlace = iData.cookType == COOK_TYPE_OVEN or false
-        end
+            return true, false
+        elseif counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+            local plates = 1
+            local children = find_all_object_children(o, id_bhvIngredient)
+            for i,c in ipairs(children) do
+                c.parentObj = c
+                c.oParentSyncID = 0
+                c.oPlateAppearTimer = 5 * 30
+                plates = plates + 1
+                if m and m.playerIndex == 0 then network_send_object(c, true) end
+            end
 
-        if not allowPlace then return (o2 ~= nil), true end
+            o.oPlateAppearTimer = 5 * 30
+            counter.oPlatesStackedExtra = counter.oPlatesStackedExtra + plates
+            if m and m.playerIndex == 0 then
+                network_send_object(o, true)
+                network_send_object(counter, true)
+            end
+            return true, false
+        end
 
         counter.usingObj = o
         o.usingObj = counter
@@ -934,6 +930,26 @@ function check_ingredient_valid_for_place(o, o2, onPlate)
         return true, false
     end
     return false, false
+end
+
+-- check if o can be placed on the counter
+function check_counter_valid_interact(counter, o)
+    if o == nil then return true end -- interact with any counter while not holding something
+
+    local iData = ITEM_DATA[o.oBehParams]
+    if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT then
+        return (iData.cookType == COOK_TYPE_HEAT)
+    elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
+        return iData.isPlate or false
+    elseif counter.oBehParams2ndByte == COUNTER_TYPE_PLATES then
+        return false
+    elseif counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+        return (iData.washItem ~= nil)
+    elseif counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
+        return (iData.cookType == COOK_TYPE_OVEN)
+    end
+
+    return true
 end
 
 ---@param o Object

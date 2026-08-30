@@ -274,12 +274,6 @@ function pizza_mushroom_switch(n)
 end
 
 --- @param n GraphNode | FnGraphNode
-function flour_switch(n)
-    local switch = cast_graph_node(n)
-    switch.selectedCase = 0 -- alt is cut chocolate???
-end
-
---- @param n GraphNode | FnGraphNode
 function chocolate_switch(n)
     alt_item_switch(n, ITEM_CHOCOLATE_CUT)
 end
