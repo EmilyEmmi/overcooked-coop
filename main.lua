@@ -655,19 +655,30 @@ function before_mario_update(m)
         hasValidGrabAction = (selectedItem ~= nil)
 
         -- select counter (when not holding an item, ground ingredients take priority, otherwise counters do)
+        local heldIData = (m.heldObj and obj_has_behavior_id(m.heldObj, id_bhvIngredient) ~= 0 and ITEM_DATA[m.heldObj.oBehParams])
         selectedCounter = nil
         if selectedItem == nil or m.heldObj then
             selectedCounter = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
                 local o = counter.usingObj
                 if m.heldObj == nil then return true end
-                if o == nil or o == counter then
+                if heldIData and heldIData.washItem and counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                    return true
+                elseif o == nil or o == counter then
                     return check_counter_valid_interact(counter, m.heldObj)
                 end
                 return (check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
             end, 100)
             if selectedCounter then
                 selectedItem = selectedCounter.usingObj
-                hasValidGrabAction = (hasValidGrabAction or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
+                -- if we're holding a dirty plate, treat counter as having nothing
+                if heldIData and heldIData.washItem then
+                    selectedItem = nil
+                end
+
+                hasValidGrabAction = (selectedItem ~= nil or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
+                if (not hasValidGrabAction) and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                    hasValidGrabAction = (selectedCounter.oPlatesStackedExtra ~= 0)
+                end
             end
         end
     else

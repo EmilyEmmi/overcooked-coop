@@ -631,10 +631,11 @@ function behind_hud_render()
         o = obj_get_next_with_same_behavior_id(o)
     end
 
-    -- render progress bar for sinks
+    -- render progress bar for sinks (+ counter button prompt)
     o = obj_get_first_with_behavior_id(id_bhvCounter)
     while o do
-        if o.oBehParams2ndByte == COUNTER_TYPE_SINK and o.oPlateAppearTimer ~= 0 then
+        if (hasValidGrabAction and o == selectedCounter and selectedItem == nil)
+        or (o.oBehParams2ndByte == COUNTER_TYPE_SINK and o.oPlateAppearTimer ~= 0) then
             local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
             local out = gVec3fZero()
             djui_hud_world_pos_to_screen_pos(pos, out)
@@ -716,7 +717,7 @@ function behind_hud_render()
                 end
             end
 
-            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oNotifyTimer ~= 0 then
+            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oNotifyTimer ~= 0 or (hasValidGrabAction and o == selectedItem) then
                 if radar.frameLastRendered + 1 ~= get_global_timer() then
                     radar.prevX = radar.x
                     radar.prevY = radar.y
@@ -728,11 +729,11 @@ function behind_hud_render()
                 djui_hud_set_color(255, 255, 255, 255)
                 local x, y, scale = radar.x, radar.y, radar.scale
                 local prevX, prevY, prevScale = radar.prevX, radar.prevY, radar.prevScale
-                local maxColumns = 3
-                local columns = math.min(#items, maxColumns)
                 if #items == 1 then
                     render_ingredient_icon_interpolated(items[1], prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
                 elseif #items ~= 0 then
+                    local maxColumns = 3
+                    local columns = math.min(#items, maxColumns)
                     y = y - 20 * scale * math.ceil(#items / columns)
                     prevY = prevY - 20 * prevScale * math.ceil(#items / columns)
                     for i, item in ipairs(items) do
@@ -790,6 +791,23 @@ function behind_hud_render()
                     djui_hud_set_color(255, 255, 255, alpha)
                     djui_hud_print_text_interpolated(text, prevX, prevY, prevScale, x, y, scale)
                 end
+                -- button prompt
+                if hasValidGrabAction and o == selectedItem and o.oHeldState == HELD_FREE then
+                    local buttonIndex = grabButtonIndex
+                    if iData.cut then
+                        local counter = o.usingObj
+                        if counter and counter.oBehParams2ndByte == COUNTER_TYPE_CUT then
+                            buttonIndex = actionButtonIndex
+                        end
+                    end
+                    local tex = get_texture_info("button_"..buttonIndex)
+                    x = radar.x - tex.width * scale / 2
+                    y = radar.y + 20 * scale
+                    prevX = radar.prevX - tex.width * prevScale / 2
+                    prevY = radar.prevY + 20 * prevScale
+                    djui_hud_set_color(255, 255, 255, 255)
+                    djui_hud_render_texture_interpolated(tex, prevX, prevY, prevScale, prevScale, x, y, scale, scale)
+                end
 
                 radar.prevX = radar.x
                 radar.prevY = radar.y
@@ -812,13 +830,28 @@ function behind_hud_render()
             y = radar.y + 20 * scale
             prevX = radar.prevX - 20 * prevScale
             prevY = radar.prevY + 20 * prevScale
-            radar.barWidth = o.oPlateAppearTimer / (3 * 30)
 
-            if radar.barWidth ~= 0 and radar.barWidth ~= 1 then
-                local width = 40 * radar.barWidth
-                djui_hud_render_rect_interpolated(prevX, prevY, 40 * prevScale, 10 * prevScale, x, y, 40 * scale, 10 * scale)
-                djui_hud_set_color(0, 255, 0, 255)
-                djui_hud_render_rect_interpolated(prevX, prevY, width * prevScale, 10 * prevScale, x, y, width * scale, 10 * scale)
+            if o.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                radar.barWidth = o.oPlateAppearTimer / (3 * 30)
+                if radar.barWidth ~= 0 and radar.barWidth ~= 1 then
+                    local width = 40 * radar.barWidth
+                    djui_hud_render_rect_interpolated(prevX, prevY, 40 * prevScale, 10 * prevScale, x, y, 40 * scale, 10 * scale)
+                    djui_hud_set_color(0, 255, 0, 255)
+                    djui_hud_render_rect_interpolated(prevX, prevY, width * prevScale, 10 * prevScale, x, y, width * scale, 10 * scale)
+                end
+            end
+
+            -- button prompt
+            local washable = (gMarioStates[0].heldObj == nil and o.oBehParams2ndByte == COUNTER_TYPE_SINK and o.oPlatesStackedExtra ~= 0)
+            if o == selectedCounter and ((selectedItem == nil and hasValidGrabAction) or washable) then
+                local buttonIndex = (washable and actionButtonIndex) or grabButtonIndex
+                local tex = get_texture_info("button_"..buttonIndex)
+                x = radar.x - tex.width * scale / 2
+                y = radar.y
+                prevX = radar.prevX - tex.width * prevScale / 2
+                prevY = radar.prevY
+                djui_hud_set_color(255, 255, 255, 255)
+                djui_hud_render_texture_interpolated(tex, prevX, prevY, prevScale, prevScale, x, y, scale, scale)
             end
 
             radar.prevX = radar.x
