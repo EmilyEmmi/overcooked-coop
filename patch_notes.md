@@ -12,6 +12,7 @@
     - However, he also takes 4 times as long to recover from being thrown off the stage
 - Changed various models and animations (denpakei32, WBMarioo)
 - Changed icon for mushroom (denpakei32)
+- Changed colors of various icons
 - Ingredients on top of counters are deprioritzed for deletion when too many ingredients are present (this means they can only be deleted in rare circumstances)
 - Ingredients now respawn if they fall into water
 - You now always get asked if you'd like to join/practice, even in the lobby

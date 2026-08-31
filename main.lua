@@ -161,8 +161,8 @@ function update()
 
     if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
         local np = gNetworkPlayers[0]
-        if np.currLevelNum ~= LEVEL_CASTLE_GROUNDS and np.currAreaSyncValid then
-            warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+        if np.currLevelNum ~= gLevelValues.entryLevel and np.currAreaSyncValid then
+            warp_to_level(gLevelValues.entryLevel, 1, 0)
         end
 
         -- EXTREMELY BASIC headless support
@@ -196,8 +196,8 @@ function update()
         local np0 = gNetworkPlayers[0]
         local act = sMario0.kitchen
         if sMario0.inPractice then
-            if np0.currLevelNum ~= LEVEL_CASTLE_GROUNDS and np0.currAreaSyncValid then
-                warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+            if np0.currLevelNum ~= gLevelValues.entryLevel and np0.currAreaSyncValid then
+                warp_to_level(gLevelValues.entryLevel, 1, 0)
             end
         elseif (np0.currLevelNum ~= lData.level or np0.currActNum ~= act) and np0.currAreaSyncValid then
             warp_to_level(lData.level, 1, act)
@@ -388,7 +388,7 @@ function update()
                     if np.connected and (np.currLevelNum == lData.level or not np.currAreaSyncValid) then
                         allOut = false
                         if i == 0 and np.currAreaSyncValid then
-                            warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+                            warp_to_level(gLevelValues.entryLevel, 1, 0)
                             restartTransition = true
                         end
                         if not announceProblem then
@@ -420,7 +420,7 @@ function update()
             else
                 local np = gNetworkPlayers[0]
                 if np.currLevelNum == lData.level then
-                    warp_to_level(LEVEL_CASTLE_GROUNDS, 1, 0)
+                    warp_to_level(gLevelValues.entryLevel, 1, 0)
                     restartTransition = true
                 end
             end
