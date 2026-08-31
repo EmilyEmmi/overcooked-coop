@@ -114,8 +114,10 @@ langdata["en"] =
   menu_reduced_motion = "Reduced Menu Motion",
   menu_order_hud_location = "Order Hud Location",
   menu_order_priority = "Order Priority",
+  menu_button_prompts = "Button Prompts",
   menu_cook_indicators = "Cook/Burn Subtitles",
   menu_disable_water_effect = "Disable Water Effect",
+  menu_hide_hud = "Hide HUD",
   menu_language = "Language",
 
   menu_join_now = "Put me in!",
@@ -165,6 +167,8 @@ langdata["en"] =
   menu_desc_disable_water_effect = "Disables the moving water in one of the levels.",
   menu_desc_old_plate_place_off = "When grabbing an ingredient from a counter with a plate, you will keep holding the plate.",
   menu_desc_old_plate_place_on = "When grabbing an ingredient from a counter with a plate, the plate will be placed on the counter.",
+  menu_desc_button_prompts = "Show button prompts for interacting with ingredients.",
+  menu_desc_hide_hud = "Hides the HUD. Useful for taking pictures.",
 
   menu_title_join = "Join?",
   menu_desc_join_now = "Join the action right now, or until a spot opens up.",

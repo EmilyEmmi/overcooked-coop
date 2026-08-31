@@ -200,6 +200,13 @@ OC_LEVEL_DATA = {
                 bowser.oAction = 2
                 bowser.oSubAction = 0
                 obj_set_pos(bowser, 4000, -500, 0)
+            elseif m.heldObj == bowser and bowser.oTimer > 150 then
+                -- prevent holding bowser too long
+                set_mario_action(m, ACT_RELEASING_BOWSER, 0);
+            elseif bowser.oAction == 1 then
+                bowser.oIntangibleTimer = 150 -- prevents grabbing bowser repeatedly
+            elseif bowser.oAction == 2 and bowser.oSubAction == 0 then
+                bowser.oFaceAnglePitch = bowser.oFaceAnglePitch - 0x600 -- makes bowser take longer to recover
             end
         end,
     },

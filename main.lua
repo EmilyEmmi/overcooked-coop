@@ -7,7 +7,7 @@
 local subTimer = 0
 selectedItem = nil
 selectedCounter = nil
-hasValidGrabAction = false
+grabPromptValid = false
 waitOpenDJUI = false
 gotNewRecord = false
 stayInSpectate = true
@@ -520,6 +520,7 @@ function mario_update(m)
         network_player_set_description(np, trans("menu_practice"), 100, 100, 100, 255)
     elseif sMario.spectator then
         network_player_set_description(np, trans("menu_spectate"), 100, 100, 100, 255)
+        m.visibleToObjects = false
     else
         network_player_set_description(np, "", 255, 255, 255, 255)
     end
@@ -638,7 +639,7 @@ function before_mario_update(m)
     end
 
     -- get selected item and counter
-    hasValidGrabAction = false
+    grabPromptValid = false
     if sMario.inPractice or not sMario.spectator then
         local grabPos = {x = m.pos.x, y = m.pos.y, z = m.pos.z}
         grabPos.x = grabPos.x + sins(m.faceAngle.y) * 52
@@ -652,7 +653,7 @@ function before_mario_update(m)
             and (o.parentObj == nil or o.parentObj == o) and (counter == nil)
             and (m.heldObj == nil or check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
         end, 115)
-        hasValidGrabAction = (selectedItem ~= nil)
+        grabPromptValid = (selectedItem ~= nil)
 
         -- select counter (when not holding an item, ground ingredients take priority, otherwise counters do)
         local heldIData = (m.heldObj and obj_has_behavior_id(m.heldObj, id_bhvIngredient) ~= 0 and ITEM_DATA[m.heldObj.oBehParams])
@@ -675,9 +676,9 @@ function before_mario_update(m)
                     selectedItem = nil
                 end
 
-                hasValidGrabAction = (selectedItem ~= nil or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
-                if (not hasValidGrabAction) and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
-                    hasValidGrabAction = (selectedCounter.oPlatesStackedExtra ~= 0)
+                grabPromptValid = (selectedItem ~= nil or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
+                if (not grabPromptValid) and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                    grabPromptValid = (selectedCounter.oPlatesStackedExtra ~= 0)
                 end
             end
         end
@@ -692,7 +693,7 @@ function before_mario_update(m)
     sMario.waitingForSlot = (sMario.spectator and not (sMario.inPractice or stayInSpectate))
 
     -- Sparkles at selected (might be changed)
-    if (selectedCounter or selectedItem) and hasValidGrabAction then
+    if (selectedCounter or selectedItem) and grabPromptValid then
         local o = selectedCounter or selectedItem
         local pos = {x = o.oPosX, y = o.oPosY, z = o.oPosZ}
         local size = 45
@@ -704,6 +705,7 @@ function before_mario_update(m)
             obj_translate_xyz_random(sparkle, size);
             obj_scale_random(sparkle, 1.0, 0.0);
         end)
+        if not showButtonPrompts then grabPromptValid = false end
     end
 
     if m.controller.buttonDown & ACTION_BUTTON ~= 0 and (not m.heldObj)
@@ -828,12 +830,16 @@ end
 hook_event(HOOK_BEFORE_MARIO_UPDATE, before_mario_update)
 
 function allow_interact(m, o, type)
-    if type == INTERACT_GRABBABLE and obj_has_behavior_id(o, id_bhvIngredient) ~= 0 then
-        -- don't interact with ingredients; have THEM be pushed around instead
-        if m.flags & MARIO_VANISH_CAP == 0 then
-            obj_resolve_object_collisions_custom(m.marioObj, o) -- runs from Mario object
+    if type == INTERACT_GRABBABLE then
+        if obj_has_behavior_id(o, id_bhvIngredient) ~= 0 then
+            -- don't interact with ingredients; have THEM be pushed around instead
+            if m.flags & MARIO_VANISH_CAP == 0 then
+                obj_resolve_object_collisions_custom(m.marioObj, o) -- runs from Mario object
+            end
+            return false
+        elseif gPlayerSyncTable[m.playerIndex].spectator then
+            return false -- prevents spectators from grabbing Bowser
         end
-        return false
     elseif type == INTERACT_WARP or type == INTERACT_WARP_DOOR then
         return false
     end

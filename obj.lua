@@ -139,10 +139,10 @@ function bhv_ingredient_loop(o)
                         if maxCounterNum < other.oPlateCounterNum then
                             maxCounterNum = other.oPlateCounterNum
                         end
-                        other.oPlatesStackedExtra = #otherPlates + 1
+                        other.oPlatesStackedExtra = #otherPlates
                     end
                     o.oPlateCounterNum = maxCounterNum + 1
-                    o.oPlatesStackedExtra = #otherPlates + 1
+                    o.oPlatesStackedExtra = #otherPlates
 
                     o.usingObj = counter
                     o.oUsingSyncID = counter.oSyncID
@@ -342,7 +342,7 @@ function bhv_ingredient_loop(o)
                 end
 
                 if o.oPlatesStackedExtra ~= 0 then
-                    -- update plate stack
+                    -- update plate stack (TODO: this whole system is broken)
                     local otherPlates = find_all_object_using(counter, id_bhvIngredient)
                     if o.oPlatesStackedExtra ~= #otherPlates - 1 then
                         local minCounterNum = 100
@@ -798,6 +798,10 @@ function check_ingredient_valid_for_place(o, o2, onPlate)
         if iData2.isPlate then
             children2 = find_all_object_children(o2, id_bhvIngredient)
             if #children2 == 0 and (iData.isPlate or iData.plateable) then
+                if iData.isPlate then
+                    local children = find_all_object_children(o, id_bhvIngredient)
+                    return #children ~= 0, #children ~= 0 -- Only allow if the other plate has contents
+                end
                 return true, true -- Plating is always legal if there are no children
             end
 
@@ -1107,7 +1111,7 @@ function bhv_counter_loop(o)
     load_object_collision_model()
 
     -- validate object on counter
-    if o.usingObj and o.usingObj ~= o and (o.usingObj.usingObj ~= o or o.oSyncID ~= 0 and o.usingObj.oUsingSyncID ~= o.oSyncID) then
+    if o.usingObj and o.usingObj ~= o and (o.usingObj.usingObj ~= o or (o.oSyncID ~= 0 and o.usingObj.oUsingSyncID ~= o.oSyncID)) then
         o.usingObj = nil
     end
 

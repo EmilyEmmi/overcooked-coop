@@ -555,6 +555,8 @@ function on_hud_render()
 
     if inMenu then
         render_menu()
+    elseif hideOcHud then
+        -- nothing
     elseif gPlayerSyncTable[0].inPractice or gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
         level_select_hud()
     elseif gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
@@ -578,6 +580,8 @@ function behind_hud_render()
     hud_hide()
     djui_hud_reset_color()
     djui_hud_reset_text_color()
+
+    if hideOcHud then return end
 
     local o = obj_get_first_with_behavior_id(id_bhvIngredient)
     local toRenderObj = {}
@@ -634,7 +638,7 @@ function behind_hud_render()
     -- render progress bar for sinks (+ counter button prompt)
     o = obj_get_first_with_behavior_id(id_bhvCounter)
     while o do
-        if (hasValidGrabAction and o == selectedCounter and selectedItem == nil)
+        if (grabPromptValid and o == selectedCounter and selectedItem == nil)
         or (o.oBehParams2ndByte == COUNTER_TYPE_SINK and o.oPlateAppearTimer ~= 0) then
             local pos = {x = o.oPosX, y = o.oPosY + 100, z = o.oPosZ}
             local out = gVec3fZero()
@@ -717,7 +721,7 @@ function behind_hud_render()
                 end
             end
 
-            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oNotifyTimer ~= 0 or (hasValidGrabAction and o == selectedItem) then
+            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oNotifyTimer ~= 0 or (grabPromptValid and o == selectedItem) then
                 if radar.frameLastRendered + 1 ~= get_global_timer() then
                     radar.prevX = radar.x
                     radar.prevY = radar.y
@@ -792,7 +796,7 @@ function behind_hud_render()
                     djui_hud_print_text_interpolated(text, prevX, prevY, prevScale, x, y, scale)
                 end
                 -- button prompt
-                if hasValidGrabAction and o == selectedItem and o.oHeldState == HELD_FREE then
+                if grabPromptValid and o == selectedItem and o.oHeldState == HELD_FREE then
                     local buttonIndex = grabButtonIndex
                     if iData.cut then
                         local counter = o.usingObj
@@ -843,7 +847,7 @@ function behind_hud_render()
 
             -- button prompt
             local washable = (gMarioStates[0].heldObj == nil and o.oBehParams2ndByte == COUNTER_TYPE_SINK and o.oPlatesStackedExtra ~= 0)
-            if o == selectedCounter and ((selectedItem == nil and hasValidGrabAction) or washable) then
+            if o == selectedCounter and ((selectedItem == nil and grabPromptValid) or washable) then
                 local buttonIndex = (washable and actionButtonIndex) or grabButtonIndex
                 local tex = get_texture_info("button_"..buttonIndex)
                 x = radar.x - tex.width * scale / 2
@@ -1076,9 +1080,11 @@ actionButtonIndex = 0
 throwButtonIndex = 0
 orderHUDLocation = 0
 reverseReading = false
+showButtonPrompts = true
 showCookIndicators = false
 disableWaterEffect = false
 oldPlatePlace = false
+hideOCHud = false
 
 inMenu = false
 local menuOption = 1
@@ -1367,6 +1373,19 @@ local menu_data = {
             desc = {"menu_desc_left_to_right", "menu_desc_right_to_left"},
         },
         {
+            "menu_button_prompts",
+            function(x)
+                showButtonPrompts = (x == 1)
+            end,
+            runOnChange = true,
+            currNum = (showButtonPrompts and 1) or 0,
+            maxNum = 1,
+            nameRef = { "menu_off", "menu_on" },
+            save = "showButtonPrompts",
+            localSave = true,
+            desc = "menu_desc_button_prompts",
+        },
+        {
             "menu_cook_indicators",
             function(x)
                 showCookIndicators = (x == 1)
@@ -1391,6 +1410,17 @@ local menu_data = {
             save = "disableWaterEffect",
             localSave = true,
             desc = "menu_desc_disable_water_effect",
+        },
+        {
+            "menu_hide_hud",
+            function(x)
+                hideOcHud = (x == 1)
+            end,
+            runOnChange = true,
+            currNum = (hideOcHud and 1) or 0,
+            maxNum = 1,
+            nameRef = { "menu_off", "menu_on" },
+            desc = "menu_desc_hide_hud",
         },
         {
             "menu_language",
