@@ -1288,9 +1288,27 @@ hook_on_sync_table_change(gGlobalSyncTable, "score", "score", on_score_change)
 -- handle spectator being disabled
 function on_spectator_change(tag, oldVal, newVal)
     if oldVal == newVal or oldVal == nil or newVal == nil then return end
-    if newVal then return end
 
     local m = gMarioStates[0]
+    if newVal then
+        if m.heldObj then
+            m.marioBodyState.allowPartRotation = 0
+            m.prevAction = m.action
+            if m.action & ACT_FLAG_SWIMMING ~= 0 then
+                m.action = ACT_WATER_ACTION_END
+            elseif m.action & ACT_FLAG_CONTROL_JUMP_HEIGHT ~= 0 then
+                m.action = ACT_JUMP
+            elseif m.action & ACT_FLAG_AIR ~= 0 then
+                m.action = ACT_FREEFALL
+            elseif m.action & ACT_FLAG_MOVING ~= 0 then
+                set_mario_action(m, ACT_WALKING, 0)
+            else
+                m.action = ACT_IDLE
+            end
+        end
+        mario_drop_held_object(m)
+        return
+    end
     m.flags = m.flags &~ MARIO_VANISH_CAP
     stayInSpectate = false
 

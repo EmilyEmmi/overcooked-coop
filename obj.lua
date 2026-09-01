@@ -584,9 +584,13 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
             end
             if not counter then return true, true end
         elseif not placeOnPlate then
+            -- don't run if not local player
+            if not (m and m.playerIndex == 0) then return false, false end
+
             -- This should only run with a container on a plate.
             -- Put stuff in the actual container instead.
             local wasPlate = iData2.isPlate
+            local wasHoldingContainer = (o2 == placedObj)
             if wasPlate then
                 local children = find_all_object_children(o2, id_bhvIngredient)
                 o2 = children[1]
@@ -634,17 +638,13 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
             end
             o2.oCutOrCookTimer = o2.oCutOrCookTimer // 2
 
-            if m and m.playerIndex == 0 then
-                network_send_object(o2, true)
-                if iData.pourable then
-                    return true, true
-                else
-                    for i,c in ipairs(children) do
-                        obj_mark_for_deletion(c)
-                    end
-                end
-            elseif iData.pourable then
+            network_send_object(o2, true)
+            if iData.pourable then
                 return true, true
+            else
+                for i,c in ipairs(children) do
+                    obj_mark_for_deletion(c)
+                end
             end
             
             if iData.isPlate then
@@ -653,12 +653,14 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 else
                     o2.parentObj = o
                     o2.oParentSyncID = o.oSyncID
-                    if m and m.playerIndex == 0 then
-                        network_send_object(o2, true)
-                    end
+                    network_send_object(o2, true)
                     forceCounterPlace = true
                     if o2 == placedObj then return true, false end
                 end
+            end
+
+            if wasHoldingContainer and isHeld and (not gPlayerSyncTable[0].oldPlatePlace) then
+                return true, true -- Keep holding container
             end
         else
             local children = {o}
@@ -724,7 +726,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
     
         if counter.oBehParams2ndByte == COUNTER_TYPE_TRASH then
             if iData.noTrash then
-                if o.oHeldState ~= HELD_FREE then
+                if o.oHeldState ~= HELD_FREE and m and m.playerIndex == 0 then
                     if iData.isPlate then
                         local children = find_all_object_children(o, id_bhvIngredient)
                         for i,c in ipairs(children) do
@@ -734,8 +736,6 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                         o.oContents = 0
                         o.oContentCount = 0
                         o.oCutOrCookTimer = 0
-                    end
-                    if m and m.playerIndex == 0 then
                         network_send_object(o, true)
                     end
                 end
@@ -747,9 +747,9 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 return true, false
             end
         elseif counter.oBehParams2ndByte == COUNTER_TYPE_SERVING then
-            o.oPlateAppearTimer = 5 * 30
             o.usingObj, o.oUsingSyncID = nil, 0
             if m and m.playerIndex == 0 then
+                o.oPlateAppearTimer = 5 * 30
                 local items = {}
                 local children = find_all_object_children(o, id_bhvIngredient)
                 for i,c in ipairs(children) do

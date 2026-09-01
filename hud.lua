@@ -1658,7 +1658,7 @@ function render_menu()
     djui_hud_render_rect(0, 0, screenWidth + 10, screenHeight + 10)
 
     local tex = ICON_TOMATO
-    if gMarioStates[0].heldObj then
+    if gMarioStates[0].heldObj and obj_has_behavior_id(gMarioStates[0].heldObj, id_bhvIngredient) ~= 0 then
         local o = gMarioStates[0].heldObj
         tex = (ITEM_DATA[o.oBehParams] and ITEM_DATA[o.oBehParams].icon) or tex
     end

@@ -6,9 +6,10 @@
 - Better tutorials- instead of just using text, levels that introduce new concepts will have diagrams
 - Chat messages will now show the player's current kitchen- if they aren't in your kitchen, their message will be gray
     - The player list will also show which kitchen a player is in
-- Added an option to hide the HUD to Preferences (this does not save)
+- Added an option to hide the HUD in Preferences (this does not save)
 ### Adjustments
-- Interacting with an ingredient on a counter while holding a plate no longer places the plate on the counter
+- Interacting with an ingredient on a counter while holding a plate or other container no longer places the held item on the counter
+    - Ex: If you have 3 cut tomatoes each on a counter, and you are holding a pot, you can now grab all of the tomatoes from the counters without placing the pot down
     - This change can be toggled in Preferences
 - Improved action priority- for example, if you're holding a bun and a bunch of ingredients are on the ground, the ingredients you're actually able to place on the burger have priority
 - Scores were rebalanced a bit- easier levels were made more difficult, harder levels were made less difficult
@@ -31,6 +32,7 @@
 - The desync fix will now correct instances where players are placed in the wrong level
 - Kitchen player count should now be auto balanced correctly (NEEDS TESTING)
 - Hopefully fixed rare instances where plates would permanently disappear (NEEDS TESTING)
+- Fixed item duplication occuring in laggy situations
 - Fixed occasional script errors in Koopa Kitchen
 - Fixed the description for Host Options being "Host Options" instead of the actual description
 - Fixed the cooking time not updating properly when transferring contents between pots/pans
@@ -39,4 +41,6 @@
 - Burgers and soup may no longer be plated while a pizza is already on the plate
 - The ingredient cap can no longer delete items that players are already holding
 - Spectators can no longer grab Bowser
+- Holding Bowser no longer causes the pause menu to display Lettuce in the background
+    - Other ingredients changing the background is intentional
 - The cutting sound is no longer audible across an infinite distance
