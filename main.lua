@@ -533,13 +533,20 @@ function mario_update(m)
         end
     end
 
+    gGlobalSyncTable.maxKitchens = 4 -- TEMP
     if sMario.inPractice then
-        network_player_set_description(np, trans("menu_practice"), 100, 100, 100, 255)
+        network_player_set_description(np, trans("menu_practice"), 128, 128, 128, 255)
     elseif sMario.spectator then
-        network_player_set_description(np, trans("menu_spectate"), 100, 100, 100, 255)
+        network_player_set_description(np, trans("menu_spectate"), 128, 128, 128, 255)
         m.visibleToObjects = false
-    else
+    elseif gGlobalSyncTable.maxKitchens <= 1 or not is_game_state_level_running() then
         network_player_set_description(np, "", 255, 255, 255, 255)
+    else
+        local color = {r = 128, g = 255, b = 128}
+        if m.playerIndex ~= 0 and sMario.kitchen ~= gPlayerSyncTable[0].kitchen then
+            color = {r = 255, g = 128, b = 128}
+        end
+        network_player_set_description(np, tostring(sMario.kitchen), color.r, color.g, color.b, 255)
     end
 
     if m.playerIndex ~= 0 and is_player_active(m) == 0 then return end
@@ -1429,14 +1436,31 @@ if _G.cheatsApi then
     hook_chat_command("add-order", "[ID?] - Add an order to the pending orders list - leave blank for random", add_order_command)
 end
 
--- attempt desync fix if "desync" is said in chat
 function on_chat_message(m, msg)
-    if m.playerIndex ~= 0 then return end
-
-    msg = msg:lower()
-    if msg:find("desync") then
+    -- attempt desync fix if "desync" is said in chat
+    if m.playerIndex == 0 and msg:lower():find("desync") then
         djui_chat_message_create(trans("fix_desync"))
         attempt_desync_fix(network_global_index_from_local(0))
+    end
+
+    local np = gNetworkPlayers[m.playerIndex]
+    if np.description and #np.description ~= 0 then
+        local sMario = gPlayerSyncTable[m.playerIndex]
+        local tag = np.description
+        local tagColor = string.format("\\#%02X%02X%02X\\", np.descriptionR, np.descriptionG, np.descriptionB)
+        local name = network_get_player_text_color_string(m.playerIndex)..np.name
+        local msgColor = "\\#\\"
+        if gGlobalSyncTable.gameState == GAME_STATE_PLAYING
+        and (sMario.spectator or sMario.practice or sMario.kitchen ~= gPlayerSyncTable[0].kitchen) then
+            msgColor = "\\#808080\\"
+        end
+        djui_chat_message_create(string.format("%s %s[%s]%s: %s", name, tagColor, tag, msgColor, msg))
+        if m.playerIndex == 0 then
+            play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource)
+        else
+            play_sound(SOUND_MENU_MESSAGE_APPEAR, gGlobalSoundSource)
+        end
+        return false
     end
 end
 hook_event(HOOK_ON_CHAT_MESSAGE, on_chat_message)

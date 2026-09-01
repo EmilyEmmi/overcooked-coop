@@ -10228,7 +10228,7 @@ Gfx castle_grounds_dl_LAYER_TRANSPARENT_DECAL_castle_grounds_seg7_dl_0700B1D0_me
 };
 
 Gfx mat_castle_grounds_dl_f3dlite_material_083_layer4[] = {
-	gsSPClearGeometryMode(G_LIGHTING | G_CULL_BACK),
+	gsSPClearGeometryMode(G_CULL_BACK | G_LIGHTING),
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, SHADE, 0, TEXEL0, 0, SHADE, 0),
 	gsDPSetAlphaDither(G_AD_NOISE),
@@ -10243,7 +10243,7 @@ Gfx mat_castle_grounds_dl_f3dlite_material_083_layer4[] = {
 };
 
 Gfx mat_revert_castle_grounds_dl_f3dlite_material_083_layer4[] = {
-	gsSPSetGeometryMode(G_LIGHTING | G_CULL_BACK),
+	gsSPSetGeometryMode(G_CULL_BACK | G_LIGHTING),
 	gsDPPipeSync(),
 	gsDPSetAlphaDither(G_AD_DISABLE),
 	gsDPSetRenderMode(G_RM_AA_ZB_TEX_EDGE, G_RM_AA_ZB_TEX_EDGE2),

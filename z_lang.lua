@@ -1,4 +1,4 @@
--- this is the translate command, it supports up to two blanks
+-- this is the translate command, supports formatting like in string.format
 function trans(id, ...)
   local usingLang = lang or "en"
   if not id then return "INVALID" end
@@ -90,7 +90,7 @@ function lang_test(msg)
 end
 
 if cheatsApi then
-    hook_chat_command("lang-test", "Test language", lang_test)
+  hook_chat_command("lang-test", "Test language", lang_test)
 end
 
 lang = "en"

@@ -1270,7 +1270,7 @@ function bhv_player_barrier_loop(o)
     end
 
     if width ~= 0 then
-        obj_scale_xyz(o, width * 1.04, 1, 1)
+        obj_scale_xyz(o, width * 1.04, width / 10, 1)
         load_object_collision_model()
         cur_obj_enable_rendering()
     else

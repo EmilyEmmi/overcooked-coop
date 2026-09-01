@@ -4,6 +4,8 @@
 - Made the Character Select menu accessible using the Z button in the menu, or through a menu option (previously, it could only be accessed using the /char-select command)
 - Button prompts now appear for interacting with ingredients! Toggleable in Preferences
 - Better tutorials- instead of just using text, levels that introduce new concepts will have diagrams
+- Chat messages will now show the player's current kitchen- if they aren't in your kitchen, their message will be gray
+    - The player list will also show which kitchen a player is in
 - Added an option to hide the HUD to Preferences (this does not save)
 ### Adjustments
 - Interacting with an ingredient on a counter while holding a plate no longer places the plate on the counter
@@ -11,6 +13,7 @@
 - Improved action priority- for example, if you're holding a bun and a bunch of ingredients are on the ground, the ingredients you're actually able to place on the burger have priority
 - Scores were rebalanced a bit- easier levels were made more difficult, harder levels were made less difficult
     - In addition, scores are now 5% lower for each additional kitchen (up to 15% lower for 13+ players)
+- Merry Go Pizza now has counters at the barrier, making it easier to pass items between sides
 - Bowser is now automatically dropped after 5 seconds, and he can't be regrabbed until another 5 seconds have passed
     - However, he also takes 4 times as long to recover from being thrown off the stage
 - Changed various models and animations (denpakei32, WBMarioo)
@@ -21,6 +24,7 @@
 - You now always get asked if you'd like to join/practice, even in the lobby
 - Added a version number in the bottom left corner of the menu
 - Added a warning when using a Character Select version lower than v1.16.3
+- Barriers now scale vertically as well
 ### Fixes
 - The desync fix will now correct instances where players are placed in the wrong level
 - Fixed occasional script errors in Koopa Kitchen

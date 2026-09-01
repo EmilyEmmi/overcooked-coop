@@ -286,7 +286,7 @@ function get_star_scores(oc_level, maxKitchens, maxPlayers)
                 maxPlayers = maxPlayers - players
             end
 
-            -- Apply scale, rounding to the nearest tenth
+            -- Apply scale, rounding to the nearest ten
             for i=1,4 do
                 neededPoints[i] = math.ceil(neededPoints[i] * pointScale / 10) * 10
             end
