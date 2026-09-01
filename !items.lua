@@ -200,6 +200,7 @@ ITEM_DATA = {
         model = E_MODEL_POT,
         scale = 0.5,
         isCooked = true,
+        isLiquid = true,
         cookIcon = ICON_POT,
         plateable = true,
         skipItem = true,

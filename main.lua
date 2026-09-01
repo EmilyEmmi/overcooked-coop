@@ -51,6 +51,7 @@ for i=0,MAX_PLAYERS-1 do
     local sMario = gPlayerSyncTable[i]
     sMario.cutTimer = 0
     sMario.washTimer = 0
+    sMario.eatTimer = 0
     sMario.kitchen = 1
     sMario.spawnID = 0
     sMario.selObjSyncID = 0
@@ -630,6 +631,25 @@ function mario_update(m)
     else
         c.actionAnimTimer = 0
     end
+    if sMario.eatTimer % 6 == 1 then
+        -- Overcomplicated way of playing a different sound for soup
+        local isLiquid = false
+        local o = m.heldObj
+        local iData = (o and ITEM_DATA[o.oBehParams]) or ITEM_DATA[0]
+        if o and obj_has_behavior_id(o, id_bhvIngredient) ~= 0 and iData.isPlate then
+            local children = find_all_object_children(o, id_bhvIngredient)
+            isLiquid = (#children ~= 0)
+            for i, c in ipairs(children) do
+                iData = ITEM_DATA[c.oBehParams]
+                if iData and not iData.isLiquid then
+                    isLiquid = false
+                    break
+                end
+            end
+        end
+        play_sound((isLiquid and SOUND_ACTION_SWIM) or SOUND_OBJ2_PIRANHA_PLANT_BITE, m.marioObj.header.gfx.cameraToObject)
+        m.particleFlags = m.particleFlags | PARTICLE_SNOW
+    end
     
     -- move romhack cam up
     --[[if m.playerIndex == 0 and m.area.camera and m.area.camera.mode == CAMERA_MODE_ROM_HACK
@@ -732,21 +752,42 @@ function before_mario_update(m)
         if not showButtonPrompts then grabPromptValid = false end
     end
 
-    if m.controller.buttonDown & ACTION_BUTTON ~= 0 and (not m.heldObj)
-    and selectedCounter and (selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK) then
-        local counter = selectedCounter
-        local o = counter.usingObj
-        local iData = (o and ITEM_DATA[o.oBehParams]) or ITEM_DATA[0]
+    local prevEatTimer = sMario.eatTimer
+    if m.controller.buttonDown & ACTION_BUTTON ~= 0 then
+        if (not m.heldObj) and selectedCounter and (selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK) then
+            local counter = selectedCounter
+            local o = counter.usingObj
+            local iData = (o and ITEM_DATA[o.oBehParams]) or ITEM_DATA[0]
 
-        if selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT
-        and o and o ~= counter and iData and iData.cut then
-            sMario.cutTimer = 6
-            m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
-        elseif selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
-            sMario.washTimer = 6
-            m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
+            if selectedCounter.oBehParams2ndByte == COUNTER_TYPE_CUT
+            and o and o ~= counter and iData and iData.cut then
+                sMario.cutTimer = 6
+                m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
+            elseif selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK and counter.oPlatesStackedExtra ~= 0 then
+                sMario.washTimer = 6
+                m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
+            end
+        elseif gNetworkPlayers[0].currLevelNum == LEVEL_CASTLE_GROUNDS
+        and m.heldObj and obj_has_behavior_id(m.heldObj, id_bhvIngredient) ~= 0 then
+            local iData = ITEM_DATA[m.heldObj.oBehParams] or ITEM_DATA[0]
+            if iData.isPlate then
+                local children = find_all_object_children(m.heldObj, id_bhvIngredient)
+                if #children ~= 0 then
+                    set_without_sync(sMario, "eatTimer", sMario.eatTimer + 1)
+                    if sMario.eatTimer > 30 then
+                        for i, c in ipairs(children) do
+                            obj_mark_for_deletion(c)
+                        end
+                        sMario.eatTimer = 0
+                    elseif sMario.eatTimer % 6 == 1 then
+                        sync_value(sMario, "eatTimer")
+                    end
+                    m.controller.buttonPressed = m.controller.buttonPressed &~ ACTION_BUTTON
+                end
+            end
         end
     end
+    if sMario.eatTimer == prevEatTimer then sMario.eatTimer = 0 end
     
     if m.controller.buttonPressed & GRAB_BUTTON ~= 0 and not INVALID_GRAB_ACTION[m.action] then
         if m.heldObj then
@@ -837,7 +878,7 @@ function before_mario_update(m)
     
     if m.controller.buttonPressed & THROW_BUTTON ~= 0 and m.heldObj and (m.action & ACT_FLAG_THROWING == 0) and obj_has_behavior_id(m.heldObj, id_bhvBowser) == 0 then
         local iData = ITEM_DATA[m.heldObj.oBehParams] or ITEM_DATA[0]
-        if obj_has_behavior_id(m.heldObj, id_bhvIngredient) == 0 or not (iData.noThrow or m.heldObj.oContentCount ~= 0) then
+        if obj_has_behavior_id(m.heldObj, id_bhvIngredient) == 0 or not (iData.noThrow or iData.isCooked or m.heldObj.oContentCount ~= 0) then
             m.marioBodyState.allowPartRotation = 0
             m.prevAction = m.action
             m.controller.buttonPressed = m.controller.buttonPressed &~ THROW_BUTTON

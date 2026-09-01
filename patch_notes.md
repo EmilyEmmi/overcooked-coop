@@ -1,5 +1,6 @@
 ## v1.1 (WIP)
 ### New features:
+- By popular demand, you can now finally eat your culinary creations! Hold the ACTION button (X by default) while holding a plate with food in the lobby.
 - Added Portuguese translation, available under Preferences -> Language (denpakei32)
 - Made the Character Select menu accessible using the Z button in the menu, or through a menu option (previously, it could only be accessed using the /char-select command)
 - Button prompts now appear for interacting with ingredients! Toggleable in Preferences
