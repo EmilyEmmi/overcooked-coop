@@ -23,6 +23,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	press_start = "Aperte [START]",
 	time_format = "%d:%02d",
 	short_player_count = "%dP",
+	old_char_select_warning = "\\#ff5050\\AVISO: Usar versões antigas do Character Select pode causar problemas! Por favor atualize para a versão v1.16.3 ou superior aqui:\n\\#\\https://github.com/Squishy6094/character-select-coop/releases",
 
 	tip = "Dica: ",
 	kitchen = "Cozinha",
@@ -39,6 +40,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	level_name_1 = "Bob-Omb Saladfield",
 	level_desc_1 = "Um nível simples com salada que ensina as mecânicas básicas. Comece aqui!",
 	level_advice_1 = "Aperte [GRAB] para agarrar ingredientes, e segure [ACTION] em uma tábua para cortá-los.",
+	level_tutorial_1 = "Prepare uma salada picando alface, e opcionalmente adicionando tomates picados.",
 	
 	level_name_2 = "Whomp's Spinning Salads",
 	level_desc_2 = "Caminhe cuidadosamente pelas plataformas giratórias para preparar saladas, e não se esqueça de lavar a louça!",
@@ -47,6 +49,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	level_name_3 = "Soupy Sea",
 	level_desc_3 = "Aprenda a fazer sopa, mas tome cuidado, As bancadas vão se mexer com o movimento do barco...",
 	level_advice_3 = "Você não consegue atravessar por barreiras vermelhas, mas os ingredientes conseguem.",
+	level_tutorial_3 = "Prepare sopa cortando e cozinhando três ingredientes do mesmo tipo em uma panela.",
 
 	level_name_4 = "Lethal Lava Puzzle",
 	level_desc_4 = "Faça mais sopa, mas olhe onde você anda! Se você ficar em cima de uma peça de quebra-cabeça, você vai ser derrubado na lava!",
@@ -100,15 +103,19 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_preferences = "Preferências",
 	menu_records = "Recordes",
 	menu_djui_menu = "Menu DJUI",
+	menu_char_select = "Character Select",
 
 	menu_grab_button = "Botão de Agarrar",
 	menu_action_button = "Botão de Ação",
 	menu_throw_button = "Botão de Arremessar",
+	menu_old_plate_place = "Comportamento antigo de agarrar",
 	menu_reduced_motion = "Movimento de menu reduzido",
-	menu_order_hud_location = "Order Hud Location",
+	menu_order_hud_location = "Definir posição do HUD",
 	menu_order_priority = "Prioridade de pedidos",
+	menu_button_prompts = "Indicações dos Botões",
 	menu_cook_indicators = "Legendas de cozinhar/queimar",
 	menu_disable_water_effect = "Desativar efeito de água.",
+	menu_hide_hud = "Esconder HUD",
 	menu_language = "Linguagem",
 
 	menu_join_now = "Me coloque!",
@@ -136,6 +143,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_records = "Visualizar suas pontuações máximas.",
 	menu_desc_djui_menu = "Entrar no menu DJUI. Você também pode pressionar [R] para o acessar.",
 	menu_desc_quit_practice = "Sair da pratica.",
+	menu_desc_char_select = "Opens the Character Select Menu. You can also press [Z] in this menu.",
 
 	menu_title_confirm = "Confirmar?",
 	menu_desc_confirm_restart = "Você tem certeza que deseja reiniciar? Qualquer progresso que não está salvo vai ser perdido!",
@@ -155,6 +163,10 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_cook_indicators = "Exibir um gráfico acima do temporizador quando algo terminar de cozinhar ou está queimando. Útil se você não consegue ouvir avisos sonoros.",
 	menu_desc_language = "Selecione a linguagem para este mod.\n\n(Recado: Nem todos as linguagens no sm64coopdx são suportados.)",
 	menu_desc_disable_water_effect = "Desativa a água em movimento em um dos níveis.",
+	menu_desc_old_plate_place_off = "Quando você agarrar um ingrediente de uma bancada usando um recipiente, você continuará segurando o recipiente.",
+	menu_desc_old_plate_place_on = "Quando você agarrar um ingrediente de uma bancada usando um recipiente, o recipiente será colocado sobre a bancada.",
+	menu_desc_button_prompts = "Exibir indicações de botões para interagir com os ingredientes.",
+	menu_desc_hide_hud = "Esconde o HUD. É útil para tirar fotos.",
 
 	menu_title_join = "Entrar?",
 	menu_desc_join_now = "Entrar na ação agora, ou esperar até que uma vaga seja aberta.",
