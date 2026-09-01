@@ -143,7 +143,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_records = "Visualizar suas pontuações máximas.",
 	menu_desc_djui_menu = "Entrar no menu DJUI. Você também pode pressionar [R] para o acessar.",
 	menu_desc_quit_practice = "Sair da pratica.",
-	menu_desc_char_select = "Opens the Character Select Menu. You can also press [Z] in this menu.",
+	menu_desc_char_select = "Abre o menu do Character Select. Você também consegue apertar [Z] neste menu.",
 
 	menu_title_confirm = "Confirmar?",
 	menu_desc_confirm_restart = "Você tem certeza que deseja reiniciar? Qualquer progresso que não está salvo vai ser perdido!",
