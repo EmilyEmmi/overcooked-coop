@@ -547,6 +547,91 @@ function level_select_hud()
     end
 end
 
+function advice_hud()
+    local screenWidth, screenHeight = djui_hud_get_screen_width(), djui_hud_get_screen_height()
+
+    local scale = 4
+    local x = 20
+    local y = 20
+    djui_hud_set_text_alignment(TEXT_HALIGN_LEFT, TEXT_VALIGN_TOP)
+    djui_hud_print_text(time_format(gGlobalSyncTable.timeLeft), x, y, scale)
+
+    -- level title
+    x = screenWidth / 2
+    djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+    local titleScale = scale
+    local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
+    local text = get_level_translated_field(gGlobalSyncTable.ocLevel, "name") or "???"
+    local width = djui_hud_measure_text(text) * titleScale
+    if width > screenWidth * 0.7 then
+        titleScale = (screenWidth * 0.7) / width * titleScale
+    end
+    djui_hud_print_text(text, x, y, titleScale, titleScale)
+
+    -- advice + picture
+    if lData.tutorial then
+        local texScale = scale / 2
+        local tex = get_texture_info("tip_bg")
+        x = (screenWidth - tex.width * texScale) / 2
+        y = (screenHeight - tex.height * texScale) / 2
+        djui_hud_reset_color()
+        djui_hud_render_texture(tex, x, y, texScale, texScale)
+        if lData.tutorialPic then
+            djui_hud_render_texture(lData.tutorialPic, x, y, texScale, texScale)
+        end
+
+        x = screenWidth / 2
+        y = y + 7.5 * scale
+        local adviceScale = scale / 2
+        local buttonNames = { "X", "Y", "L", "B" }
+        text = ""
+
+        local advice = get_level_translated_field(gGlobalSyncTable.ocLevel, "tutorial") or "???"
+        advice = advice:gsub("%[GRAB%]", "["..buttonNames[grabButtonIndex+1].."]")
+        advice = advice:gsub("%[ACTION%]", "["..buttonNames[actionButtonIndex+1].."]")
+        advice = advice:gsub("%[THROW%]", "["..buttonNames[throwButtonIndex+1].."]")
+
+        for i, word in ipairs(split(advice, " ")) do
+            local newText = text
+            if #newText == 0 then
+                newText = word
+            else
+                newText = newText .. " " .. word
+            end
+            width = djui_hud_measure_text(newText) * adviceScale
+            if width < (tex.width - 16) * texScale then
+                text = newText
+            else
+                text = text .. "\n" .. word
+            end
+        end
+        djui_hud_set_font(FONT_RECOLOR_HUD)
+        djui_hud_set_text_color(0, 255, 200, 255)
+        djui_hud_print_text(text, x, y, adviceScale, adviceScale)
+        djui_hud_set_font(FONT_CUSTOM_HUD)
+        djui_hud_reset_text_color()
+    end
+
+    -- spawn placement
+    x = screenWidth / 2
+    if gMarioStates[0].action == ACT_SELECT_START and not gPlayerSyncTable[0].readyToStart then
+        djui_hud_set_text_alignment(TEXT_HALIGN_CENTER, TEXT_VALIGN_TOP)
+        y = screenHeight - 20 * scale
+        text = trans("confirm_key")
+        if confirmTime > 0 then
+            local width = djui_hud_measure_text(text) * scale
+            local barWidth = width * (confirmTime / 30)
+            djui_hud_set_color(0, 255, 0, 255)
+            djui_hud_render_rect(x - width / 2, y, barWidth, 18 * scale)
+        end
+        djui_hud_set_color(255, 255, 255, 255)
+        djui_hud_print_text(text, x, y, scale)
+    else
+        y = screenHeight - 20 * scale
+        djui_hud_print_text(trans("ready"), x, y, scale)
+    end
+end
+
 function on_hud_render()
     djui_hud_set_resolution(RESOLUTION_DJUI)
     djui_hud_set_font(FONT_CUSTOM_HUD)
@@ -569,6 +654,10 @@ function on_hud_render()
         lastHudScore = 0
         scoreModifiers = {}
         setup_hud()
+    elseif gGlobalSyncTable.gameState == GAME_STATE_ADVICE then
+        lastHudScore = 0
+        scoreModifiers = {}
+        advice_hud()
     end
 end
 hook_event(HOOK_ON_HUD_RENDER, on_hud_render)
@@ -1048,8 +1137,8 @@ function build_records_menu(menu)
                     desc = desc,
                     false,
                     descExtra = function()
-                        local maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
-                        local neededPoints = get_star_scores(i, maxKitchens)
+                        local maxKitchens = math.clamp(math.ceil(players / 4), 1, MAX_KITCHENS)
+                        local neededPoints = get_star_scores(i, maxKitchens, players)
                         local result = {}
                         for stars=1,maxStars do
                             table.insert(result, neededPoints[stars])
@@ -1120,7 +1209,7 @@ local menu_data = {
             end,
             true,
             function()
-                return gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP
+                return not is_game_state_level_running()
             end,
             desc = "menu_desc_restart",
         },
@@ -1136,7 +1225,7 @@ local menu_data = {
             end,
             true,
             function()
-                return gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP
+                return not is_game_state_level_running()
             end,
             desc = "menu_desc_quit",
         },
@@ -1450,7 +1539,7 @@ local menu_data = {
             function()
                 inMenu = false
                 stayInSpectate = false
-                if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then
+                if not is_game_state_level_running() then
                     return
                 end
                 local sMario = gPlayerSyncTable[0]
@@ -1468,7 +1557,7 @@ local menu_data = {
             end,
             false,
             function()
-                return not ((gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP) or gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
+                return is_game_state_level_running() and not (gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
             end,
             desc = "menu_desc_join_now",
         },
@@ -1480,7 +1569,7 @@ local menu_data = {
             end,
             false,
             function()
-                return ((gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP) or gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
+                return (not is_game_state_level_running()) or (gGlobalSyncTable.allowMidGameJoin or gPlayerSyncTable[0].canRejoin)
             end,
             desc = "menu_desc_join_now",
         },

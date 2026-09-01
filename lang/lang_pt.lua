@@ -42,7 +42,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	
 	level_name_2 = "Whomp's Spinning Salads",
 	level_desc_2 = "Caminhe cuidadosamente pelas plataformas giratórias para preparar saladas, e não se esqueça de lavar a louça!",
-	level_advice_2 = "Leve pratos sujos para a pia e segure [ACTION] para lavar-los.",
+	level_tutorial_2 = "Leve pratos sujos para a pia e segure [ACTION] para lavar-los.",
 
 	level_name_3 = "Soupy Sea",
 	level_desc_3 = "Aprenda a fazer sopa, mas tome cuidado, As bancadas vão se mexer com o movimento do barco...",
@@ -54,11 +54,11 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 
 	level_name_5 = "Shifting Sand Burgers",
 	level_desc_5 = "Aprenda a fazer hambúrgueres, mas não caia na areia movediça!",
-	level_advice_5 = "Para preparar hambúrgueres, corte um pouco de carne e grelhe o hambúrguer, depois coloque no pão e acrescente os outros ingredientes.",
+	level_tutorial_5 = "Para preparar hambúrgueres, corte um pouco de carne e grelhe o hambúrguer, depois coloque no pão e acrescente os outros ingredientes.",
 
 	level_name_6 = "Burger Time",
 	level_desc_6 = "Faça hambúrgueres mais complexos! Use o impluso na parede para alcançar os ingredientes!",
-	level_advice_6 = "Aperta [THROW] para arremessar ingredientes crus. Os ingredientes vão quicar das paredes ao serem arremessados.",
+	level_tutorial_6 = "Aperta [THROW] para arremessar ingredientes crus. Os ingredientes vão quicar das paredes ao serem arremessados.",
 	-- wall kick seems to be most known as impluso na parede (first seen(?) in the playtronic guide for sm64)...
 
 	level_name_7 = "Rainbow Cruise",
@@ -67,7 +67,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 
 	level_name_8 = "Slip Slidin' Pizzas",
 	level_desc_8 = "Se acostume com o reino da Pizza. Escorregue para acessar rapidamente a área de baixo, mas tome cuidado para não cair da montanha!",
-	level_advice_8 = "Prepare pizzas combinando massa, tomate, queijo e outros ingredientes de cobertura cortados, e depois asse a pizza no forno.",
+	level_tutorial_8 = "Prepare pizzas combinando massa, tomate, queijo e outros ingredientes de cobertura cortados, e depois asse a pizza no forno.",
 
 	level_name_9 = "Merry Go Pizza",
 	level_desc_9 = "Prepare pizzas com vários ingredientes neste carrossel caótico... se você tiver coragem!",

@@ -274,7 +274,8 @@ function get_star_scores(oc_level, maxKitchens, maxPlayers)
             neededPoints = lData.starScores[math.clamp(maxPlayers, 1, 4)]
         else
             -- If there are more than 4 players, we add based on the amount of players in each kitchen.
-            -- For example, 5 players expects the 2 and 3 players scores added together.   
+            -- For example, 5 players expects the 2 and 3 players scores added together.
+            local pointScale = math.max(1 - 0.05 * (maxKitchens-1), 0.5) -- scale down 5% per extra kitchen
             neededPoints = {0, 0, 0, 0}
             while maxKitchens ~= 0 do
                 local players = math.clamp(math.ceil(maxPlayers / maxKitchens), 1, 4)
@@ -283,6 +284,11 @@ function get_star_scores(oc_level, maxKitchens, maxPlayers)
                 end
                 maxKitchens = maxKitchens - 1
                 maxPlayers = maxPlayers - players
+            end
+
+            -- Apply scale, rounding to the nearest tenth
+            for i=1,4 do
+                neededPoints[i] = math.ceil(neededPoints[i] * pointScale / 10) * 10
             end
         end
     end
@@ -381,6 +387,10 @@ function get_level_translated_field(level, field)
         end
     end
     return text
+end
+
+function is_game_state_level_running()
+    return gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_ADVICE or gGlobalSyncTable.gameState == GAME_STATE_PLAYING
 end
 
 function attempt_desync_fix(from)

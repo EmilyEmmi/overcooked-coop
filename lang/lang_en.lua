@@ -45,13 +45,15 @@ langdata["en"] =
   level_name_1 = "Bob-Omb Saladfield",
   level_desc_1 = "A simple level with salad that teaches the basic mechanics. Start here!",
   level_advice_1 = "Press [GRAB] to grab ingredients, and hold [ACTION] on a cutting board to cut them.",
+  level_tutorial_1 = "Make salad by chopping lettuce, and optionally adding chopped tomatoes.",
 
   level_name_2 = "Whomp's Spinning Salads",
   level_desc_2 = "Tread carefully across the spinning platforms to create salads, and make sure you wash those dishes!",
-  level_advice_2 = "Bring dirty dishes to the sink and hold [ACTION] to wash them.",
+  level_tutorial_2 = "Bring dirty dishes to the sink and hold [ACTION] to wash them.",
 
   level_name_3 = "Soupy Sea",
   level_desc_3 = "Learn to make soup, but be careful- the counters will shift with the rocking boat...",
+  level_tutorial_3 = "Make soup by cutting and cooking three ingredients of the same type in a pot.",
   level_advice_3 = "You can't pass through red barriers, but ingredients can.",
 
   level_name_4 = "Lethal Lava Puzzle",
@@ -60,11 +62,11 @@ langdata["en"] =
 
   level_name_5 = "Shifting Sand Burgers",
   level_desc_5 ="Learn to make burgers, but don't fall into the quicksand!",
-  level_advice_5 = "To make burgers, cut a slab of meat and cook the patty, then place on a bun and add toppings.",
+  level_tutorial_5 = "To make burgers, cut a slab of meat and cook the patty, then place on a bun and add toppings.",
 
   level_name_6 = "Burger Time",
   level_desc_6 = "Make more complicated burgers! Use the Wall Kick to reach the ingredients!",
-  level_advice_6 = "Press [THROW] to throw raw ingredients. Ingredients will bounce off of walls when thrown.",
+  level_tutorial_6 = "Press [THROW] to throw raw ingredients. Ingredients will bounce off of walls when thrown.",
 
   level_name_7 = "Rainbow Cruise",
   level_desc_7 = "Put burgers and salad together on this carpet ride! Take advantage of when the carpets are together!",
@@ -72,7 +74,7 @@ langdata["en"] =
 
   level_name_8 = "Slip Slidin' Pizzas",
   level_desc_8 = "Become aquainted with the realm of Pizza. Slide down to access the lower area quickly, but don't slip off of the mountain!",
-  level_advice_8 = "Make pizza by combining cut dough, tomato, cheese, and other toppings, then baking the pizza in an oven.",
+  level_tutorial_8 = "Make pizza by combining cut dough, tomato, cheese, and other toppings, then baking the pizza in an oven.",
 
   level_name_9 = "Merry Go Pizza",
   level_desc_9 = "Make Pizzas with multiple toppings in this chaotic merry go round... if you dare!",

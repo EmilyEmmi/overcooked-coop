@@ -21,6 +21,7 @@ GAME_STATE_SETUP = 1
 GAME_STATE_PLAYING = 2
 GAME_STATE_END = 3
 GAME_STATE_PREPARE = 4
+GAME_STATE_ADVICE = 5
 
 ACTION_BUTTONS = {X_BUTTON, Y_BUTTON, L_TRIG, B_BUTTON}
 
@@ -91,7 +92,7 @@ function update()
 
     -- update music
     local currSeq = get_current_background_music()
-    if (not gPlayerSyncTable[0].inPractice) and gGlobalSyncTable.gameState == GAME_STATE_SETUP then
+    if (not gPlayerSyncTable[0].inPractice) and (gGlobalSyncTable.gameState == GAME_STATE_ADVICE or gGlobalSyncTable.gameState == GAME_STATE_SETUP) then
         if currSeq ~= SEQ_MENU_FILE_SELECT then
             currSeq = SEQ_MENU_FILE_SELECT
             play_music(SEQ_PLAYER_LEVEL, currSeq, 0)
@@ -191,7 +192,7 @@ function update()
                 gGlobalSyncTable.timeLeft = 15
             end
         end
-    elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+    elseif is_game_state_level_running() then
         local lData = OC_LEVEL_DATA[gGlobalSyncTable.ocLevel]
         local np0 = gNetworkPlayers[0]
         local act = sMario0.kitchen
@@ -297,40 +298,51 @@ function update()
                         end
                         if totalPlayers < 1 then totalPlayers = 1 end
 
-                        gGlobalSyncTable.timeLeft = math.min(gGlobalSyncTable.timeLeft, nonReadyPlayers * 20 // totalPlayers + 3)
-                        if gGlobalSyncTable.timeLeft == 0 then
-                            gGlobalSyncTable.timeLeft = lData.totalTime or 240
-                            gGlobalSyncTable.gameState = GAME_STATE_PLAYING
-                        elseif gGlobalSyncTable.timeLeft == 2 then
-                            -- See which spots are filled
-                            local maxKitchens = gGlobalSyncTable.maxKitchens
-                            local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / maxKitchens)
-                            local isFilled = {}
-                            local playerNeedsSpot = {}
-                            for i=0,MAX_PLAYERS-1 do
-                                local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
-                                if np.connected and not sMario.spectator then
-                                    local spotID = ((sMario.kitchen-1) << 2) + sMario.spawnID
-                                    if (not isFilled[spotID]) and sMario.readyToStart
-                                    and sMario.kitchen <= maxKitchens and sMario.spawnID < maxSpawnID then
-                                        isFilled[spotID] = 1
-                                    else
-                                        table.insert(playerNeedsSpot, i)
+                        if gGlobalSyncTable.gameState == GAME_STATE_SETUP then
+                            gGlobalSyncTable.timeLeft = math.min(gGlobalSyncTable.timeLeft, nonReadyPlayers * 20 // totalPlayers + 3)
+                            if gGlobalSyncTable.timeLeft == 0 then
+                                gGlobalSyncTable.timeLeft = lData.totalTime or 240
+                                gGlobalSyncTable.gameState = GAME_STATE_PLAYING
+                            elseif gGlobalSyncTable.timeLeft == 2 then
+                                -- See which spots are filled
+                                local maxKitchens = gGlobalSyncTable.maxKitchens
+                                local maxSpawnID = math.ceil(gGlobalSyncTable.peakPlayers / maxKitchens)
+                                local isFilled = {}
+                                local playerNeedsSpot = {}
+                                for i=0,MAX_PLAYERS-1 do
+                                    local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
+                                    if np.connected and not sMario.spectator then
+                                        local spotID = ((sMario.kitchen-1) << 2) + sMario.spawnID
+                                        if (not isFilled[spotID]) and sMario.readyToStart
+                                        and sMario.kitchen <= maxKitchens and sMario.spawnID < maxSpawnID then
+                                            isFilled[spotID] = 1
+                                        else
+                                            table.insert(playerNeedsSpot, i)
+                                        end
+                                    end
+                                end
+
+                                -- Reassign players to force an even split
+                                for kitchen=1,maxKitchens do
+                                    for spawnID=0,maxSpawnID-1 do
+                                        if #playerNeedsSpot == 0 then break end
+                                        local spotID = ((kitchen-1) << 2) + spawnID
+                                        if (not isFilled[spotID]) and kitchen <= maxKitchens and spawnID <= maxSpawnID then
+                                            local index = table.remove(playerNeedsSpot)
+                                            local sMario = gPlayerSyncTable[index]
+                                            sMario.kitchen, sMario.spawnID = kitchen, spawnID
+                                            isFilled[spotID] = 1
+                                        end
                                     end
                                 end
                             end
-
-                            -- Reassign players to force an even split
-                            for kitchen=1,maxKitchens do
-                                for spawnID=0,maxSpawnID-1 do
-                                    if #playerNeedsSpot == 0 then break end
-                                    local spotID = ((kitchen-1) << 2) + spawnID
-                                    if (not isFilled[spotID]) and kitchen <= maxKitchens and spawnID <= maxSpawnID then
-                                        local index = table.remove(playerNeedsSpot)
-                                        local sMario = gPlayerSyncTable[index]
-                                        sMario.kitchen, sMario.spawnID = kitchen, spawnID
-                                        isFilled[spotID] = 1
-                                    end
+                        else
+                            gGlobalSyncTable.timeLeft = math.min(gGlobalSyncTable.timeLeft, nonReadyPlayers * 30 // totalPlayers)
+                            if gGlobalSyncTable.timeLeft == 0 then
+                                gGlobalSyncTable.gameState = GAME_STATE_SETUP
+                                gGlobalSyncTable.timeLeft = 23
+                                for i=0,MAX_PLAYERS-1 do
+                                    set_without_sync(gPlayerSyncTable[i], "readyToStart", false)
                                 end
                             end
                         end
@@ -400,9 +412,14 @@ function update()
                 end
 
                 if allOut then
-                    gGlobalSyncTable.gameState = GAME_STATE_SETUP
+                    if lData.tutorial and not restartTransition then
+                        gGlobalSyncTable.gameState = GAME_STATE_ADVICE
+                        gGlobalSyncTable.timeLeft = 30
+                    else
+                        gGlobalSyncTable.gameState = GAME_STATE_SETUP
+                        gGlobalSyncTable.timeLeft = 23
+                    end
                     gGlobalSyncTable.score = 0
-                    gGlobalSyncTable.timeLeft = 23
                     gGlobalSyncTable.peakPlayers = get_active_player_count()
                     gGlobalSyncTable.maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
                     for i=1,MAX_KITCHENS do
@@ -467,7 +484,7 @@ function on_sync_valid()
             id = PACKET_REQUEST_ORDERS,
             from = network_global_index_from_local(0),
         })
-        if gGlobalSyncTable.gameState == GAME_STATE_PLAYING or gGlobalSyncTable.gameState == GAME_STATE_SETUP then
+        if is_game_state_level_running() then
             local kitchen, spawnID = join_smallest_kitchen(0)
             sMario0.kitchen = kitchen
             sMario0.spawnID = 0
@@ -693,7 +710,7 @@ function before_mario_update(m)
     sMario.waitingForSlot = (sMario.spectator and not (sMario.inPractice or stayInSpectate))
 
     -- Sparkles at selected (might be changed)
-    if (selectedCounter or selectedItem) and grabPromptValid then
+    if (selectedCounter or selectedItem) and grabPromptValid and not hideOcHud then
         local o = selectedCounter or selectedItem
         local pos = {x = o.oPosX, y = o.oPosY, z = o.oPosZ}
         local size = 45
@@ -909,8 +926,23 @@ function act_select_start(m)
     end
     vec3f_copy(m.marioObj.header.gfx.pos, m.pos);
     vec3s_set(m.marioObj.header.gfx.angle, 0, m.faceAngle.y, 0)
-    if gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then
+    if gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
         return force_idle_state(m)
+    end
+
+    if m.playerIndex == 0 and gGlobalSyncTable.gameState == GAME_STATE_ADVICE then
+        if not sMario.readyToStart then
+            if m.controller.buttonDown & A_BUTTON ~= 0 then
+                confirmTime = confirmTime + 1
+                if confirmTime >= 30 then
+                    confirmTime = 0
+                    sMario.readyToStart = true
+                end
+            else
+                confirmTime = math.max(confirmTime - 1, 0)
+            end
+        end
+        return
     end
 
     if m.playerIndex ~= 0 or m.actionState ~= 0 or gGlobalSyncTable.timeLeft <= 3 then return 0 end
@@ -927,7 +959,10 @@ function act_select_start(m)
         end
     end
 
-    sMario.readyToStart = false
+    if sMario.readyToStart then
+        sMario.readyToStart = false
+        confirmTime = 0
+    end
     if spotTaken then
         confirmTime = -1
     elseif m.controller.buttonDown & A_BUTTON ~= 0 then
@@ -1207,8 +1242,13 @@ hook_event(HOOK_ON_DEATH, on_death)
 function on_state_change(tag, oldVal, newVal)
     if oldVal == newVal or oldVal == nil or newVal == nil then return end
 
-    if newVal == GAME_STATE_END and ((not gPlayerSyncTable[0].spectator) or (network_is_server() and gServerSettings.headlessServer ~= 0)) then
-        gotNewRecord = save_new_score()
+    if newVal == GAME_STATE_END then
+        if ((not gPlayerSyncTable[0].spectator) or (network_is_server() and gServerSettings.headlessServer ~= 0)) then
+            gotNewRecord = save_new_score()
+        end
+    elseif newVal == GAME_STATE_ADVICE or newVal == GAME_STATE_SETUP then
+        confirmTime = 0
+        gPlayerSyncTable[0].readyToStart = false
     end
 end
 hook_on_sync_table_change(gGlobalSyncTable, "gameState", "gameState", on_state_change)
@@ -1247,7 +1287,7 @@ function on_spectator_change(tag, oldVal, newVal)
     m.flags = m.flags &~ MARIO_VANISH_CAP
     stayInSpectate = false
 
-    if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and gGlobalSyncTable.gameState ~= GAME_STATE_SETUP then return end
+    if not is_game_state_level_running() then return end
 
     if m.action & ACT_GROUP_MASK == ACT_GROUP_CUTSCENE then
         on_death(m)
@@ -1364,7 +1404,7 @@ function add_order_command(msg)
 end
 
 function start_level_command(msg)
-    if gGlobalSyncTable.gameState == GAME_STATE_SETUP or gGlobalSyncTable.gameState == GAME_STATE_PLAYING then
+    if is_game_state_level_running() then
         gGlobalSyncTable.timeLeft = 1
         return true
     end
