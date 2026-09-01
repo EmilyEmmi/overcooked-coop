@@ -3,6 +3,7 @@ define_custom_obj_fields({
     oContentCount = "u32",
     oCutOrCookTimer = "u32",
     oOvercookTimer = "u32",
+    oMixedTimer = "u32",
     oParentSyncID = "u32",
     oUsingSyncID = "u32",
     oRespawnTimer = "u32",
@@ -54,6 +55,9 @@ function bhv_ingredient_init(o)
         table.insert(syncFields, "oPlateAppearTimer")
         table.insert(syncFields, "oPlateCounterNum")
         table.insert(syncFields, "oPlatesStackedExtra")
+    end
+    if iData.needsMixed then
+        table.insert(syncFields, "oMixedTimer")
     end
     network_init_object(o, true, syncFields)
 end
@@ -313,8 +317,9 @@ function bhv_ingredient_loop(o)
                 cur_obj_become_intangible()
                 ingredient_place_on_counter(o, counter)
 
-                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT or counter.oBehParams2ndByte == COUNTER_TYPE_OVEN or counter.oBehParams2ndByte == COUNTER_TYPE_MIXER then
-                    if (o.oContentCount ~= 0 or iData.selfCookItem) and o.oContents ~= ITEM_BURNT and iData.cookType then
+                if counter.oBehParams2ndByte == COUNTER_TYPE_HEAT or counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
+                    local maxMixTime = iData.mixTime or DEFAULT_COOK_TIME
+                    if (o.oContentCount ~= 0 or iData.selfCookItem) and o.oContents ~= ITEM_BURNT and iData.cookType and not (iData.needsMixed and o.oMixedTimer < maxMixTime) then
                         if (not iData.isCooked) and o.oCutOrCookTimer < maxCookTime then
                             o.oCutOrCookTimer = o.oCutOrCookTimer + 1
                             o.oOvercookTimer = 0
@@ -351,10 +356,45 @@ function bhv_ingredient_loop(o)
                             end
                         end
                     end
+                elseif counter.oBehParams2ndByte == COUNTER_TYPE_MIXER then
+                    local maxMixTime = iData.mixTime or DEFAULT_COOK_TIME
+                    if o.oContentCount ~= 0 and iData.needsMixed and o.oContents ~= ITEM_BURNT then
+                        if o.oMixedTimer < maxMixTime then
+                            o.oMixedTimer = o.oMixedTimer + 1
+                            o.oOvercookTimer = 0
+
+                            if o.oMixedTimer == maxCookTime then
+                                --djui_chat_message_create("done!")
+                                o.oNotifyTimer = 30
+                                cur_obj_play_sound_2(SOUND_MENU_REVERSE_PAUSE | 128)
+                            end
+                        else -- overcook (overmix?) after 10 seconds
+                            o.oOvercookTimer = o.oOvercookTimer + 1
+                            if o.oOvercookTimer >= 5 * 30 then
+                                local freq = 30
+                                if o.oOvercookTimer >= 9 * 30 then
+                                    freq = 5
+                                elseif o.oOvercookTimer >= 7.5 * 30 then
+                                    freq = 10
+                                end
+                                if o.oOvercookTimer % freq == 0 then
+                                    o.oNotifyTimer = freq
+                                    play_sound_with_freq_scale(SOUND_MOVING_ALMOST_DROWNING, o.header.gfx.cameraToObject, -2)
+                                end
+                            end
+                            if o.oOvercookTimer >= 10 * 30 then
+                                -- djui_chat_message_create("burnt")
+                                o.oMixedTimer = 0
+                                o.oOvercookTimer = 0
+                                o.oNotifyTimer = 0
+                                o.oContents = ITEM_BURNT
+                            end
+                        end
+                    end
                 end
 
                 if o.oPlatesStackedExtra ~= 0 then
-                    -- update plate stack (TODO: this whole system is broken)
+                    -- update plate stack
                     local otherPlates = find_all_object_using(counter, id_bhvIngredient)
                     if o.oPlatesStackedExtra ~= #otherPlates - 1 then
                         local minCounterNum = 100
@@ -627,16 +667,32 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
             o2.oContents = o2.oContents | (containerData << (8 * o2.oContentCount))
             o2.oContentCount = o2.oContentCount + containerCount
 
-            -- average cooking time
-            if iData.pourable then
-                if wasEmpty then
-                    o2.oCutOrCookTimer = o.oCutOrCookTimer * 2 -- inherit cooking time
-                else
-                    o2.oCutOrCookTimer = o2.oCutOrCookTimer + o.oCutOrCookTimer
+            if iData2.needsMixed then
+                -- reset cooking time and average mixing time instead
+                o2.oCutOrCookTimer = 0
+                if iData.pourable then
+                    if wasEmpty then
+                        o2.oMixedTimer = o.oMixedTimer * 2 -- inherit mixing time
+                    else
+                        o2.oMixedTimer = o2.oMixedTimer + o.oMixedTimer
+                    end
+                    o.oCutOrCookTimer = 0
+                    o.oMixedTimer = 0
                 end
-                o.oCutOrCookTimer = 0
+                o2.oMixedTimer = o2.oMixedTimer // 2
+            else
+                -- average cooking time
+                if iData.pourable then
+                    if wasEmpty then
+                        o2.oCutOrCookTimer = o.oCutOrCookTimer * 2 -- inherit cooking time
+                    else
+                        o2.oCutOrCookTimer = o2.oCutOrCookTimer + o.oCutOrCookTimer
+                    end
+                    o.oCutOrCookTimer = 0
+                    o.oMixedTimer = 0
+                end
+                o2.oCutOrCookTimer = o2.oCutOrCookTimer // 2
             end
-            o2.oCutOrCookTimer = o2.oCutOrCookTimer // 2
 
             network_send_object(o2, true)
             if iData.pourable then
@@ -680,11 +736,13 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                     o.oContents = 0
                     o.oContentCount = 0
                     o.oCutOrCookTimer = 0
+                    o.oMixedTimer = 0
                     network_send_object(o, true)
                 else
                     o.oContents = 0
                     o.oContentCount = 0
                     o.oCutOrCookTimer = 0
+                    o.oMixedTimer = 0
                 end
 
                 return true, true
@@ -736,6 +794,7 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                         o.oContents = 0
                         o.oContentCount = 0
                         o.oCutOrCookTimer = 0
+                        o.oMixedTimer = 0
                         network_send_object(o, true)
                     end
                 end
@@ -798,6 +857,9 @@ end
 function check_ingredient_valid_for_place(o, o2, onPlate)
     local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
     local iData2 = ITEM_DATA[o2.oBehParams] or ITEM_DATA[0]
+    local maxCookTime2 = iData2.maxCookTime or DEFAULT_COOK_TIME
+    if iData2.lockAfterCook and o2.oCutOrCookTimer >= maxCookTime2 then return false, false end
+
     if iData.washItem or iData2.washItem then
         -- allow stacking dirty plates
         if not (iData.washItem and iData2.washItem) then return end
@@ -962,7 +1024,10 @@ function check_counter_valid_interact(counter, o)
     elseif counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
         return (iData.washItem ~= nil)
     elseif counter.oBehParams2ndByte == COUNTER_TYPE_OVEN then
-        return (iData.cookType == COOK_TYPE_OVEN)
+        local maxMixTime = iData.mixTime or DEFAULT_COOK_TIME
+        return (iData.cookType == COOK_TYPE_OVEN and not (iData.needsMixed and o.oMixedTimer < maxMixTime))
+    elseif counter.oBehParams2ndByte == COUNTER_TYPE_MIXER then
+        return (iData.needsMixed)
     end
 
     return true
@@ -1169,7 +1234,9 @@ function bhv_counter_loop(o)
         local cookSoundChance = 1
         if o.usingObj and o.usingObj ~= o then
             local iData = ITEM_DATA[o.usingObj.oBehParams] or ITEM_DATA[0]
-            if iData.cookType == COOK_TYPE_OVEN and (o.usingObj.oContentCount ~= 0 or iData.selfCookItem) then
+            local maxMixTime = iData.mixTime or DEFAULT_COOK_TIME
+            if iData.cookType == COOK_TYPE_OVEN and not (iData.needsMixed and o.usingObj.oMixedTimer < maxMixTime)
+            and o.usingObj.oContentCount ~= 0 then
                 heatOn = true
                 cookSound = iData.cookSound or cookSound
                 cookSoundChance = iData.cookSoundChance or cookSoundChance

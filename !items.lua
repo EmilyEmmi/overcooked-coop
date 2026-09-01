@@ -15,6 +15,7 @@ E_MODEL_PIZZA = smlua_model_util_get_id("pizza_geo")
 E_MODEL_EGG = smlua_model_util_get_id("egg_geo")
 E_MODEL_FLOUR = smlua_model_util_get_id("flour_geo")
 E_MODEL_CHOCOLATE = smlua_model_util_get_id("chocolate_geo")
+E_MODEL_HONEY = E_MODEL_YELLOW_COIN -- TEMP
 
 E_MODEL_PLATE = smlua_model_util_get_id("plate_geo")
 E_MODEL_POT = smlua_model_util_get_id("pot_geo")
@@ -54,6 +55,8 @@ ICON_OVEN = get_texture_info("icon_oven")
 ICON_DOUGH = get_texture_info("icon_dough")
 ICON_SAUSAGE = get_texture_info("icon_sausage")
 ICON_CHICKEN = get_texture_info("icon_chicken")
+ICON_MIXED = gTextures.star -- TEMP
+ICON_MIXER = gTextures.star -- TEMP
 
 ITEM_LETTUCE = 0
 ITEM_LETTUCE_CUT = 1
@@ -87,6 +90,11 @@ ITEM_EGG = 28
 ITEM_FLOUR = 29
 ITEM_CHOCOLATE = 30
 ITEM_CHOCOLATE_CUT = 31
+ITEM_HONEY = 32
+ITEM_HONEY_CUT = 33
+ITEM_CARROT = 34
+ITEM_CARROT_CUT = 35
+ITEM_CAKE = 36
 
 SALAD_COMBO = {[ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1}
 BURGER_COMBO = {[ITEM_MEAT_COOKED] = 1, [ITEM_LETTUCE_CUT] = 1, [ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1}
@@ -94,7 +102,6 @@ PIZZA_COMBO = {[ITEM_TOMATO_CUT] = 1, [ITEM_CHEESE_CUT] = 1, [ITEM_SAUSAGE_CUT] 
 
 COOK_TYPE_HEAT = 0
 COOK_TYPE_OVEN = 1
-COOK_TYPE_MIX = 2
 
 BOX_LABEL_CASES = {
     [ITEM_MEAT] = 0,
@@ -314,14 +321,14 @@ ITEM_DATA = {
     },
     [ITEM_BOWL] = {
         model = E_MODEL_BOWL,
-        contentSlots = 3,
-        accepts = {[ITEM_EGG] = 1, [ITEM_FLOUR] = 1, [ITEM_CHOCOLATE_CUT] = 1},
+        contentSlots = 4,
+        accepts = {[ITEM_EGG] = 1, [ITEM_FLOUR] = 1, [ITEM_CHOCOLATE_CUT] = 1, [ITEM_HONEY_CUT] = 1, [ITEM_CARROT_CUT] = 1},
         pourable = true,
-        cookType = COOK_TYPE_MIX,
+        cookType = COOK_TYPE_OVEN,
+        needsMixed = true,
+        lockAfterCook = true,
         noTrash = true,
         noThrow = true,
-        cookSound = SOUND_GENERAL_QUIET_BUBBLE2,
-        cookSoundChance = 1/16,
         renderFunc = function(o)
             if o.usingObj and o.usingObj.oBehParams2ndByte == COUNTER_TYPE_MIXER then
                 o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
@@ -340,11 +347,40 @@ ITEM_DATA = {
     [ITEM_CHOCOLATE] = {
         model = E_MODEL_CHOCOLATE,
         cut = ITEM_CHOCOLATE_CUT,
-        --icon = ICON_CHOCOLATE
+        --icon = ICON_CHOCOLATE,
     },
     [ITEM_CHOCOLATE_CUT] = {
         model = E_MODEL_CHOCOLATE, -- no cut model atm
-        --icon = ICON_CHOCOLATE
+        --icon = ICON_CHOCOLATE,
+        subIcon = ICON_CUT,
+    },
+    [ITEM_HONEY] = {
+        model = E_MODEL_EXCLAMATION_BOX, -- TEMP
+        animState = 3, -- TEMP
+        cut = ITEM_HONEY_CUT,
+        --icon = ICON_CHOCOLATE,
+    },
+    [ITEM_HONEY_CUT] = {
+        model = E_MODEL_YELLOW_COIN, -- TEMP
+        --icon = ICON_CHOCOLATE,
+        subIcon = ICON_CUT,
+    },
+    [ITEM_CARROT] = {
+        model = E_MODEL_EXCLAMATION_BOX, -- TEMP
+        cut = ITEM_CARROT_CUT,
+        --icon = ICON_CHOCOLATE,
+    },
+    [ITEM_CARROT_CUT] = {
+        model = E_MODEL_RED_COIN, -- TEMP
+        --icon = ICON_CHOCOLATE,
+        subIcon = ICON_CUT,
+    },
+    [ITEM_CAKE] = {
+        model = E_MODEL_EXCLAMATION_BOX_OUTLINE, -- TEMP
+        isCooked = true,
+        cookIcon = {ICON_MIXER, ICON_OVEN},
+        plateable = true,
+        skipItem = true,
     },
 }
 
@@ -371,6 +407,23 @@ COOKED_DATA = {
         {
             items = {ITEM_MEAT_CUT},
             result = ITEM_MEAT_COOKED,
+        },
+    },
+    [ITEM_BOWL] = {
+        {
+            items = {ITEM_EGG, ITEM_FLOUR, ITEM_HONEY_CUT},
+            result = ITEM_CAKE,
+            inheritContents = true,
+        },
+        {
+            items = {ITEM_EGG, ITEM_FLOUR, ITEM_HONEY_CUT, ITEM_CHOCOLATE_CUT},
+            result = ITEM_CAKE,
+            inheritContents = true,
+        },
+        {
+            items = {ITEM_EGG, ITEM_FLOUR, ITEM_HONEY_CUT, ITEM_CARROT_CUT},
+            result = ITEM_CAKE,
+            inheritContents = true,
         },
     },
 }
@@ -418,6 +471,9 @@ ORDER_CHICKEN_PIZZA = 13
 ORDER_MUSHROOM_PIZZA = 14
 ORDER_MEAT_PIZZA = 15
 ORDER_PEPPERONI_MUSHROOM_PIZZA = 16
+ORDER_PLAIN_CAKE = 17
+ORDER_CHOCOLATE_CAKE = 18
+ORDER_CARROT_CAKE = 19
 
 ORDER_DATA = {
     [ORDER_PLAIN_SALAD] = {
@@ -540,4 +596,25 @@ ORDER_DATA = {
         },
         icon = get_texture_info("icon_pizza_pepperoni_mushroom"),
     },
+    --[[[ORDER_PLAIN_CAKE] = {
+        name = "Plain Cake",
+        items = {
+            {type = ITEM_CAKE, contents = {ITEM_EGG, ITEM_FLOUR, ITEM_HONEY_CUT}},
+        },
+        --icon = get_texture_info("icon_pizza_mushroom"),
+    },
+    [ORDER_CHOCOLATE_CAKE] = {
+        name = "Chocolate Cake",
+        items = {
+            {type = ITEM_CAKE, contents = {ITEM_EGG, ITEM_FLOUR, ITEM_HONEY_CUT, ITEM_CHOCOLATE_CUT}},
+        },
+        --icon = get_texture_info("icon_pizza_pepperoni_chicken"),
+    },
+    [ORDER_CARROT_CAKE] = {
+        name = "Carrot Cake",
+        items = {
+            {type = ITEM_CAKE, contents = {ITEM_EGG, ITEM_FLOUR, ITEM_HONEY_CUT, ITEM_CARROT_CUT}},
+        },
+        --icon = get_texture_info("icon_pizza_pepperoni_mushroom"),
+    },]]
 }

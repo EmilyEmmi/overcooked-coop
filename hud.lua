@@ -770,6 +770,7 @@ function behind_hud_render()
             local items = {}
             local children = {o}
             local allCooked = (iData.isCooked or false)
+            local allMixed = false
             if iData.isPlate then
                 children = find_all_object_children(o, id_bhvIngredient)
             end
@@ -778,6 +779,7 @@ function behind_hud_render()
                 if c.oContents == ITEM_BURNT then
                     table.insert(items, ITEM_BURNT)
                     allCooked = false
+                    allMixed = false
                 else
                     local iDataC = ITEM_DATA[c.oBehParams]
                     if iDataC.icon and not (iDataC.noTrash or iDataC.skipItem) then
@@ -786,7 +788,9 @@ function behind_hud_render()
                     
                     if c.oContentCount ~= 0 then
                         local maxCookTime = iDataC.cookTime or DEFAULT_COOK_TIME
-                        allCooked = allCooked or iDataC.isCooked or (iDataC.cookType == COOK_TYPE_HEAT and c.oCutOrCookTimer >= maxCookTime)
+                        local maxMixTime = iDataC.mixTime or DEFAULT_COOK_TIME
+                        allCooked = allCooked or iDataC.isCooked or (iDataC.cookType and c.oCutOrCookTimer >= maxCookTime)
+                        allMixed = allMixed or (iDataC.needsMixed and c.oMixedTimer >= maxMixTime)
 
                         local cookedData = get_cooked_data(c)
                         local renderContents = true
@@ -810,7 +814,7 @@ function behind_hud_render()
                 end
             end
 
-            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oNotifyTimer ~= 0 or (grabPromptValid and o == selectedItem) then
+            if #items ~= 0 or o.oCutOrCookTimer ~= 0 or o.oMixedTimer ~= 0 or o.oNotifyTimer ~= 0 or (grabPromptValid and o == selectedItem) then
                 if radar.frameLastRendered + 1 ~= get_global_timer() then
                     radar.prevX = radar.x
                     radar.prevY = radar.y
@@ -822,8 +826,9 @@ function behind_hud_render()
                 djui_hud_set_color(255, 255, 255, 255)
                 local x, y, scale = radar.x, radar.y, radar.scale
                 local prevX, prevY, prevScale = radar.prevX, radar.prevY, radar.prevScale
+                local forceSubIcon = ((allCooked and ICON_HEAT) or (allMixed and ICON_MIXED))
                 if #items == 1 then
-                    render_ingredient_icon_interpolated(items[1], prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
+                    render_ingredient_icon_interpolated(items[1], prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, forceSubIcon)
                 elseif #items ~= 0 then
                     local maxColumns = 3
                     local columns = math.min(#items, maxColumns)
@@ -839,12 +844,12 @@ function behind_hud_render()
                             x = x + 20 * scale
                             prevX = prevX + 20 * prevScale
                         end
-                        render_ingredient_icon_interpolated(item, prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, allCooked)
+                        render_ingredient_icon_interpolated(item, prevX, prevY, prevScale, prevScale, x, y, scale, scale, true, forceSubIcon)
                     end
                 end
 
-                -- cooking/cutting progress
-                if o.oCutOrCookTimer ~= 0 then
+                -- cooking/cutting/mixing progress
+                if o.oCutOrCookTimer ~= 0 or o.oMixedTimer ~= 0 then
                     x = radar.x - 20 * scale
                     y = radar.y + 20 * scale
                     prevX = radar.prevX - 20 * prevScale
@@ -852,6 +857,9 @@ function behind_hud_render()
                     radar.barWidth = 0
                     if iData.cut then
                         radar.barWidth = o.oCutOrCookTimer / 30
+                    elseif o.oCutOrCookTimer == 0 and o.oMixedTimer ~= 0 then
+                        local maxMixTime = iData.mixTime or DEFAULT_COOK_TIME
+                        radar.barWidth = o.oMixedTimer / maxMixTime
                     elseif iData.cookType then
                         local maxCookTime = iData.cookTime or DEFAULT_COOK_TIME
                         radar.barWidth = o.oCutOrCookTimer / maxCookTime
@@ -2298,65 +2306,83 @@ function smooth_approach(goal, current, rate)
     return result
 end
 
-function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, forceHeatIcon)
+function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, forceSubIcon)
     local tex = ITEM_DATA[item].icon
+    local texWidth, texHeight = 0, 0
     if tex then
-        local texWidth = tex.width * scaleX
+        texWidth = tex.width * scaleX
+        texHeight = tex.height * scaleY
         local itemX = x - texWidth / 2
         
         djui_hud_render_texture(tex, itemX, y, scaleX, scaleY)
-        local subTex = ITEM_DATA[item].subIcon
-        if allowHeatIcon and (forceHeatIcon or ITEM_DATA[item].isCooked) then
-            subTex = ICON_HEAT
-        end
-        if subTex then
-            local texHeight = tex.height * scaleY
-            local subTexWidth = subTex.width * scaleX
-            local subTexHeight = subTex.height * scaleX
-            itemX = x + texWidth / 2 - subTexWidth
-            djui_hud_render_texture(subTex, itemX, y + texHeight - subTexHeight, scaleX, scaleY)
-        end
     else
+        y = y - 10 * scaleY
+
         local text = string.format("%02X", item)
-        local texWidth = 16 * scaleX
+        texWidth = 16 * scaleX
+        texHeight = 16 * scaleY
         local itemX = x - texWidth / 2
         djui_hud_print_text(text, itemX, y, scaleX / 2, scaleY)
+
+        y = y + 10 * scaleY
+    end
+
+    local subTex = ITEM_DATA[item].subIcon
+    if forceSubIcon then
+        subTex = forceSubIcon
+    elseif allowHeatIcon and ITEM_DATA[item].isCooked then
+        subTex = ICON_HEAT
+    end
+    if subTex then
+        local subTexWidth = subTex.width * scaleX
+        local subTexHeight = subTex.height * scaleX
+        itemX = x + texWidth / 2 - subTexWidth
+        djui_hud_render_texture(subTex, itemX, y + texHeight - subTexHeight, scaleX, scaleY)
     end
 end
 
-function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, prevScaleY, x, y, scaleX, scaleY, allowHeatIcon, forceHeatIcon)
+function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, prevScaleY, x, y, scaleX, scaleY, allowHeatIcon, forceSubIcon)
     local tex = ITEM_DATA[item].icon
+    local texWidth, texHeight, prevTexWidth, prevTexHeight = 0, 0, 0, 0
     if tex then
-        local texWidth = tex.width * scaleX
-        local prevTexWidth = tex.width * prevScaleX
+        texWidth = tex.width * scaleX
+        prevTexWidth = tex.width * prevScaleX
+        texHeight = tex.height * scaleY
+        prevTexHeight = tex.height * prevScaleY
         local itemX = x - texWidth / 2
         local prevItemX = prevX - prevTexWidth / 2
         
         djui_hud_render_texture_interpolated(tex, prevItemX, prevY, prevScaleX, prevScaleY, itemX, y, scaleX, scaleY)
-        local subTex = ITEM_DATA[item].subIcon
-        if allowHeatIcon and (forceHeatIcon or ITEM_DATA[item].isCooked) then
-            subTex = ICON_HEAT
-        end
-        if subTex then
-            local texHeight = tex.height * scaleY
-            local prevTexHeight = tex.height * prevScaleY
-            local subTexWidth = subTex.width * scaleX
-            local subTexHeight = subTex.height * scaleY
-            local prevSubTexWidth = subTex.width * prevScaleX
-            local prevSubTexHeight = subTex.height * prevScaleY
-            itemX = x + texWidth / 2 - subTexWidth
-            prevItemX = prevX + prevTexWidth / 2 - prevSubTexWidth
-            djui_hud_render_texture_interpolated(subTex, prevItemX, prevY + prevTexHeight - prevSubTexHeight, prevScaleX, prevScaleY, itemX, y + texHeight - subTexHeight, scaleX, scaleY)
-        end
     else
         y = y - 10 * scaleY
         prevY = prevY - 10 * prevScaleY
 
         local text = string.format("%02X", item)
-        local texWidth = 16 * scaleX
-        local prevTexWidth = 16 * prevScaleX
+        texWidth = 16 * scaleX
+        prevTexWidth = 16 * prevScaleX
+        texHeight = 16 * scaleY
+        prevTexHeight = 16 * prevScaleY
         local itemX = x - texWidth / 2
         local prevItemX = prevX - prevTexWidth / 2
         djui_hud_print_text_interpolated(text, prevItemX, prevY, prevScaleX / 2, prevScaleY, itemX, y, scaleX / 2, scaleY)
+
+        y = y + 10 * scaleY
+        prevY = prevY + 10 * prevScaleY
+    end
+
+    local subTex = ITEM_DATA[item].subIcon
+    if forceSubIcon then
+        subTex = forceSubIcon
+    elseif allowHeatIcon and ITEM_DATA[item].isCooked then
+        subTex = ICON_HEAT
+    end
+    if subTex then
+        local subTexWidth = subTex.width * scaleX
+        local subTexHeight = subTex.height * scaleY
+        local prevSubTexWidth = subTex.width * prevScaleX
+        local prevSubTexHeight = subTex.height * prevScaleY
+        itemX = x + texWidth / 2 - subTexWidth
+        prevItemX = prevX + prevTexWidth / 2 - prevSubTexWidth
+        djui_hud_render_texture_interpolated(subTex, prevItemX, prevY + prevTexHeight - prevSubTexHeight, prevScaleX, prevScaleY, itemX, y + texHeight - subTexHeight, scaleX, scaleY)
     end
 end
