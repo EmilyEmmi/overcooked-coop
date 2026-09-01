@@ -1271,8 +1271,8 @@ local menu_data = {
                 confirmText = "menu_desc_confirm_practice"
                 confirmFunc = function()
                     inMenu = false
-                    gPlayerSyncTable[0].inPractice = true
                     gPlayerSyncTable[0].spectator = true
+                    gPlayerSyncTable[0].inPractice = true
                 end
                 enter_menu(2)
             end,
@@ -1530,6 +1530,7 @@ local menu_data = {
             function()
                 inMenu = false
                 stayInSpectate = false
+                gPlayerSyncTable[0].spectator = true
                 gPlayerSyncTable[0].inPractice = true
             end,
             desc = "menu_desc_join_practice",

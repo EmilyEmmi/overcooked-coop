@@ -98,20 +98,32 @@ function bhv_ingredient_loop(o)
     end
 
     if o.oPlateAppearTimer ~= 0 then
+        local counter
         local isWashable = (iData.washItem ~= nil)
         o.header.gfx.node.flags = o.header.gfx.node.flags | GRAPH_RENDER_INVISIBLE
         o.oHeldState = HELD_FREE
         o.parentObj, o.oParentSyncID = nil, 0
-        if o.oPlateAppearTimer == 1 or not iData.washItem then
+        if o.oPlateAppearTimer == 1 or not isWashable then
             o.oPlateAppearTimer = o.oPlateAppearTimer - 1
+        elseif isWashable then
+            -- check sink; make sure the sink also knows there are plates inside
+            counter = obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(counter)
+                return counter.oBehParams2ndByte == COUNTER_TYPE_SINK
+            end)
+            if counter and counter.oPlatesStackedExtra == 0 then
+                counter.oPlatesStackedExtra = 1 -- failsafe
+            end
         end
 
         if o.oPlateAppearTimer == 0 then
-            -- go to nearest plate counter
-            local counter = obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(counter)
-                if iData.washItem then return counter.oBehParams2ndByte == COUNTER_TYPE_SINK end
-                return counter.oBehParams2ndByte == COUNTER_TYPE_PLATES
-            end)
+            -- go to nearest plate counter/sink
+            if not counter then
+                counter = obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(counter)
+                    if isWashable then return counter.oBehParams2ndByte == COUNTER_TYPE_SINK end
+                    return counter.oBehParams2ndByte == COUNTER_TYPE_PLATES
+                end)
+            end
+
             if counter then
                 audio_sample_play(SAMPLE_PLATE_SPAWN, {x = o.oPosX, y = o.oPosY, z = o.oPosZ}, 0.5)
                 local sink = (iData.washItem and counter) or (obj_get_nearest_behavior_id_with_condition(o, id_bhvCounter, function(sink)

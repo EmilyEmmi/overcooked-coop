@@ -241,7 +241,7 @@ function get_active_player_count()
     local totalPlayers = 0
     for i=0,MAX_PLAYERS-1 do
         local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
-        if np.connected and not sMario.spectator then
+        if np.connected and not (sMario.spectator or sMario.inPractice) then
             totalPlayers = totalPlayers + 1
         end
     end
@@ -252,7 +252,7 @@ function is_active_player_in_area(maxToCheck)
     local total = 0
     for i=0,MAX_PLAYERS-1 do
         local m, sMario = gMarioStates[i], gPlayerSyncTable[i]
-        if is_player_active(m) ~= 0 and not sMario.spectator then
+        if is_player_active(m) ~= 0 and not (sMario.spectator or sMario.inPractice) then
             total = total + 1
             if maxToCheck == nil or total >= maxToCheck then
                 return true

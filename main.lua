@@ -96,7 +96,7 @@ function update()
         if currSeq ~= SEQ_MENU_FILE_SELECT then
             currSeq = SEQ_MENU_FILE_SELECT
             play_music(SEQ_PLAYER_LEVEL, currSeq, 0)
-        elseif gGlobalSyncTable.timeLeft <= 3 then
+        elseif gGlobalSyncTable.gameState == GAME_STATE_SETUP and gGlobalSyncTable.timeLeft <= 3 then
             fadeout_level_music(600)
         end
     else
@@ -311,7 +311,7 @@ function update()
                                 local playerNeedsSpot = {}
                                 for i=0,MAX_PLAYERS-1 do
                                     local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
-                                    if np.connected and not sMario.spectator then
+                                    if np.connected and not (sMario.spectator or sMario.inPractice) then
                                         local spotID = ((sMario.kitchen-1) << 2) + sMario.spawnID
                                         if (not isFilled[spotID]) and sMario.readyToStart
                                         and sMario.kitchen <= maxKitchens and sMario.spawnID < maxSpawnID then
@@ -327,7 +327,7 @@ function update()
                                     for spawnID=0,maxSpawnID-1 do
                                         if #playerNeedsSpot == 0 then break end
                                         local spotID = ((kitchen-1) << 2) + spawnID
-                                        if (not isFilled[spotID]) and kitchen <= maxKitchens and spawnID <= maxSpawnID then
+                                        if (not isFilled[spotID]) and kitchen <= maxKitchens and spawnID < maxSpawnID then
                                             local index = table.remove(playerNeedsSpot)
                                             local sMario = gPlayerSyncTable[index]
                                             sMario.kitchen, sMario.spawnID = kitchen, spawnID
@@ -566,7 +566,7 @@ function mario_update(m)
         set_anim_to_frame(m, c.actionAnimTimer)
         c.actionAnimTimer = (c.actionAnimTimer + 1) % 6
         if c.actionAnimTimer == 1 then
-            audio_sample_play(SAMPLE_CUT, gLakituState.pos, 1)
+            audio_sample_play(SAMPLE_CUT, m.pos, 1)
             
             local o, counter = selectedItem, selectedCounter
             if m.playerIndex ~= 0 then
@@ -694,8 +694,9 @@ function before_mario_update(m)
             end, 100)
             if selectedCounter then
                 selectedItem = selectedCounter.usingObj
-                -- if we're holding a dirty plate, treat counter as having nothing
-                if heldIData and heldIData.washItem then
+                -- if we're holding a dirty plate, treat sink as having nothing
+                if heldIData and heldIData.washItem
+                and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
                     selectedItem = nil
                 end
 
@@ -1450,7 +1451,7 @@ function on_chat_message(m, msg)
         local name = network_get_player_text_color_string(m.playerIndex)..np.name
         local msgColor = "\\#\\"
         if gGlobalSyncTable.gameState == GAME_STATE_PLAYING
-        and (sMario.spectator or sMario.practice or sMario.kitchen ~= gPlayerSyncTable[0].kitchen) then
+        and (sMario.spectator or sMario.inPractice or sMario.kitchen ~= gPlayerSyncTable[0].kitchen) then
             msgColor = "\\#808080\\"
         end
         djui_chat_message_create(string.format("%s %s[%s]%s: %s", name, tagColor, tag, msgColor, msg))

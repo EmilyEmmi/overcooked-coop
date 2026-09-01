@@ -13,7 +13,9 @@
 - Improved action priority- for example, if you're holding a bun and a bunch of ingredients are on the ground, the ingredients you're actually able to place on the burger have priority
 - Scores were rebalanced a bit- easier levels were made more difficult, harder levels were made less difficult
     - In addition, scores are now 5% lower for each additional kitchen (up to 15% lower for 13+ players)
-- Merry Go Pizza now has counters at the barrier, making it easier to pass items between sides
+- Made the following adjustments to Merry Go Pizza:
+    - Added counters at the barrier, making it easier to pass items between sides
+    - The previously empty side now also has ingredients
 - Bowser is now automatically dropped after 5 seconds, and he can't be regrabbed until another 5 seconds have passed
     - However, he also takes 4 times as long to recover from being thrown off the stage
 - Changed various models and animations (denpakei32, WBMarioo)
@@ -27,6 +29,8 @@
 - Barriers now scale vertically as well
 ### Fixes
 - The desync fix will now correct instances where players are placed in the wrong level
+- Kitchen player count should now be auto balanced correctly (NEEDS TESTING)
+- Hopefully fixed rare instances where plates would permanently disappear (NEEDS TESTING)
 - Fixed occasional script errors in Koopa Kitchen
 - Fixed the description for Host Options being "Host Options" instead of the actual description
 - Fixed the cooking time not updating properly when transferring contents between pots/pans
@@ -35,3 +39,4 @@
 - Burgers and soup may no longer be plated while a pizza is already on the plate
 - The ingredient cap can no longer delete items that players are already holding
 - Spectators can no longer grab Bowser
+- The cutting sound is no longer audible across an infinite distance
