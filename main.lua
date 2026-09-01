@@ -1,4 +1,4 @@
--- name: Overcooked 64!
+-- name: Overcooked 64! (v1.1 WIP)
 -- description: Work with your fellow chefs to serve various dishes in wacky scenarios!\n\nA collaboration made for Blocky's "Cooperation" competition, based on the "Overcooked!" series by Ghost Town Games\n\nMain development: EmilyEmmi\nSprite work: EmilyEmmi, denpakei32, LoganLuigi21\nObject Models: WBMarioo, denpakei32\nLevel Design/Porting: EmilyEmmi, WBMarioo, Blocky\nUV Scroll Library: djoslin0\nAdditional support: Cooliokid 956
 -- pausable: false
 -- category: gamemode
@@ -533,7 +533,6 @@ function mario_update(m)
         end
     end
 
-    gGlobalSyncTable.maxKitchens = 4 -- TEMP
     if sMario.inPractice then
         network_player_set_description(np, trans("menu_practice"), 128, 128, 128, 255)
     elseif sMario.spectator then
