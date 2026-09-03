@@ -782,8 +782,11 @@ function behind_hud_render()
                     allMixed = false
                 else
                     local iDataC = ITEM_DATA[c.oBehParams]
+                    local addPlus = false
                     if iDataC.icon and not (iDataC.noTrash or iDataC.skipItem) then
                         table.insert(items, c.oBehParams)
+                    elseif iDataC.contentSlots and c.oContentCount < iDataC.contentSlots then
+                        addPlus = true -- adds a (+) icon to containers
                     end
                     
                     if c.oContentCount ~= 0 then
@@ -810,6 +813,9 @@ function behind_hud_render()
                                 table.insert(items, ingredient)
                             end
                         end
+                    end
+                    if addPlus then
+                        table.insert(items, -1) -- plus icon
                     end
                 end
             end
@@ -2307,7 +2313,16 @@ function smooth_approach(goal, current, rate)
 end
 
 function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, forceSubIcon)
-    local tex = ITEM_DATA[item].icon
+    local iData = ITEM_DATA[item] or ITEM_DATA[0]
+    local tex = iData.icon
+    local prevColor = djui_hud_get_color()
+    if item == -1 then
+        tex = ICON_PLUS
+        allowHeatIcon = nil
+        forceSubIcon = nil
+        djui_hud_set_color(prevColor.r, prevColor.g, prevColor.b, prevColor.a // 2)
+    end
+
     local texWidth, texHeight = 0, 0
     if tex then
         texWidth = tex.width * scaleX
@@ -2322,15 +2337,18 @@ function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, force
         texWidth = 16 * scaleX
         texHeight = 16 * scaleY
         local itemX = x - texWidth / 2
+        local prevFont = djui_hud_get_font()
+        djui_hud_set_font(FONT_HUD)
         djui_hud_print_text(text, itemX, y, scaleX / 2, scaleY)
+        djui_hud_set_font(prevFont)
 
         y = y + 10 * scaleY
     end
 
-    local subTex = ITEM_DATA[item].subIcon
+    local subTex = iData.subIcon
     if forceSubIcon then
         subTex = forceSubIcon
-    elseif allowHeatIcon and ITEM_DATA[item].isCooked then
+    elseif allowHeatIcon and iData.isCooked then
         subTex = ICON_HEAT
     end
     if subTex then
@@ -2339,10 +2357,20 @@ function render_ingredient_icon(item, x, y, scaleX, scaleY, allowHeatIcon, force
         itemX = x + texWidth / 2 - subTexWidth
         djui_hud_render_texture(subTex, itemX, y + texHeight - subTexHeight, scaleX, scaleY)
     end
+    djui_hud_set_color_from_table(prevColor)
 end
 
 function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, prevScaleY, x, y, scaleX, scaleY, allowHeatIcon, forceSubIcon)
-    local tex = ITEM_DATA[item].icon
+    local iData = ITEM_DATA[item] or ITEM_DATA[0]
+    local tex = iData.icon
+    local prevColor = djui_hud_get_color()
+    if item == -1 then
+        tex = ICON_PLUS
+        allowHeatIcon = nil
+        forceSubIcon = nil
+        djui_hud_set_color(prevColor.r, prevColor.g, prevColor.b, prevColor.a // 2)
+    end
+
     local texWidth, texHeight, prevTexWidth, prevTexHeight = 0, 0, 0, 0
     if tex then
         texWidth = tex.width * scaleX
@@ -2364,16 +2392,19 @@ function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, pre
         prevTexHeight = 16 * prevScaleY
         local itemX = x - texWidth / 2
         local prevItemX = prevX - prevTexWidth / 2
+        local prevFont = djui_hud_get_font()
+        djui_hud_set_font(FONT_HUD)
         djui_hud_print_text_interpolated(text, prevItemX, prevY, prevScaleX / 2, prevScaleY, itemX, y, scaleX / 2, scaleY)
+        djui_hud_set_font(prevFont)
 
         y = y + 10 * scaleY
         prevY = prevY + 10 * prevScaleY
     end
 
-    local subTex = ITEM_DATA[item].subIcon
+    local subTex = iData.subIcon
     if forceSubIcon then
         subTex = forceSubIcon
-    elseif allowHeatIcon and ITEM_DATA[item].isCooked then
+    elseif allowHeatIcon and iData.isCooked then
         subTex = ICON_HEAT
     end
     if subTex then
@@ -2385,4 +2416,5 @@ function render_ingredient_icon_interpolated(item, prevX, prevY, prevScaleX, pre
         prevItemX = prevX + prevTexWidth / 2 - prevSubTexWidth
         djui_hud_render_texture_interpolated(subTex, prevItemX, prevY + prevTexHeight - prevSubTexHeight, prevScaleX, prevScaleY, itemX, y + texHeight - subTexHeight, scaleX, scaleY)
     end
+    djui_hud_set_color_from_table(prevColor)
 end

@@ -55,6 +55,7 @@ ICON_OVEN = get_texture_info("icon_oven")
 ICON_DOUGH = get_texture_info("icon_dough")
 ICON_SAUSAGE = get_texture_info("icon_sausage")
 ICON_CHICKEN = get_texture_info("icon_chicken")
+ICON_PLUS = get_texture_info("icon_plus")
 ICON_MIXED = gTextures.star -- TEMP
 ICON_MIXER = gTextures.star -- TEMP
 
