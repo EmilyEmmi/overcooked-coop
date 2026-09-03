@@ -222,14 +222,15 @@ function bhv_ingredient_loop(o)
         if obj_has_behavior_id(o.parentObj, id_bhvIngredient) ~= 0 then
             obj_copy_pos(o, o.parentObj)
             cur_obj_become_intangible()
+            o.usingObj, o.oUsingSyncID = nil, 0
             return
         else
             o.parentObj, o.oParentSyncID = nil, 0
         end
     end
-
-    -- failsafe if multiple people are holding: use gIndex priority
+    
     if o.oHeldState ~= HELD_FREE and gMarioStates[0].heldObj == o and o.heldByPlayerIndex ~= 0 then
+        -- failsafe if multiple people are holding: use gIndex priority
         local m0 = gMarioStates[0]
         if m.heldObj ~= o or network_global_index_from_local(0) < network_global_index_from_local(o.heldByPlayerIndex) then
             o.heldByPlayerIndex = 0
@@ -416,13 +417,17 @@ function bhv_ingredient_loop(o)
         end
     elseif (o.oHeldState == HELD_HELD) then
         cur_obj_become_intangible()
+        cur_obj_disable_rendering()
+
         if o.usingObj then
             o.usingObj.usingObj = nil
             o.usingObj = nil
             o.oUsingSyncID = 0
         end
-
-        cur_obj_disable_rendering()
+        if gMarioStates[0].heldObj ~= o and o.heldByPlayerIndex == 0 then
+            -- failsafe if erroneously holding
+            o.oHeldState = HELD_FREE
+        end
     elseif (o.oHeldState == HELD_THROWN) or (o.oHeldState == HELD_DROPPED) then
         --cur_obj_enable_rendering()
         local m2 = gMarioStates[o.heldByPlayerIndex]
@@ -693,29 +698,43 @@ function attempt_item_place(placedObj, m, placeOnObj, placeOnCounter, isHeld)
                 end
                 o2.oCutOrCookTimer = o2.oCutOrCookTimer // 2
             end
-
-            network_send_object(o2, true)
+            
             if iData.pourable then
+                network_send_object(o, true)
+                network_send_object(o2, true)
                 return true, true
             else
                 for i,c in ipairs(children) do
+                    if c.usingObj then
+                        c.usingObj = nil
+                        c.oUsingSyncID = 0
+                    end
                     obj_mark_for_deletion(c)
                 end
             end
             
             if iData.isPlate then
                 if wasPlate or not iData2.plateable then
+                    network_send_object(o2, true)
                     return true, true
                 else
                     o2.parentObj = o
                     o2.oParentSyncID = o.oSyncID
-                    network_send_object(o2, true)
+                    if o2.usingObj then
+                        o2.usingObj = nil
+                        o2.oUsingSyncID = 0
+                    end
                     forceCounterPlace = true
-                    if o2 == placedObj then return true, false end
+                    if o2 == placedObj then
+                        network_send_object(o2, true)
+                        return true, false
+                    end
                 end
             end
+            network_send_object(o2, true)
 
-            if wasHoldingContainer and isHeld and (not gPlayerSyncTable[0].oldPlatePlace) then
+            if (wasHoldingContainer or (iData.isPlate and o == placedObj))
+            and isHeld and (not gPlayerSyncTable[0].oldPlatePlace) then
                 return true, true -- Keep holding container
             end
         else
