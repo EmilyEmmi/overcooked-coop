@@ -121,8 +121,11 @@ function update()
     -- update player count this round
     if network_is_server() and gGlobalSyncTable.gameState ~= GAME_STATE_END then
         local totalPlayers = get_active_player_count()
-        if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
-            gGlobalSyncTable.peakPlayers = totalPlayers
+        if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING and (gGlobalSyncTable.gameState ~= GAME_STATE_SETUP or gGlobalSyncTable.timeLeft > 3) then
+            if gGlobalSyncTable.peakPlayers ~= totalPlayers then
+                gGlobalSyncTable.peakPlayers = totalPlayers
+                gGlobalSyncTable.maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
+            end
         else
             gGlobalSyncTable.peakPlayers = math.clamp(totalPlayers, gGlobalSyncTable.peakPlayers, gGlobalSyncTable.maxKitchens * 4)
         end
@@ -135,29 +138,31 @@ function update()
 
     -- limit the number of ingredients in the level
     -- we prioritize deleting raw, uncut ingredients
-    local ingredientCount = obj_count_objects_with_behavior_id(id_bhvIngredient)
-    if ingredientCount > MAX_INGREDIENT_COUNT then
-        local o = obj_get_first_with_behavior_id(id_bhvIngredient)
-        local lastResortDelete = {}
-        while o and ingredientCount > MAX_INGREDIENT_COUNT do
-            local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
-            if o.oHeldState == HELD_FREE and not iData.noTrash then
-                if o.oContentCount == 0 and (not iData.subIcon)
-                and o.usingObj == nil or o.usingObj == o then
-                    obj_mark_for_deletion(o)
-                    ingredientCount = ingredientCount - 1
-                else
-                    table.insert(lastResortDelete, o)
+    if get_network_player_smallest_global().localIndex == 0 then
+        local ingredientCount = obj_count_objects_with_behavior_id(id_bhvIngredient)
+        if ingredientCount > MAX_INGREDIENT_COUNT then
+            local o = obj_get_first_with_behavior_id(id_bhvIngredient)
+            local lastResortDelete = {}
+            while o and ingredientCount > MAX_INGREDIENT_COUNT do
+                local iData = ITEM_DATA[o.oBehParams] or ITEM_DATA[0]
+                if o.oHeldState == HELD_FREE and not iData.noTrash then
+                    if o.oContentCount == 0 and (not iData.subIcon)
+                    and o.usingObj == nil or o.usingObj == o then
+                        obj_mark_for_deletion(o)
+                        ingredientCount = ingredientCount - 1
+                    else
+                        table.insert(lastResortDelete, o)
+                    end
                 end
+                o = obj_get_next_with_same_behavior_id(o)
             end
-            o = obj_get_next_with_same_behavior_id(o)
-        end
 
-        -- delete last resort items
-        while #lastResortDelete ~= 0 and ingredientCount > MAX_INGREDIENT_COUNT do
-            o = table.remove(lastResortDelete, 1)
-            obj_mark_for_deletion(o)
-            ingredientCount = ingredientCount - 1
+            -- delete last resort items
+            while #lastResortDelete ~= 0 and ingredientCount > MAX_INGREDIENT_COUNT do
+                o = table.remove(lastResortDelete, 1)
+                obj_mark_for_deletion(o)
+                ingredientCount = ingredientCount - 1
+            end
         end
     end
 
@@ -700,30 +705,27 @@ function before_mario_update(m)
 
         -- select counter (when not holding an item, ground ingredients take priority, otherwise counters do)
         local heldIData = (m.heldObj and obj_has_behavior_id(m.heldObj, id_bhvIngredient) ~= 0 and ITEM_DATA[m.heldObj.oBehParams])
-        selectedCounter = nil
-        if selectedItem == nil or m.heldObj then
-            selectedCounter = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
-                local o = counter.usingObj
-                if m.heldObj == nil then return true end
-                if heldIData and heldIData.washItem and counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
-                    return true
-                elseif o == nil or o == counter then
-                    return check_counter_valid_interact(counter, m.heldObj)
-                end
-                return (check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
-            end, 100)
-            if selectedCounter then
-                selectedItem = selectedCounter.usingObj
-                -- if we're holding a dirty plate, treat sink as having nothing
-                if heldIData and heldIData.washItem
-                and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
-                    selectedItem = nil
-                end
+        selectedCounter = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
+            local o = counter.usingObj
+            if m.heldObj == nil then return true end
+            if heldIData and heldIData.washItem and counter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                return true
+            elseif o == nil or o == counter then
+                return check_counter_valid_interact(counter, m.heldObj)
+            end
+            return (check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
+        end, 100)
+        if selectedCounter then
+            selectedItem = selectedCounter.usingObj
+            -- if we're holding a dirty plate, treat sink as having nothing
+            if heldIData and heldIData.washItem
+            and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                selectedItem = nil
+            end
 
-                grabPromptValid = (selectedItem ~= nil or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
-                if (not grabPromptValid) and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
-                    grabPromptValid = (selectedCounter.oPlatesStackedExtra ~= 0)
-                end
+            grabPromptValid = (selectedItem ~= nil or m.heldObj ~= nil or selectedCounter.oBehParams2ndByte == COUNTER_TYPE_INGREDIENT)
+            if (not grabPromptValid) and selectedCounter.oBehParams2ndByte == COUNTER_TYPE_SINK then
+                grabPromptValid = (selectedCounter.oPlatesStackedExtra ~= 0)
             end
         end
     else

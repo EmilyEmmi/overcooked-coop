@@ -1596,6 +1596,37 @@ function falling_rising_platform_loop(o)
 end
 id_bhvFallingRisingPlatform = hook_behavior(nil, OBJ_LIST_SURFACE, false, falling_rising_platform_init, falling_rising_platform_loop, "bhvFallingRisingPlatform")
 
+-- custom merry go round object
+---@param o Object
+function custom_merry_go_round_init(o)
+    o.oFlags = o.oFlags | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE
+    o.collisionData = gGlobalObjectCollisionData.bbh_seg7_collision_merry_go_round
+    o.oCollisionDistance = 2000
+end
+
+---@param o Object
+function custom_merry_go_round_loop(o)
+    if o.oTimer <= 1 then
+        o.oFaceAngleYaw = 0
+        o.oAngleVelYaw = 0
+        load_object_collision_model()
+        return
+    end
+
+    o.oAngleVelYaw = 0x40 -- half the typical speed
+    o.oFaceAngleYaw = o.oFaceAngleYaw + o.oAngleVelYaw
+
+    local angleYaw = o.oAngleVelYaw;
+    local expectedYaw = limit_angle((get_network_area_timer() - 1) * angleYaw)
+    if abs_angle_diff(o.oFaceAngleYaw, expectedYaw) >= angleYaw * 10 then -- off by 10 frames or more
+        o.oFaceAngleYaw = expectedYaw
+        --o.oAngleVelYaw = expectedYaw - o.oFaceAngleYaw -- Also moves items- commented out to be less disruptive
+    end
+
+    load_object_collision_model()
+end
+id_bhvCustomMerryGoRound = hook_behavior(nil, OBJ_LIST_SURFACE, false, custom_merry_go_round_init, custom_merry_go_round_loop, "bhvCustomMerryGoRound")
+
 -- fix rotation based on network_area_timer to reduce desyncs between players
 ---@param o Object
 function custom_rotating_platform_loop(o)
@@ -1607,24 +1638,6 @@ function custom_rotating_platform_loop(o)
     end
 end
 hook_behavior(id_bhvRotatingPlatform, OBJ_LIST_SURFACE, false, nil, custom_rotating_platform_loop)
-
--- same as above
----@param o Object
-function custom_merry_go_round_loop(o)
-    if o.oTimer <= 1 then
-        o.oMoveAngleYaw = 0
-        o.oFaceAngleYaw = 0
-        o.oAngleVelYaw = 0
-    end
-
-    local angleYaw = o.oAngleVelYaw;
-    local expectedYaw = limit_angle(get_network_area_timer() * angleYaw)
-    if abs_angle_diff(o.oFaceAngleYaw, expectedYaw) >= angleYaw * 10 then -- off by 10 frames or more
-        o.oFaceAngleYaw = expectedYaw
-        --o.oAngleVelYaw = expectedYaw - o.oFaceAngleYaw -- Also moves items- commented out to be less disruptive
-    end
-end
-hook_behavior(id_bhvMerryGoRound, OBJ_LIST_SURFACE, false, nil, custom_merry_go_round_loop)
 
 -- make puzzle pieces move more slowly
 ---@param o Object

@@ -13,11 +13,14 @@
     - Ex: If you have 3 cut tomatoes each on a counter, and you are holding a pot, you can now grab all of the tomatoes from the counters without placing the pot down
     - This change can be toggled in Preferences
 - Improved action priority- for example, if you're holding a bun and a bunch of ingredients are on the ground, the ingredients you're actually able to place on the burger have priority
+    - In addition, ingredients on a counter now always have priority, meaning you can finally cut things even if there's a bunch of ingredients on the floor
 - Scores were rebalanced a bit- easier levels were made more difficult, harder levels were made less difficult
     - In addition, scores are now 5% lower for each additional kitchen (up to 15% lower for 13+ players)
 - Made the following adjustments to Merry Go Pizza:
     - Added counters at the barrier, making it easier to pass items between sides
     - The previously empty side now also has ingredients
+    - The merry go round's speed was halved
+    - Extra counters were added in front of the ovens and cutting boards to make managing ingredients easier
 - Bowser is now automatically dropped after 5 seconds, and he can't be regrabbed until another 5 seconds have passed
     - However, he also takes 4 times as long to recover from being thrown off the stage
 - Changed various models and animations (denpakei32, WBMarioo)
@@ -27,13 +30,14 @@
 - Ingredients on top of counters are deprioritzed for deletion when too many ingredients are present (this means they can only be deleted in rare circumstances)
 - Ingredients now respawn if they fall into water
 - You now always get asked if you'd like to join/practice, even in the lobby
+- If a player leaves during the setup phase, the amount of players/kitchens now updates immediately.
 - Added a version number in the bottom left corner of the menu
 - Added a warning when using a Character Select version lower than v1.16.3
 - Barriers now scale vertically as well
 ### Fixes
 - The desync fix will now correct instances where players are placed in the wrong level
-- Kitchen player count should now be auto balanced correctly (NEEDS TESTING)
-- Hopefully fixed rare instances where plates would permanently disappear (NEEDS TESTING)
+- Kitchen player count should now be auto balanced correctly
+- Hopefully fixed rare instances where plates would permanently disappear
 - Fixed item duplication occuring in laggy situations
 - Fixed occasional script errors in Koopa Kitchen
 - Fixed the description for Host Options being "Host Options" instead of the actual description
