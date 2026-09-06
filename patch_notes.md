@@ -23,6 +23,7 @@
     - Extra counters were added in front of the ovens and cutting boards to make managing ingredients easier
 - Bowser is now automatically dropped after 5 seconds, and he can't be regrabbed until another 5 seconds have passed
     - However, he also takes 4 times as long to recover from being thrown off the stage
+- You are now marked as AFK if idle in a level and not chatting for 30 seconds, placing you in spectator mode until you move again
 - Changed various models and animations (denpakei32, WBMarioo)
 - Changed icon for mushroom (denpakei32)
 - Changed colors of various icons
@@ -50,3 +51,4 @@
 - Holding Bowser no longer causes the pause menu to display Lettuce in the background
     - Other ingredients changing the background is intentional
 - The cutting sound is no longer audible across an infinite distance
+- Fixed being able to erroneously rejoin/not rejoin in certain situations

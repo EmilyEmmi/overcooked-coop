@@ -909,9 +909,28 @@ function check_ingredient_valid_for_place(o, o2, onPlate)
 
         -- put cooked result on plate if it exists
         if not (iData.isPlate or iData.plateable) then
-            if #children2 ~= 0 then return false, false end
             local cookedData = get_cooked_data(o)
-            return (cookedData ~= nil), (cookedData ~= nil), cookedData
+            if cookedData then
+                if #children2 ~= 0 then
+                    -- jank method to check if placement is valid;
+                    -- we temporarily treat the container as its cooking result
+                    local prevBehParams = o.oBehParams
+                    local prevContents = o.oContents
+                    local prevContentCount = o.oContentCount
+                    o.oBehParams = cookedData.result
+                    if not cookedData.inheritContents then
+                        o.oContents = 0
+                        o.oContentCount = 0
+                    end
+                    local result = check_ingredient_valid_for_place(o, o2, onPlate)
+                    o.oBehParams = prevBehParams
+                    o.oContents = prevContents
+                    o.oContentCount = prevContentCount
+                    return result, result, cookedData
+                end
+                return true, true, cookedData
+            end
+            return false, false
         end
 
         local children = {o}

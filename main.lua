@@ -11,6 +11,8 @@ grabPromptValid = false
 waitOpenDJUI = false
 gotNewRecord = false
 stayInSpectate = true
+afkTimer = 0
+afkSpectate = false
 wasInGameList = {}
 
 pending_orders_all = {}
@@ -134,6 +136,20 @@ function update()
     -- prevent us from getting stuck in a level without sync valid
     if (not gNetworkPlayers[0].currAreaSyncValid) and gMarioStates[0].area.localAreaTimer > 150 then
         warp_to_level(gNetworkPlayers[0].currLevelNum, gNetworkPlayers[0].currAreaIndex, gNetworkPlayers[0].currActNum)
+    end
+
+    -- mark as AFK if we idle for too long
+    local m0 = gMarioStates[0]
+    if m0.controller.buttonDown ~= 0 or m0.input & INPUT_NONZERO_ANALOG ~= 0
+    or m0.controller.extStickX ~= 0 or m0.controller.extStickY ~= 0 or djui_is_chatbox_open() then
+        afkTimer = 0
+        afkSpectate = false
+    elseif gGlobalSyncTable.gameState == GAME_STATE_PLAYING and (not gPlayerSyncTable[0].spectator) then
+        afkTimer = afkTimer + 1
+        if afkTimer >= 30 * 30 then
+            afkSpectate = true
+            gPlayerSyncTable[0].spectator = true
+        end
     end
 
     -- limit the number of ingredients in the level
@@ -479,6 +495,7 @@ function on_sync_valid()
     
     if network_is_server() then
         sMario0.spectator = false
+        sMario0.canRejoin = true
         sMario0.flags = gMarioStates[0].flags & ~MARIO_VANISH_CAP
     else
         clear_pending_orders_table()
@@ -527,7 +544,6 @@ function mario_update(m)
     and sMario.waitingForSlot and np.currAreaSyncValid then
         if gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING then
             sMario.spectator = false
-            sMario.canRejoin = true
         elseif (gGlobalSyncTable.allowMidGameJoin or sMario.canRejoin)
         and get_active_player_count() < gGlobalSyncTable.maxKitchens * 4 then
             local kitchen, spawnID = join_smallest_kitchen(m.playerIndex)
@@ -693,17 +709,8 @@ function before_mario_update(m)
         grabPos.x = grabPos.x + sins(m.faceAngle.y) * 52
         grabPos.z = grabPos.z + coss(m.faceAngle.y) * 52
         --spawn_non_sync_object(id_bhvSparkleSpawn, E_MODEL_NONE, grabPos.x, grabPos.y, grabPos.z, nil)
-        
-        -- select ingredient from ground
-        selectedItem = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvIngredient, function(o)
-            local counter = o.usingObj
-            return o.oHeldState == HELD_FREE and o.oPlateAppearTimer == 0 and o.oRespawnTimer == 0
-            and (o.parentObj == nil or o.parentObj == o) and (counter == nil)
-            and (m.heldObj == nil or check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
-        end, 115)
-        grabPromptValid = (selectedItem ~= nil)
 
-        -- select counter (when not holding an item, ground ingredients take priority, otherwise counters do)
+        -- select counter
         local heldIData = (m.heldObj and obj_has_behavior_id(m.heldObj, id_bhvIngredient) ~= 0 and ITEM_DATA[m.heldObj.oBehParams])
         selectedCounter = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvCounter, function(counter)
             local o = counter.usingObj
@@ -728,6 +735,20 @@ function before_mario_update(m)
                 grabPromptValid = (selectedCounter.oPlatesStackedExtra ~= 0)
             end
         end
+
+        -- select ingredient from ground if no valid counter was found
+        if not grabPromptValid then
+            selectedItem = nearest_behavior_id_from_pos_with_condition(grabPos, id_bhvIngredient, function(o)
+                local counter = o.usingObj
+                return o.oHeldState == HELD_FREE and o.oPlateAppearTimer == 0 and o.oRespawnTimer == 0
+                and (o.parentObj == nil or o.parentObj == o) and (counter == nil)
+                and (m.heldObj == nil or check_ingredient_valid_for_place(m.heldObj, o, false) or check_ingredient_valid_for_place(o, m.heldObj, false))
+            end, 115)
+            if selectedItem then
+                grabPromptValid = true
+                selectedCounter = nil
+            end
+        end
     else
         m.flags = m.flags | MARIO_VANISH_CAP
         selectedItem, selectedCounter = nil, nil
@@ -736,7 +757,12 @@ function before_mario_update(m)
     sMario.selCounterSyncID = (selectedCounter and selectedCounter.oSyncID) or 0
     sMario.throwButtonIndex = throwButtonIndex
     sMario.oldPlatePlace = oldPlatePlace
-    sMario.waitingForSlot = (sMario.spectator and not (sMario.inPractice or stayInSpectate))
+    sMario.waitingForSlot = (sMario.spectator and not (sMario.inPractice or stayInSpectate or afkSpectate))
+    
+    -- Can only rejoin if we switch spectator during a round, but not later
+    if (sMario.spectator or sMario.inPractice) == (gGlobalSyncTable.gameState ~= GAME_STATE_PLAYING) then
+        sMario.canRejoin = (gGlobalSyncTable.gameState == GAME_STATE_PLAYING)
+    end
 
     -- Sparkles at selected (might be changed)
     if (selectedCounter or selectedItem) and grabPromptValid and not hideOcHud then
@@ -915,12 +941,13 @@ hook_event(HOOK_ALLOW_INTERACT, allow_interact)
 
 function on_player_disconnected(m)
     local sMario = gPlayerSyncTable[m.playerIndex]
+    local couldRejoin = sMario.canRejoin
     set_without_sync(sMario, "spectator", true)
     set_without_sync(sMario, "waitingForSlot", false)
     set_without_sync(sMario, "inPractice", false)
     set_without_sync(sMario, "canRejoin", false)
 
-    if network_is_server() and sMario.coopnetID ~= "-1" then
+    if network_is_server() and sMario.coopnetID ~= "-1" and couldRejoin then
         -- see if someone else has that ID (in case they joined before their clone disconnected)
         local foundClone = false
         for i=1,MAX_PLAYERS-1 do
