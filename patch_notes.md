@@ -1,6 +1,7 @@
-## v1.1 (WIP)
+## v1.1
 ### New features:
 - By popular demand, you can now finally eat your culinary creations! Hold the ACTION button (X by default) while holding a plate with food in the lobby.
+- When Auto Start is enabled, players can now vote for which stage to play. This is between the stage you just played, the next stage, and two randomly selected stages.
 - Added Portuguese translation, available under Preferences -> Language (denpakei32)
 - Made the Character Select menu accessible using the Z button in the menu, or through a menu option (previously, it could only be accessed using the /char-select command)
 - Button prompts now appear for interacting with ingredients! Toggleable in Preferences
