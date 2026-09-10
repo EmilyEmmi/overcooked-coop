@@ -1,5 +1,5 @@
--- name: Overcooked 64! (v1.1 WIP)
--- description: Work with your fellow chefs to serve various dishes in wacky scenarios!\n\nA collaboration made for Blocky's "Cooperation" competition, based on the "Overcooked!" series by Ghost Town Games\n\nMain development: EmilyEmmi\nSprite work: EmilyEmmi, denpakei32, LoganLuigi21\nObject Models: WBMarioo, denpakei32\nLevel Design/Porting: EmilyEmmi, WBMarioo, Blocky\nUV Scroll Library: djoslin0\nAdditional support: Cooliokid 956
+-- name: Overcooked 64! (v1.1)
+-- description: Work with your fellow chefs to serve various dishes in wacky scenarios!\n\nA collaboration made for Blocky's "Cooperation" competition, based on the "Overcooked!" series by Ghost Town Games\n\nMain development: EmilyEmmi\nSprite work: EmilyEmmi, denpakei32, LoganLuigi21\nObject Models: WBMarioo, denpakei32\nLevel Design/Porting: EmilyEmmi, WBMarioo, Blocky\nUV Scroll Library: djoslin0\nTranslations: denpakei32\nAdditional support: Cooliokid 956
 -- pausable: false
 -- category: gamemode
 -- incompatible: gamemode, romhack
@@ -14,6 +14,7 @@ stayInSpectate = true
 afkTimer = 0
 afkSpectate = false
 wasInGameList = {}
+voteOptions = {}
 
 pending_orders_all = {}
 pending_orders = {}
@@ -31,7 +32,7 @@ BASE_TEMPO = 0
 BASE_MULTI = 1
 
 gGlobalSyncTable.gameState = GAME_STATE_LEVEL_SELECT
-gGlobalSyncTable.ocLevel = 0
+gGlobalSyncTable.ocLevel = 1
 gGlobalSyncTable.score = 0
 gGlobalSyncTable.timeLeft = 0
 gGlobalSyncTable.maxKitchens = 1
@@ -65,6 +66,7 @@ for i=0,MAX_PLAYERS-1 do
     sMario.oldPlatePlace = false
     sMario.inPractice = false
     sMario.canRejoin = false
+    sMario.voteOption = 0
     sMario.coopnetID = "-1"
     c.actionAnimTimer = 0
 end
@@ -198,14 +200,58 @@ function update()
 
             if gGlobalSyncTable.autoStart and gGlobalSyncTable.peakPlayers ~= 0 then
                 subTimer = subTimer + 1
-                if subTimer >= 30 then
+                if #voteOptions == 0 then
+                    voteOptions = {id = PACKET_VOTE_OPTIONS}
+
+                    -- Select 4 levels; the one we just played, the next level, and two other random unlocked levels.
+                    -- We only select the next level if we've unlocked it by getting at least 1 star on the previous level.
+                    table.insert(voteOptions, gGlobalSyncTable.ocLevel)
+                    local nextLevel = (gGlobalSyncTable.ocLevel % #OC_LEVEL_DATA + 1)
+                    if level_is_unlocked(nextLevel) then
+                        table.insert(voteOptions, nextLevel)
+                    end
+                    local unlockedPool = {}
+                    for i=0,#OC_LEVEL_DATA do
+                        if i ~= gGlobalSyncTable.ocLevel and i ~= nextLevel and level_is_unlocked(i) then
+                            table.insert(unlockedPool, i)
+                        end
+                    end
+                    shuffle(unlockedPool)
+                    while #voteOptions < 4 and #unlockedPool ~= 0 do
+                        table.insert(voteOptions, table.remove(unlockedPool))
+                    end
+                    
+                    network_send_include_self(true, voteOptions)
+                elseif subTimer >= 30 then
                     subTimer = 0
                     gGlobalSyncTable.timeLeft = gGlobalSyncTable.timeLeft - 1
                     if gGlobalSyncTable.timeLeft <= 0 then
                         local newLevel = gGlobalSyncTable.ocLevel
-                        if get_star_record(newLevel) >= 1 then
-                            newLevel = (newLevel % #OC_LEVEL_DATA + 1)
+                        if #voteOptions ~= 0 then
+                            local voteCount = {}
+                            for i=1,#voteOptions do
+                                table.insert(voteCount, {voteOptions[i], 0})
+                            end
+                            for i=0,MAX_PLAYERS-1 do
+                                local np, sMario = gNetworkPlayers[i], gPlayerSyncTable[i]
+                                if np.connected and voteCount[sMario.voteOption] and not (sMario.spectator or sMario.inPractice) then
+                                    voteCount[sMario.voteOption][2] = voteCount[sMario.voteOption][2] + 1
+                                end
+                            end
+                            shuffle(voteCount) -- random result if tied
+                            table.sort(voteCount, function(a, b)
+                                return a[2] > b[2]
+                            end)
+                            newLevel = voteCount[1][1]
+
+                            local packet = {id = PACKET_VOTE_RESULTS}
+                            for i, data in ipairs(voteCount) do
+                                packet["level_"..i] = data[1]
+                                packet["votes_"..i] = data[2]
+                            end
+                            network_send_include_self(false, packet)
                         end
+                        
                         start_level_command(tostring(newLevel))
                     end
                 end
@@ -946,6 +992,7 @@ function on_player_disconnected(m)
     set_without_sync(sMario, "waitingForSlot", false)
     set_without_sync(sMario, "inPractice", false)
     set_without_sync(sMario, "canRejoin", false)
+    set_without_sync(sMario, "voteOption", 0)
 
     if network_is_server() and sMario.coopnetID ~= "-1" and couldRejoin then
         -- see if someone else has that ID (in case they joined before their clone disconnected)
@@ -1326,6 +1373,12 @@ function on_state_change(tag, oldVal, newVal)
     elseif newVal == GAME_STATE_ADVICE or newVal == GAME_STATE_SETUP then
         confirmTime = 0
         gPlayerSyncTable[0].readyToStart = false
+        if inMenu and get_current_menu() == 9 then
+            inMenu = false
+        end
+    elseif newVal == GAME_STATE_LEVEL_SELECT then
+        gPlayerSyncTable[0].voteOption = 0
+        voteOptions = {}
     end
 end
 hook_on_sync_table_change(gGlobalSyncTable, "gameState", "gameState", on_state_change)

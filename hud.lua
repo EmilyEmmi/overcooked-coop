@@ -994,77 +994,23 @@ function build_level_menu(menu)
             end
         end
         if min == 0 then
-            djui_popup_create("You've 3 starred every stage!\nYou've unlocked the Test Level!", 2)
+            djui_popup_create(trans("unlocked_test_level"), 2)
             mod_storage_save_bool("unlockTestLevel", true)
         end
     end
     local unclearedLevel = false
 
     for i=min,#OC_LEVEL_DATA do
-        local levelName = get_level_translated_field(i, "name")
-        local desc = get_level_translated_field(i, "desc") or trans("menu_no_desc")
-        desc = desc .. "\n\n"
-        local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(i)
-
-        local bestStars = 0
-        local maxStars = 3
-        if bestOverallScore ~= 0 then
-            -- score for this many players
-            local players = gGlobalSyncTable.peakPlayers
-            local bestPlayerScore, bestPlayerStars = get_record_for_level(i, players)
-
-            -- score for the most stars obtained
-            local bestStarsScore, bestStarsPlayers = 0, 0
-            bestStarsScore, bestStars, bestStarsPlayers = get_record_for_level(i, 0, true)
-
-            maxStars = math.clamp(bestStars+1, 3, 4)
-            for stars=1,maxStars do
-                desc = desc .. string.rep("", stars) .. ": %d\n"
+        local levelStartFunc = function()
+            if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
+                start_level_command(tostring(i))
             end
-
-            local starStrPlayer = (bestPlayerStars == 0 and "0") or string.rep("", bestPlayerStars)
-            local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
-            local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
-            if players ~= 0 then
-                if bestPlayerScore ~= 0 then
-                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." %d (%s)", players, bestPlayerScore, starStrPlayer)
-                else
-                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." 0", players)
-                end
-            end
-            desc = desc .. string.format("\n"..trans("menu_record_best_stars").." %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
-            desc = desc .. string.format("\n"..trans("menu_record_best_overall").." %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
-        else
-            for stars=1,maxStars do
-                desc = desc .. string.rep("", stars) .. ": %d\n"
-            end
-            desc = desc .. "\nNo scores saved."
+            inMenu = false
         end
-                
-        table.insert(menu, {
-            levelName,
-            function()
-                if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT then
-                    start_level_command(tostring(i))
-                end
-                inMenu = false
-            end,
-            desc = desc,
-            true,
-            descExtra = function()
-                local maxKitchens = math.clamp(math.ceil(gGlobalSyncTable.peakPlayers / 4), 1, MAX_KITCHENS)
-                local neededPoints = get_star_scores(i, maxKitchens)
-                local result = {}
-                for stars=1,maxStars do
-                    table.insert(result, neededPoints[stars])
-                end
-                return table.unpack(result)
-            end,
-            noLang = true,
-        })
+        local completed = add_level_select_option(menu, i, 0, levelStartFunc, true)
 
         -- require 1 star to unlock the next level
-        if i ~= 0 and bestStars == 0 and i ~= #OC_LEVEL_DATA and not cheatsApi then
+        if i ~= 0 and (not completed) and i ~= #OC_LEVEL_DATA and not cheatsApi then
             unclearedLevel = true
             break
         end
@@ -1091,7 +1037,7 @@ function build_records_menu(menu)
             if recordsPlayers ~= x then
                 reloadRecords = true
                 recordsPlayers = x
-                enter_menu(6, 1, true)
+                reload_menu()
                 set_menu_option(6, 1, x)
                 reloadRecords = false
             end
@@ -1108,61 +1054,14 @@ function build_records_menu(menu)
             if recordsPlayers ~= button.currNum then
                 reloadRecords = true
                 recordsPlayers = button.currNum
-                enter_menu(6, 1, true)
+                reload_menu()
                 set_menu_option(6, 1, button.currNum)
                 reloadRecords = false
             end
         end,
     })
     for i=min,#OC_LEVEL_DATA do
-        local levelName = get_level_translated_field(i, "name")
-        local desc = get_level_translated_field(i, "desc") or trans("menu_no_desc")
-        desc = desc .. "\n\n"
-        local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(i)
-
-        local bestStars = 0
-        local maxStars = 3
-        if bestOverallScore ~= 0 then
-            -- score for this many players
-            local players = recordsPlayers
-            local bestPlayerScore, bestPlayerStars = get_record_for_level(i, players)
-            if players == 0 or bestPlayerScore ~= 0 then
-                -- score for the most stars obtained
-                local bestStarsScore, bestStarsPlayers = 0, 0
-                bestStarsScore, bestStars, bestStarsPlayers = get_record_for_level(i, 0, true)
-
-                maxStars = math.clamp(bestStars+1, 3, 4)
-                for stars=1,maxStars do
-                    desc = desc .. string.rep("", stars) .. ": %d\n"
-                end
-
-                local starStrPlayer = (bestPlayerStars == 0 and "0") or string.rep("", bestPlayerStars)
-                local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
-                local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
-                if players ~= 0 then
-                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." %d (%s)", players, bestPlayerScore, starStrPlayer)
-                end
-                desc = desc .. string.format("\n"..trans("menu_record_best_stars").." %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
-                desc = desc .. string.format("\n"..trans("menu_record_best_overall").." %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
-
-                table.insert(menu, {
-                    levelName,
-                    function() end,
-                    desc = desc,
-                    false,
-                    descExtra = function()
-                        local maxKitchens = math.clamp(math.ceil(players / 4), 1, MAX_KITCHENS)
-                        local neededPoints = get_star_scores(i, maxKitchens, players)
-                        local result = {}
-                        for stars=1,maxStars do
-                            table.insert(result, neededPoints[stars])
-                        end
-                        return table.unpack(result)
-                    end,
-                    noLang = true,
-                })
-            end
-        end
+        add_level_select_option(menu, i, recordsPlayers, nil, false)
     end
 end
 
@@ -1176,6 +1075,89 @@ function build_language_menu(menu)
             noLang = true,
         })
     end
+end
+
+function build_voting_menu(menu)
+    for i, oc_level in ipairs(voteOptions) do
+        local voteFunc = function()
+            gPlayerSyncTable[0].voteOption = i
+            reload_menu()
+        end
+        add_level_select_option(menu, oc_level, 0, voteFunc, true)
+        if i == gPlayerSyncTable[0].voteOption then
+            menu[#menu][1] = " " .. menu[#menu][1]
+        end
+    end
+end
+
+function add_level_select_option(menu, oc_level, players, selectFunc, usePeakPlayers)
+    local levelName = get_level_translated_field(oc_level, "name")
+    local desc = get_level_translated_field(oc_level, "desc") or trans("menu_no_desc")
+    desc = desc .. "\n\n"
+    local bestOverallScore, bestOverallStars, bestOverallPlayers = get_record_for_level(oc_level)
+
+    local bestStars = 0
+    local maxStars = 3
+    if bestOverallScore ~= 0 then
+        -- score for this many players
+        if usePeakPlayers then
+            players = gGlobalSyncTable.peakPlayers or players
+        end
+        local bestPlayerScore, bestPlayerStars = get_record_for_level(oc_level, players)
+        if players == 0 or bestPlayerScore ~= 0 or usePeakPlayers then
+            -- score for the most stars obtained
+            local bestStarsScore, bestStarsPlayers = 0, 0
+            bestStarsScore, bestStars, bestStarsPlayers = get_record_for_level(oc_level, 0, true)
+
+            maxStars = math.clamp(bestStars+1, 3, 4)
+            for stars=1,maxStars do
+                desc = desc .. string.rep("", stars) .. ": %d\n"
+            end
+
+            local starStrPlayer = (bestPlayerStars == 0 and "0") or string.rep("", bestPlayerStars)
+            local starStrMostStars = (bestStars == 0 and "0") or string.rep("", bestStars)
+            local starStrOverall = (bestOverallStars == 0 and "0") or string.rep("", bestOverallStars)
+            if players ~= 0 then
+                if bestPlayerScore ~= 0 then
+                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." %d (%s)", players, bestPlayerScore, starStrPlayer)
+                else
+                    desc = desc .. string.format("\n"..trans("menu_record_best_players").." 0", players)
+                end
+            end
+            desc = desc .. string.format("\n"..trans("menu_record_best_stars").." %d (%s, %dP)", bestStarsScore, starStrMostStars, bestStarsPlayers)
+            desc = desc .. string.format("\n"..trans("menu_record_best_overall").." %d (%s, %dP)", bestOverallScore, starStrOverall, bestOverallPlayers)
+        else
+            return false
+        end
+    else
+        if not usePeakPlayers then return false end
+
+        for stars=1,maxStars do
+            desc = desc .. string.rep("", stars) .. ": %d\n"
+        end
+        desc = desc .. "\nNo scores saved."
+    end
+
+    table.insert(menu, {
+        levelName,
+        selectFunc or (function() end),
+        desc = desc,
+        false,
+        descExtra = function()
+            if usePeakPlayers then
+                players = gGlobalSyncTable.peakPlayers or players
+            end
+            local maxKitchens = math.clamp(math.ceil(players / 4), 1, MAX_KITCHENS)
+            local neededPoints = get_star_scores(oc_level, maxKitchens, players)
+            local result = {}
+            for stars=1,maxStars do
+                table.insert(result, neededPoints[stars])
+            end
+            return table.unpack(result)
+        end,
+        noLang = true,
+    })
+    return (bestStars ~= 0)
 end
 
 grabButtonIndex = 3
@@ -1242,6 +1224,20 @@ local menu_data = {
                 return not is_game_state_level_running()
             end,
             desc = "menu_desc_quit",
+        },
+        {
+            "menu_voting",
+            function(x)
+                enter_menu(9)
+            end,
+            false,
+            function()
+                if gPlayerSyncTable[0].inPractice or gPlayerSyncTable[0].spectator then
+                    return true
+                end
+                return (#voteOptions == 0 or gGlobalSyncTable.gameState ~= GAME_STATE_LEVEL_SELECT or not gGlobalSyncTable.autoStart)
+            end,
+            desc = "menu_desc_voting",
         },
         {
             "menu_level_select",
@@ -1555,6 +1551,10 @@ local menu_data = {
                 inMenu = false
                 stayInSpectate = false
                 if not is_game_state_level_running() then
+                    if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT and gGlobalSyncTable.autoStart and #voteOptions ~= 0 then
+                        open_menu()
+                        enter_menu(9, 1, true)
+                    end
                     return
                 end
                 local sMario = gPlayerSyncTable[0]
@@ -1636,7 +1636,8 @@ local menu_data = {
             end,
         },
         title = "menu_host_options",
-    }
+    },
+    [9] = {buildFunc = build_voting_menu, title = "menu_voting"},
 }
 
 -- load menu settings; never nesters be crying rn
@@ -2269,6 +2270,10 @@ function enter_menu(id, option, back)
             button.updateNum(button)
         end
     end
+end
+
+function reload_menu()
+    return enter_menu(menuID, menuOption, true)
 end
 
 function set_menu_option(id, option, value)

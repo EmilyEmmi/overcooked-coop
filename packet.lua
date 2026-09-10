@@ -81,10 +81,16 @@ function on_packet_served_order(data, self)
 end
 
 function on_packet_request_orders(data, self)
-    if #pending_orders == 0 or not data.from then return end
+    if not data.from then return end
 
     local toLocalIndex = network_local_index_from_global(data.from)
     if toLocalIndex == 0 then return end
+
+    if gGlobalSyncTable.gameState == GAME_STATE_LEVEL_SELECT and gGlobalSyncTable.autoStart and #voteOptions ~= 0 then
+        network_send_to(toLocalIndex, true, voteOptions)
+    end
+
+    if #pending_orders == 0 then return end
     for kitchen, pending_orders in ipairs(pending_orders_all) do
         for i,pending_data in ipairs(pending_orders) do
             if pending_data.vanishTimer == nil then
@@ -104,15 +110,40 @@ function on_packet_desync_fix(data, self)
     attempt_desync_fix(data.from)
 end
 
+function on_packet_vote_options(data, self)
+    if not self then
+        voteOptions = data
+    end
+
+    if not inMenu then
+        open_menu()
+        enter_menu(9, 1, true)
+    end
+end
+
+function on_packet_vote_results(data, self)
+    for i=1,#voteOptions do
+        local oc_level, votes = data["level_"..i], data["votes_"..i]
+        if oc_level and votes and votes ~= 0 then
+            local name = get_level_translated_field(oc_level, "name") or "???"
+            djui_chat_message_create(string.format("\\#ffff50\\%s: %d", name, votes))
+        end
+    end
+end
+
 PACKET_ORDER = 0
 PACKET_SERVED_ORDER = 1
 PACKET_REQUEST_ORDERS = 2
 PACKET_DESYNC_FIX = 3
+PACKET_VOTE_OPTIONS = 4
+PACKET_VOTE_RESULTS = 5
 local sPacketTable = {
     [PACKET_ORDER] = on_packet_order,
     [PACKET_SERVED_ORDER] = on_packet_served_order,
     [PACKET_REQUEST_ORDERS] = on_packet_request_orders,
     [PACKET_DESYNC_FIX] = on_packet_desync_fix,
+    [PACKET_VOTE_OPTIONS] = on_packet_vote_options,
+    [PACKET_VOTE_RESULTS] = on_packet_vote_results,
 }
 function on_packet_receive(data)
     if data.id and sPacketTable[data.id] then

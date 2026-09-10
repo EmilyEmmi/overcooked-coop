@@ -34,6 +34,7 @@ langdata["en"] =
   taken = "Spot Taken",
   confirm_key = "[A] Confirm",
   cook_done = "Done",
+  unlocked_test_level = "You've 3 starred every stage!\nYou've unlocked the Test Level!",
 
   -- Level Info
   -- Note: Many of these level names use wordplay or alliteration, which are
@@ -108,6 +109,7 @@ langdata["en"] =
   menu_records = "Records",
   menu_djui_menu = "DJUI Menu",
   menu_char_select = "Character Select",
+  menu_voting = "Voting",
 
   menu_grab_button = "Grab Button",
   menu_action_button = "Action Button",
@@ -148,6 +150,7 @@ langdata["en"] =
   menu_desc_djui_menu = "Enter the DJUI menu. You can also press the [R] button to access this.",
   menu_desc_quit_practice = "Quit practicing.",
   menu_desc_char_select = "Opens the Character Select Menu. You can also press [Z] in this menu.",
+  menu_desc_voting = "Vote for which level should be played next.",
 
   menu_title_confirm = "Confirm?",
   menu_desc_confirm_restart = "Are you sure you want to restart? Any unsaved progress will be lost!",

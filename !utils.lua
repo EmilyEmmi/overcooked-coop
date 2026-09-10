@@ -370,6 +370,16 @@ function get_record_for_level(oc_level, players, checkMaxStars)
     return score, stars, players
 end
 
+function level_is_unlocked(oc_level)
+    if cheatsApi then return true end
+
+    if oc_level == OC_LEVEL_TEST then
+        return mod_storage_load_bool("unlockTestLevel")
+    end
+
+    return (oc_level == 1 or get_star_record(oc_level-1) >= 1)
+end
+
 ---@param level integer
 ---@param field string
 ---@return string? text
@@ -496,6 +506,14 @@ function split(s, delimiter, limit_)
     table.insert(result, finalmatch)
   end
   return result
+end
+
+-- Shuffles a table
+function shuffle(toShuffle)
+    for i = #toShuffle, 2, -1 do
+        local j = math.random(i)
+        toShuffle[i], toShuffle[j] = toShuffle[j], toShuffle[i]
+    end
 end
 
 function set_without_sync(syncTable, field, value)
