@@ -32,6 +32,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	taken = "Vaga ocupada",
 	confirm_key = "[A] Confirmar",
 	cook_done = "Pronto",
+	unlocked_test_level = "Você obteve 3 estrelas em todos os níveis!\nVocê desbloqueou o Nível de Teste!",
 
 	-- NOTE: Don't translate the text inside brackets ([GRAB], etc.)
 	level_name_0 = "Nível de Teste",
@@ -104,6 +105,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_records = "Recordes",
 	menu_djui_menu = "Menu DJUI",
 	menu_char_select = "Character Select",
+	menu_voting = "Votação",
 
 	menu_grab_button = "Botão de Agarrar",
 	menu_action_button = "Botão de Ação",
@@ -144,6 +146,7 @@ langdata["pt"] = -- the letters here will be what you type for the command (ex: 
 	menu_desc_djui_menu = "Entrar no menu DJUI. Você também pode pressionar [R] para o acessar.",
 	menu_desc_quit_practice = "Sair da pratica.",
 	menu_desc_char_select = "Abre o menu do Character Select. Você também consegue apertar [Z] neste menu.",
+	menu_desc_voting = "Vote para qual nível deve ser jogado da próxima vez.",
 
 	menu_title_confirm = "Confirmar?",
 	menu_desc_confirm_restart = "Você tem certeza que deseja reiniciar? Qualquer progresso que não está salvo vai ser perdido!",
